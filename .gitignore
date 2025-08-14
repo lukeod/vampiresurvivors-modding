@@ -1,0 +1,35 @@
+# Local context files (machine-specific configuration)
+LOCAL_*
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs
+bin/
+obj/
+build/
+*.dll
+*.pdb
+
+# User-specific files
+*.user
+*.suo
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Logs
+*.log
+logs/
+
+# Backup files
+*.bak
+*.backup
+*.old
