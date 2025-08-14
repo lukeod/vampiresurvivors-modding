@@ -45,13 +45,26 @@ echo DLCInspector built successfully.
 echo.
 
 REM Build AssetDumper
-echo [3/3] Building AssetDumper...
+echo [3/4] Building AssetDumper...
 dotnet build AssetDumper.csproj -c Release
 if %ERRORLEVEL% NEQ 0 (
     echo Failed to build AssetDumper!
     exit /b 1
 )
 echo AssetDumper built successfully.
+echo.
+
+REM Build ProjectileManipulator
+echo [4/4] Building ProjectileManipulator...
+cd ..\projectile-manipulator
+dotnet build ProjectileManipulator.csproj -c Release
+if %ERRORLEVEL% NEQ 0 (
+    echo Failed to build ProjectileManipulator!
+    cd ..\tracer
+    exit /b 1
+)
+cd ..\tracer
+echo ProjectileManipulator built successfully.
 echo.
 
 echo ========================================
@@ -81,6 +94,9 @@ if /i "%COPY_MODS%"=="Y" (
     
     copy /Y "bin\Release\net6.0\AssetDumper.dll" "%VAMPIRE_SURVIVORS_PATH%\Mods\" >nul 2>&1
     if %ERRORLEVEL% EQU 0 echo - AssetDumper.dll copied
+    
+    copy /Y "..\projectile-manipulator\bin\Release\net6.0\ProjectileManipulator.dll" "%VAMPIRE_SURVIVORS_PATH%\Mods\" >nul 2>&1
+    if %ERRORLEVEL% EQU 0 echo - ProjectileManipulator.dll copied
     
     echo.
     echo Mods installed successfully!

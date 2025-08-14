@@ -1,0 +1,100 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputType>Library</OutputType>
+    <AssemblyName>ProjectileManipulator</AssemblyName>
+    <RootNamespace>ProjectileManipulator</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Include="ProjectileManipulator.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!-- MelonLoader Core (adjust paths as needed for your installation) -->
+    <Reference Include="MelonLoader">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\net6\MelonLoader.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    
+    <!-- Harmony for patching -->
+    <Reference Include="0Harmony">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\net6\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    
+    <!-- Unity Core -->
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    
+    <!-- Unity Input for keyboard handling -->
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\Il2CppAssemblies\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    
+    <!-- Unity Mathematics for float2 type -->
+    <Reference Include="Unity.Mathematics">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\Il2CppAssemblies\Unity.Mathematics.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    
+    <!-- Game Assembly -->
+    <Reference Include="Il2CppVampireSurvivors.Runtime">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\Il2CppAssemblies\Il2CppVampireSurvivors.Runtime.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    
+    <!-- PauseSystem for GameMonoBehaviour base class -->
+    <Reference Include="Il2CppPauseSystem">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\Il2CppAssemblies\Il2CppPauseSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    
+    <!-- PhaserPort for ArcadeSprite base class (Projectile inherits from this) -->
+    <Reference Include="Il2CppPhaserPort">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\Il2CppAssemblies\Il2CppPhaserPort.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    
+    <!-- IL2CPP mscorlib -->
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    
+    <!-- System for collections -->
+    <Reference Include="Il2CppSystem">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\Il2CppAssemblies\Il2CppSystem.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    
+    <!-- Additional assemblies for object pool support -->
+    <Reference Include="Il2CppQFSW.MOP2">
+      <HintPath>$(VAMPIRE_SURVIVORS_PATH)\MelonLoader\Il2CppAssemblies\Il2CppQFSW.MOP2.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+  
+  <!-- 
+    To build this project:
+    1. Set the VAMPIRE_SURVIVORS_PATH environment variable to your game installation directory
+       Example: C:\Program Files (x86)\Steam\steamapps\common\Vampire Survivors
+       
+    2. Or replace $(VAMPIRE_SURVIVORS_PATH) in the paths above with your actual game path
+    
+    3. Run: dotnet build
+    
+    4. Copy the output ProjectileManipulator.dll to your game's Mods folder
+  -->
+</Project>

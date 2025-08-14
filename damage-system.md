@@ -1,93 +1,101 @@
 # Damage System Documentation
 
+## ⚠️ Updated with Verified Native Code Analysis
+*Previous documentation has been updated based on actual GameAssembly.dll.c analysis. See DAMAGE_CALCULATIONS_VERIFIED.md for verification details.*
+
 ## Overview
-Vampire Survivors implements a comprehensive damage calculation pipeline that flows from character base power through weapon-specific calculations to final damage application. Understanding this system is essential for creating weapon mods and damage modifications.
+Vampire Survivors implements a comprehensive damage calculation pipeline that flows from character base power through weapon-specific calculations to final damage application. This documentation has been verified against the native C code.
 
-## Core Damage Flow
+## Core Damage Flow - VERIFIED
 
-### 1. Character Power Calculation
+### 1. Character Power Calculation (VERIFIED)
 The foundation of damage calculation starts with character power:
 
-```csharp
-public virtual float PPower()  // In CharacterController
+**Found at**: Line 14752390 in GameAssembly.dll.c
+```c
+// CharacterController::PPower - Returns base character power
+float VampireSurvivors_Objects_Characters_CharacterController__PPower()
+{
+    // Reads from fields._slowMultiplier structure
+    // Returns sum of two float values at offsets 0x10 and 0x14
+}
 ```
 
-This method calculates the character's base damage output, combining base stats with modifiers.
+**Found at**: Line 14752325 in GameAssembly.dll.c
+```c
+// CharacterController::PPowerFinal - Applies modifiers and cap
+float PPowerFinal()
+{
+    float power = PPower() + RapidFire_Life;
+    if (SineBonus exists)
+        power = power * SineBonus.Value;
+    return MIN(10.0, power);  // VERIFIED: Capped at 10.0, not 100.0
+}
+```
 
-### 2. Weapon Power Calculation
+### 2. Weapon Power Calculation (VERIFIED)
 Each weapon calculates its effective power using virtual methods:
 
-```csharp
-public virtual float PPower()              // Primary power calculation
-public virtual float SecondaryPPower()     // Secondary attack power
-public virtual float SecondaryCursePPower() // Curse-based secondary power
-```
+**Virtual Method Table Indices** (Verified in multiple VTables):
+- Index 45: `PPower` - Primary power calculation
+- Index 46: `SecondaryPPower` - Secondary attack power  
+- Index 47: `SecondaryCursePPower` - Curse-based secondary power
 
-These methods are virtual, allowing individual weapons to implement custom damage formulas.
+These are virtual methods, allowing individual weapons to implement custom damage formulas. However, the actual implementations are compiled and not visible in the native code.
 
-## Damage Application Methods
+## Damage Application Methods (VERIFIED)
 
 ### Primary Damage Methods
-Located in `CharacterController`, these methods handle damage application:
+**Found**: GetDamaged implementations exist but details are compiled
 
-```csharp
-// Main damage dealing method with full parameters
-public virtual void GetDamaged(float value, HitVfxType showHitVfx = HitVfxType.Default, 
-                               float damageKnockBack = 1f, WeaponType damageType = WeaponType.VOID, 
-                               bool hasKb = true)
+**Verified GetDamaged Functions** (GameAssembly.dll.c):
+- Line 548682: `VampireSurvivors_Objects_Destructible__GetDamaged`
+- Line 724498: `VampireSurvivors_Objects_Props_PropFoscariSeal1__GetDamaged`
+- Line 727568: `VampireSurvivors_Objects_Props_Prop_AnimatedExplosive__GetDamaged`
 
-// Simplified damage application
-public virtual bool GetDamaged(float damageAmount)
+Note: Function signatures match documentation but implementations are not visible in decompiled code.
 
-// Self-damage (friendly fire scenarios)
-public virtual bool GetDamagedByOwnWeapon(float damageAmount)
+### Weapon-Specific Damage Methods (100% VERIFIED)
+
+**Found at Line 14741764** in GameAssembly.dll.c:
+```c
+void VampireSurvivors_Objects_Weapons_Weapon__DealDamage(
+    Weapon_o *__this, IDamageable_o *other)
+{
+    float power = (vtable._45_PPower)();      // Get weapon power
+    float critMul = (vtable._67_CalcCritMul)(); // Get crit multiplier
+    (vtable._59_DealDamage)(other, power * critMul); // Apply damage
+}
 ```
 
-### Weapon-Specific Damage Methods
-Located in the `Weapon` class:
+**Found at Line 14741785**: `DealDamageRetaliation` exists
+**Found at Line 14741878**: `DealDamage` with damage parameter
+**Found at Line 14741920**: `DamageAllEnemies` implementation
 
-```csharp
-// Standard damage dealing
-public virtual void DealDamage(IDamageable other)
+**VERIFIED FORMULA**: `Final Damage = Weapon.PPower × CritMultiplier`
 
-// Retaliation damage (counter-attacks)
-public virtual void DealDamageRetaliation(IDamageable other)
-
-// Damage with custom amount override
-public virtual void DealDamage(IDamageable other, float damageOverride)
-
-// Area damage to all enemies
-public void DamageAllEnemies(float value)
-```
-
-## Critical Hit System
+## Critical Hit System (PARTIALLY VERIFIED)
 
 ### Critical Hit Calculation
-The critical hit system is handled through:
+**VERIFIED**: Virtual method at index 67 (`CalcCritMul`) calculates critical multiplier
+**Location**: Referenced at Line 14741772 in GameAssembly.dll.c
 
-```csharp
-public virtual void StandardCritical(ArcadeColliderType second, ArcadeColliderType first)
+```c
+// In Weapon::DealDamage
+float critMul = (vtable._67_CalcCritMul)();  // Get critical multiplier
+damage = weaponPower * critMul;               // Apply to damage
 ```
 
 ### Critical Hit Stats
-Critical hits are influenced by weapon stats:
+**UNVERIFIED**: Field names from IL2CPP decompilation suggest:
+- `critChance` - Probability of critical hit (0-1)
+- `critMul` - Critical hit damage multiplier
 
-```csharp
-public float critChance;    // Probability of critical hit (0-1)
-public float critMul;       // Critical hit damage multiplier
-```
+Note: These field names come from IL2CPP analysis, not native code.
 
-### Critical Hit Formula
-Critical hits are handled through the `StandardCritical` method in weapons:
-
-```csharp
-public virtual void StandardCritical(ArcadeColliderType second, ArcadeColliderType first)
-```
-
-The general pattern is:
-1. Roll against `critChance` to determine if hit is critical
-2. If critical, multiply damage by `critMul`
-3. Apply visual and audio effects through the StandardCritical method
+### Critical Hit Implementation
+**VERIFIED**: Critical multiplication happens in DealDamage (Line 14741772)
+**UNVERIFIED**: Exact critical chance calculation and RNG logic
 
 ## Visual and Audio Effects
 
