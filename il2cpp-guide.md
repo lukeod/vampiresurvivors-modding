@@ -465,6 +465,42 @@ public static class MethodInvoker
 }
 ```
 
+## Harmony Transpiler Limitations
+
+### Transpilers Do Not Work with IL2CPP
+**Important**: Harmony transpilers cannot be used with IL2CPP games. Here's why:
+
+1. **No IL to Modify**: IL2CPP compiles C# code directly to C++, eliminating the intermediate language (IL) that transpilers operate on
+2. **Native Code**: The game runs as compiled native C++ code, not .NET bytecode
+3. **Runtime Differences**: The IL2CPP runtime doesn't maintain the IL representation needed for transpiler patches
+
+### Alternative Approaches
+Instead of transpilers, use these IL2CPP-compatible techniques:
+
+```csharp
+// Prefix hooks to intercept and modify parameters
+[HarmonyPrefix]
+public static void BeforeMethod(ref int parameter)
+{
+    parameter = ModifyValue(parameter);
+}
+
+// Postfix hooks to modify return values
+[HarmonyPostfix]
+public static void AfterMethod(ref int __result)
+{
+    __result = ModifyResult(__result);
+}
+
+// Complete method replacement with Prefix returning false
+[HarmonyPrefix]
+public static bool ReplaceMethod(ref int __result)
+{
+    __result = CustomImplementation();
+    return false; // Skip original method
+}
+```
+
 ## Performance Considerations
 
 ### IL2CPP Performance Characteristics

@@ -120,33 +120,46 @@ public void Construct(SignalBus signalBus, DiContainer diContainer,
 
 ## Initialization Flow
 
-### Game Startup Sequence
+### Application Startup Sequence
 
 1. **Application Start**
    - MelonLoader initializes
    - Mod assemblies load
    - Harmony patches apply
 
-2. **Unity Scene Load**
-   - Zenject containers initialize
-   - GameInstaller configures bindings
-   - Services instantiate
+2. **Initial Data Loading**
+   - DataManager initialization
+   - `LoadBaseJObjects()` loads raw JSON data
+   - `ReloadAllData()` called multiple times:
+     - First call: Base game data conversion
+     - Subsequent calls: Each DLC's data loading and merging
+     - Final call: Data validation and cross-referencing
+   - All data ready within 3-5 seconds of launch
 
-3. **GameManager Initialization**
+3. **Main Menu**
+   - Game waits in main menu for user interaction
+   - `GM.Core` remains null during menu state
+   - Data is loaded but GameManager not yet instantiated
+
+### Game Session Sequence
+
+1. **Player Initiates Game**
+   - Character selection
+   - Stage selection
+   - Game mode configuration
+
+2. **GameManager Initialization**
    - GameManager instantiated through dependency injection
+   - `GameManager.Awake()` called
    - `GM.Core` static accessor set
    - `Construct()` method called with injected dependencies
-   - Core systems initialize
+   - All core systems initialize
 
-4. **Data Loading**
-   - DataManager initialization and data loading
-   - JSON data processing and conversion
-   - DLC content loading and merging
-
-5. **Game Session Start**
-   - Session setup through injected components
-   - Character creation via CharacterFactory
-   - Weapon initialization through WeaponsFacade
+3. **Session Start**
+   - Player character creation via CharacterFactory
+   - Starting weapon initialization through WeaponsFacade
+   - Stage and enemy spawning begins
+   - Gameplay loop active
 
 ## System Architecture
 
@@ -206,10 +219,14 @@ if (weaponData != null)
 
 ### Timing Considerations
 
-- **Too Early**: GM.Core may be null during mod initialization
-- **Menu State**: Limited systems available in main menu
-- **In-Game**: Full access to all systems
-- **Best Hook**: `GameManager.Construct()` for dependency injection or `StartEnterWeaponSelection()` for weapon-related modifications
+- **During Startup**: GM.Core is null, only DataManager operations available
+- **Menu State**: GM.Core remains null, data is loaded but no active game session
+- **Game Session Start**: GM.Core becomes available when `GameManager.Awake()` is called
+- **In-Game**: Full access to all systems through GM.Core
+- **Best Hooks**:
+  - `DataManager.ReloadAllData()` for data modifications
+  - `GameManager.Awake()` for session-specific setup
+  - Monitor GM.Core in `OnUpdate()` for reliable detection
 
 ### Memory Management
 

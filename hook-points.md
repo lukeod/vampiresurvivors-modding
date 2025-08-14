@@ -5,12 +5,15 @@ This document outlines validated and recommended hook points for modding Vampire
 
 ## Essential Entry Points
 
-### 1. Data Load Hook ✅ *Tested & Working*
+### 1. Data Load Hook
 **Purpose**: Hook into initial data loading to modify game data before it's processed.
 
 ```csharp
-[HarmonyPatch(typeof(DataManager), "LoadBaseJObjects")]
-[HarmonyPostfix]
+// Manual patching recommended for IL2CPP
+var harmony = new Harmony("MyMod");
+var method = typeof(DataManager).GetMethod("LoadBaseJObjects");
+harmony.Patch(method, postfix: new HarmonyMethod(typeof(MyHooks).GetMethod("OnDataLoad")));
+
 public static void OnDataLoad(DataManager __instance)
 {
     // Earliest point to access and modify raw JSON data
@@ -25,19 +28,28 @@ public static void OnDataLoad(DataManager __instance)
 - Changing item properties
 - Custom enemy configurations
 
-### 2. Data Reload Hook ✅ *Tested & Working*
+### 2. Data Reload Hook
 **Purpose**: Hook into data reloading to apply changes when data is refreshed.
 
 ```csharp
-[HarmonyPatch(typeof(DataManager), "ReloadAllData")]
-[HarmonyPostfix]
+// Manual patching recommended for IL2CPP
+var harmony = new Harmony("MyMod");
+var method = typeof(DataManager).GetMethod("ReloadAllData");
+harmony.Patch(method, postfix: new HarmonyMethod(typeof(MyHooks).GetMethod("OnDataReload")));
+
 public static void OnDataReload(DataManager __instance)
 {
-    // Called after data modifications to refresh game state
+    // Called multiple times during startup (5+ times for DLC loading)
+    // Each call processes base game or DLC data
     // Data is fully converted and ready for use
     // Safe to call GetConverted methods here
 }
 ```
+
+**Important**: This method is called multiple times:
+- Once for base game data
+- Once for each DLC
+- Final call for data validation
 
 **Use Cases**:
 - Applying changes after JSON modifications
@@ -45,19 +57,25 @@ public static void OnDataReload(DataManager __instance)
 - Initializing mod-specific data structures
 - Setting up cross-references between modified data
 
-### 3. GameManager Initialization ✅ *Tested & Working*
-**Purpose**: Early access to GameManager for global mod setup.
+### 3. GameManager Initialization
+**Purpose**: Hook into GameManager when a game session starts.
 
 ```csharp
-[HarmonyPatch(typeof(GameManager), "Awake")]
-[HarmonyPostfix]
+// Manual patching recommended for IL2CPP
+var harmony = new Harmony("MyMod");
+var method = typeof(GameManager).GetMethod("Awake");
+harmony.Patch(method, postfix: new HarmonyMethod(typeof(MyHooks).GetMethod("OnGameManagerAwake")));
+
 public static void OnGameManagerAwake(GameManager __instance)
 {
-    // GameManager is fully initialized
-    // DataManager is accessible
-    // Perfect for mod initialization
+    // Called when entering gameplay after character/stage selection, not during app startup
+    // GM.Core is already set at this point
+    // DataManager, Player, Stage, and MainUI are available
+    // Perfect for gameplay-specific initialization
 }
 ```
+
+**Timing**: Called when entering gameplay after character/stage selection, not during app startup.
 
 **Use Cases**:
 - Storing GameManager reference for later use
@@ -65,7 +83,7 @@ public static void OnGameManagerAwake(GameManager __instance)
 - Initializing global mod state
 - Registering mod services
 
-### 4. Gameplay Start Hook (RECOMMENDED)
+### 4. Gameplay Start Hook
 **Purpose**: Best hook for gameplay-related modifications with full context.
 
 ```csharp
@@ -87,37 +105,48 @@ public static void OnGameplayStart(GameManager __instance, CharacterController c
 - Setting up player-specific mod features
 - Initializing gameplay tracking systems
 
-### 5. Main Menu Hook ⚠️ *May Require Special Handling*
+### 5. Main Menu Hook
 **Purpose**: Hook into main menu for UI modifications and mod setup.
 
 ```csharp
-[HarmonyPatch(typeof(AppMainMenuState), "OnEnter")]
-[HarmonyPostfix]
+// Manual patching recommended due to IL2CPP type resolution issues
+var mainMenuType = typeof(Il2CppVampireSurvivors.AppMainMenuState);
+var onEnterMethod = mainMenuType.GetMethod("OnEnter");
+if (onEnterMethod != null)
+{
+    harmony.Patch(onEnterMethod, postfix: new HarmonyMethod(typeof(MyHooks).GetMethod("OnMainMenu")));
+}
+
 public static void OnMainMenu(AppMainMenuState __instance)
 {
     // Main menu is loaded and active
-    // May require runtime type resolution due to IL2CPP
     // Use for UI modifications and menu-based mod features
 }
 ```
 
-**Potential Issues**:
+**Known Issues**:
 - Type accessibility problems with IL2CPP
 - May need runtime type resolution
-- Consider alternative approaches if problematic
+- Consider using OnUpdate monitoring as alternative
 
 ## Hook Timing Guide
 
-### Early Initialization Sequence
-1. **LoadBaseJObjects**: Raw data is loaded from JSON files
-2. **GameManager.Awake**: Core systems are initialized
-3. **ReloadAllData**: Data is converted and ready for use
+### Application Startup Sequence
+1. **MelonLoader Initialization**: Mods are loaded
+2. **LoadBaseJObjects**: Raw JSON data loaded from files
+3. **ReloadAllData** (Multiple calls):
+   - Call 1: Base game data (~2 seconds)
+   - Calls 2-4: DLC data loading (~2.5-3 seconds)
+   - Call 5: Final data merge (~3.5 seconds)
+4. **Main Menu Active**: Game ready for interaction (~5-10 seconds)
 
-### Gameplay Sequence
+### Game Session Sequence
 1. **Character Selection**: Player chooses character
-2. **InitializeGame**: Game session setup begins
-3. **AddStartingWeapon**: Gameplay officially starts
-4. **Game Loop**: Continuous gameplay systems active
+2. **Stage Selection**: Player chooses stage
+3. **GameManager.Awake**: Session initialization (when starting a game)
+4. **GM.Core Available**: All game systems ready
+5. **AddStartingWeapon**: Gameplay officially starts
+6. **Game Loop**: Continuous gameplay systems active
 
 ### Menu/UI Sequence
 1. **AppMainMenuState.OnEnter**: Main menu becomes active
@@ -424,17 +453,8 @@ public static bool ReplaceMethod()
 }
 ```
 
-### Transpiler Hooks for IL Modification
-```csharp
-[HarmonyPatch(typeof(SomeClass), "SomeMethod")]
-[HarmonyTranspiler]
-public static IEnumerable<CodeInstruction> ModifyIL(IEnumerable<CodeInstruction> instructions)
-{
-    // Advanced IL modification
-    // Use with extreme caution
-    return instructions;
-}
-```
+### Transpiler Hooks (NOT SUPPORTED)
+**Important**: Transpiler hooks do not work with IL2CPP games. The C# code is compiled to C++, eliminating the IL that transpilers modify. Use Prefix/Postfix hooks instead.
 
 ### Multiple Hook Coordination
 ```csharp

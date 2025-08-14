@@ -211,6 +211,10 @@ private void LoadBaseJObjects()
 // Force reload all data (applies JSON modifications)
 public void ReloadAllData()
 {
+    // Called multiple times during startup:
+    // - Once for base game data
+    // - Once for each DLC
+    // - Final call for data validation
     // Re-processes all JSON data
     // Updates converted data caches
     // Triggers data reload events
@@ -228,11 +232,13 @@ public static void OnDataLoad(DataManager __instance)
     // Data is loaded and ready for modification
 }
 
-// Hook after data reload
+// Hook after data reload (called multiple times)
 [HarmonyPatch(typeof(DataManager), "ReloadAllData")]
 [HarmonyPostfix]
 public static void OnDataReload(DataManager __instance)
 {
+    // Called 5+ times during startup for DLC loading
+    // Each call processes base game or DLC data
     // Data has been reloaded
     // Safe to access GetConverted methods
 }
