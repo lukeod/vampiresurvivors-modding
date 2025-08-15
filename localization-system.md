@@ -17,7 +17,7 @@ public static LanguageSourceData GetSourceContaining(string term, bool fallbackT
 public static List<LanguageSourceData> Sources;
 
 // Update all sources
-public static void UpdateSources();
+public static bool UpdateSources();
 ```
 
 ### LanguageSourceData
@@ -49,12 +49,12 @@ Individual localization term configuration:
 ```csharp
 public class TermData
 {
-    public string Term;           // Unique identifier
-    public eTermType TermType;    // Type (Text, UI, etc.)
-    public string Description;    // Optional description
-    public string[] Languages;    // Translations per language
-    public byte[] Flags;         // Term-specific flags
-    public string[] Languages_Touch; // Touch-specific translations
+    public string Term;                    // Unique identifier
+    public eTermType TermType;            // Type (Text, Font, etc.)
+    public string Description;            // Optional description
+    public Il2CppStringArray Languages;  // Translations per language
+    public Il2CppStructArray<byte> Flags; // Term-specific flags
+    public Il2CppStringArray Languages_Touch; // Touch-specific translations
 }
 ```
 
@@ -152,13 +152,18 @@ Term categories:
 ```csharp
 public enum eTermType
 {
-    Text,      // General text
-    UI,        // UI elements
-    Mesh,      // 3D text meshes
-    AudioClip, // Audio localization
-    Prefab,    // Prefab references
-    Texture,   // Texture references
-    // Additional types...
+    Text,          // General text
+    Font,          // Font assets
+    Texture,       // Texture references
+    AudioClip,     // Audio localization
+    GameObject,    // GameObject references
+    Sprite,        // Sprite assets
+    Material,      // Material assets
+    Child,         // Child objects
+    Mesh,          // 3D text meshes
+    TextMeshPFont, // TextMeshPro fonts
+    Object,        // Generic objects
+    Video          // Video assets
 }
 ```
 

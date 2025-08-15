@@ -52,6 +52,8 @@ Adventure mode content is stored in separate dictionaries:
 ```csharp
 Dictionary<CharacterType, List<CharacterData>> _adventureCharacterData;
 Dictionary<StageType, List<StageData>> _adventureStageData;
+Dictionary<EnemyType, List<EnemyData>> _adventureBestiaryData;
+Dictionary<CharacterType, CustomMerchantData> _adventureMerchantsData;
 ```
 
 ## Access Patterns
@@ -181,8 +183,8 @@ public static float CalculatePowerAtLevel(JArray levels, int targetLevel)
 ### Initial Load
 
 ```csharp
-// Called during game initialization (note: this is a private method)
-private void LoadBaseJObjects()
+// Called during game initialization
+public void LoadBaseJObjects()
 {
     // Loads all JSON data from game files
     // Populates _all*Json properties
@@ -328,7 +330,7 @@ public TextAsset GetWeaponDataJsonAsset()
 - `StageType` - Stage identifiers (0-1064 used, **safe: 5000+**)
 - `ItemType` - Item/pickup identifiers (0-230 used, **safe: 5000+**)
 - `ArcanaType` - Arcana identifiers (0-52 used, **safe: 1000+**)
-- `PowerUpType` - PowerUp identifiers (exists as separate enum, values overlap with WeaponType 50-68)
+- `PowerUpType` - PowerUp identifiers (separate enum with symbolic names like POWER, REGEN, etc.)
 - `DlcType` - DLC pack identifiers (0-5 used, **safe: 100+**)
 
 #### Additional Types

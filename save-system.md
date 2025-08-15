@@ -23,13 +23,19 @@ Supports enum arrays, dictionary mappings, nested data structures, and JSON-base
 // Generic serialization for enum collections
 public void SerializeEnumArray<T>(List<T> array, List<T> exclude = null)
 public void SerializeEnumArrayAsIntArray<T>(List<T> array, List<T> exclude = null)
+public void SerializeEnumValArray<T>(List<T> array)
 
 // Dictionary serialization
 public void SerializeObjectEnumInt<T>(Dictionary<T, int> obj)
 public void SerializeObjectEnumEnum<T1, T2>(Dictionary<T1, T2> obj)
+public void SerializeObjectEnumEnumArray<T, T2>(Dictionary<T, List<T2>> obj)
+public void SerializeObjectEnumIntArray<T, T2>(Dictionary<T, List<T2>> obj)
+```
 
-// Static serialization entry point
-public static string Serialize(PlayerOptionsData data)
+### Static Serialization
+```csharp
+// In SaveUtils class (not SaveSerializer)
+public static string GetSerializedPlayerDataAsString(PlayerOptionsData data)
 ```
 
 ## File System Integration
@@ -177,6 +183,16 @@ public static void HandleConflictResolution(byte[] dataA, byte[] dataB,
                                            Action<byte[]> onComplete)
 ```
 
+### CommitOptions Enum
+```csharp
+[Flags]
+public enum CommitOptions
+{
+    Default = 0,
+    TrySynchronously = 1
+}
+```
+
 ## Save Operation Workflow
 
 ### Save Process
@@ -210,9 +226,18 @@ bool VerifyBackupCompatibility(string backupPath)
 ## Storage Result System
 
 The save system uses `StorageResult` enum to indicate operation outcomes:
-- **Success**: Operation completed successfully
-- **Failure**: Operation failed (file errors, corruption, etc.)
-- **Conflict**: Cloud save conflict detected requiring resolution
+- **Successful**: Operation completed successfully
+- **Failed**: Operation failed (file errors, corruption, etc.)
+- **NotFound**: Save file not found
+- **SDKNotInitialized**: Platform SDK not initialized
+- **StorageNotInitialized**: Storage system not initialized
+- **StorageIsReinitializing**: Storage is currently reinitializing
+- **InvalidArg**: Invalid argument provided
+- **AnotherOperationInProgress**: Another save operation is in progress
+- **NothingToCommit**: No changes to save
+- **DataCorrupted**: Save data is corrupted
+- **TargetLocked**: Save file is locked
+- **NoFreeSpace**: Insufficient disk space
 
 ## Common Modding Scenarios
 
@@ -268,7 +293,7 @@ public static void OnSaveLoad(PlayerOptionsData __result)
 // Load save data asynchronously
 SaveSystem.LoadAsync(playerOptions, (result) =>
 {
-    if (result == StorageResult.Success)
+    if (result == StorageResult.Successful)
     {
         MelonLogger.Msg("Save loaded successfully");
         // Process loaded data

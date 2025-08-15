@@ -43,28 +43,28 @@ public T SpawnEnemy<T>(EnemyType enemyType, Vector2 spawnPos) where T : EnemyCon
 // Special enemy spawning
 public void SpawnBoss()
 public void SpawnBatGoblin()
-public void SpawnEnemyBullet(Vector2 spawnPos, EnemyType bulletType = EnemyType.BULLET_1)
+private void SpawnEnemyBullet(Vector2 spawnPos, EnemyType bulletType = EnemyType.BULLET_1)
 
 // Additional spawn management methods
 public void SetSpawnType(SpawnType type)
 
 // Internal spawning logic
-public EnemyController SpawnEnemyUnit(ObjectPool pool, EnemyType enemyType, Vector2 spawnPos)
+private EnemyController SpawnEnemyUnit(ObjectPool pool, EnemyType enemyType, Vector2 spawnPos)
 ```
 
 ### Spawn Pattern Methods
 Different spawn patterns are implemented through specialized methods:
 
 ```csharp
-// Pattern-based spawning
-public bool SpawnEnemiesInOuterRect()
-public void SpawnEnemiesInRandomLocationHorizontal()
-public void SpawnEnemiesInRandomLocationVertical()
-public void SpawnEnemiesTiled()
-public void SpawnEnemiesMapped()
+// Pattern-based spawning (internal implementation)
+private bool SpawnEnemiesInOuterRect()
+private void SpawnEnemiesInRandomLocationHorizontal()
+private void SpawnEnemiesInRandomLocationVertical()
+private void SpawnEnemiesTiled()
+private void SpawnEnemiesMapped()
 
-// Main spawning controller
-public void HandleSpawning(bool checkMaxEnemyCount = true)
+// Main spawning controller (internal)
+private void HandleSpawning(bool checkMaxEnemyCount = true)
 ```
 
 ### Spawn Types
@@ -106,6 +106,9 @@ public static ProfilerMarker MarkerSpawnEnemy;
 public static ProfilerMarker MarkerFindClosestEnemy;
 public static ProfilerMarker MarkerHandleSpawning;
 public static ProfilerMarker MarkerUpdateCulling;
+public static ProfilerMarker MarkerSpawnEnemyUnit;
+public static ProfilerMarker MarkerSpawnEnemyResolve;
+public static ProfilerMarker MarkerDespawnEnemyIfOutsideRect;
 ```
 
 ## Stage Event Management
@@ -256,7 +259,7 @@ public static bool CustomEnemySelection(ref EnemyType enemyType, Vector2 spawnPo
 ## Enemy Culling and Cleanup
 
 ### Automatic Culling
-Includes automatic enemy culling through `UpdateCulling()`. Enemies outside boundaries are despawned, off-screen enemies culled for performance, and dead enemies cleaned up automatically.
+Includes automatic enemy culling through the private `UpdateCulling()` method. Enemies outside boundaries are despawned, off-screen enemies culled for performance, and dead enemies cleaned up automatically.
 
 ### Manual Enemy Management
 ```csharp
@@ -269,7 +272,7 @@ foreach (var enemy in activeEnemies)
 
 // Additional enemy query methods
 public EnemyController ClosestAlive(Vector3 queryPos, float maxRange)
-public void GetEnemyBodiesInRect(Rectangle rect, ref List<BaseBody> bodies)
+public void GetEnemyBodiesInRect(Rectangle rect, ref List<BaseBody> list)
 ```
 
 ## Testing and Debugging

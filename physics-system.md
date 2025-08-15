@@ -38,7 +38,7 @@ Manages different collision groups for game objects:
 - `OnBulletOverlapsDoor` - Projectile-door interaction
 
 ### ArcadePhysics System
-**Location**: `Il2CppPhaserPort.ArcadePhysics`
+**Location**: `Il2Cpp.ArcadePhysics`
 
 Custom physics engine implementation:
 
@@ -89,7 +89,7 @@ public class BaseBody
 ```
 
 ### ArcadeSprite
-**Location**: `Il2CppPhaserPort.ArcadeSprite`
+**Location**: `Il2Cpp.ArcadeSprite`
 
 Extends BaseBody with sprite rendering:
 
@@ -99,9 +99,10 @@ public class ArcadeSprite : BaseBody
     public float2 position;
     
     // Movement methods
-    public void setVelocity(float x, float y);
-    public void setBounce(float x, float y);
-    public void setCollideWorldBounds(bool value);
+    public void setVelocity(float xVel, Il2CppSystem.Nullable<float> yVel = null);
+    public void setVelocity(Vector2 velocity);
+    public void setBounce(float2 bounce);
+    public void setCollideWorldBounds(bool value, float bounceX = 1, float bounceY = 1, bool onWorldBounds = false);
 }
 ```
 
@@ -118,7 +119,7 @@ public enum PhysicsType
 ## Physics Groups
 
 ### PhysicsGroup Class
-**Location**: `Il2CppPhaserPort.PhysicsGroup`
+**Location**: `Il2Cpp.PhysicsGroup`
 
 Container for physics objects:
 

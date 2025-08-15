@@ -6,11 +6,54 @@ Comprehensive UI system built on Unity's UI framework with TextMeshPro integrati
 
 ### BaseUIPage System
 Page-based UI architecture where screens extend `BaseUIPage`:
+
+**Core Game Pages:**
 - Character selection (`CharacterSelectionPage`)
 - Main game HUD (`MainGamePage`)  
 - Collections (`CollectionsPage`)
-- Director mode (`DirectorPage`)
+- Director mode (`DirectorPage : GameWindowedUIPage : BaseUIPage`)
 - Level selection (`LevelBonusSelectionPage`)
+- Arcana UI (`ArcanaUIPage`)
+- Piano interface (`PianoPage`)
+- Pause menu (`PausePage`)
+- Bestiary (`BestiaryPage`)
+- Power-ups display (`PowerUpsPage`)
+
+**Menu Pages:**
+- Main menu (`MainMenuPage`)
+- Options (`OptionsPage`)
+- Languages (`LanguagesPage`)
+- Warning dialogs (`WarningPage`)
+- Menu banner (`MenuBannerPage`)
+- Credits (`MenuCreditsPage`)
+
+**Game State Pages:**
+- Game over (`GameOverPage`)
+- Enhanced game over (`GameoverinoPage`)
+- Results recap (`RecapPage`)
+- Final credits (`FinalCreditsPage`)
+- Final fireworks (`FinalFireworksPage`)
+
+**Item/Treasure Pages:**
+- Item found (`ItemFoundPage`)
+- Character found (`CharacterFoundPage`)
+- Open treasure (`OpenTreasurePage`)
+
+**Store/Achievement Pages:**
+- DLC store (`DLCStorePage`)
+- Achievements (`AchievementsPage`)
+- Secrets (`SecretsPage`)
+
+**Additional Specialized Pages:**
+- Stage selection (`StageSelectPage`)
+- Arcana main selection (`ArcanaMainSelectionPage`)
+- TP credits (`TPCreditsPage`)
+- Background selection (`BackgroundPage`)
+- Base weapon selection (`BaseWeaponSelectionPage`)
+
+**GameWindowedUIPage Derivatives:**
+- Healer interface (`HealerPage`)
+- Merchant UI (`MerchantUIPage`)
 
 ### MainGamePage
 Main in-game UI controller:
