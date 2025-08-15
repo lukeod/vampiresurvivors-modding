@@ -1,13 +1,6 @@
 # Character System
 
-## Overview
-
-The character system in Vampire Survivors manages both player characters and enemies through the CharacterController class and associated data structures.
-
-**Important Note**: This documentation reflects the IL2CPP interop layer structure. When working with mods, be aware that:
-- Properties may use wrapper types like `EggFloat` and `EggDouble` instead of raw primitives
-- Some properties shown as `{ get; set; }` in decompiled code may require specific accessor methods
-- Actual runtime behavior may differ from the decompiled IL2CPP representation
+Manages player characters and enemies through the CharacterController class and associated data structures.
 
 ## CharacterController
 
@@ -45,7 +38,6 @@ public void InitCharacter(CharacterType characterType, int playerIndex,
 public void InitCharacterSpotlight()
 ```
 
-**Note**: Additional private initialization methods exist but are not exposed in the public API.
 
 ### Experience and Leveling
 
@@ -54,7 +46,6 @@ public void InitCharacterSpotlight()
 public void AddXp(float value, XPMultiplierMode multiplierMode = XPMultiplierMode.Normal)
 ```
 
-**Note**: Level up methods and related callbacks exist but their exact signatures may vary. The AddXp method handles growth multipliers and triggers level up when thresholds are reached.
 
 ### Utility Methods
 
@@ -86,7 +77,6 @@ public int level;                           // Character unlock level
 public float price;                         // Character unlock cost
 ```
 
-**Note**: Starting weapons and base character stats are handled through different systems in the actual implementation and may not be directly exposed as simple properties on CharacterData.
 
 ### Visual Properties
 
@@ -303,10 +293,9 @@ player.PlayerStats.Shields = 3.0f;
 player.PlayerStats.Charm = 2;
 ```
 
-## Best Practices
+## Usage Guidelines
 
-### 1. Null Check Everything
-
+### Null Safety
 ```csharp
 var player = GM.Core?.Player;
 if (player != null && player.PlayerStats != null)
@@ -315,40 +304,21 @@ if (player != null && player.PlayerStats != null)
 }
 ```
 
-### 2. Use Proper Stat Wrappers
-
-Most stats use EggFloat, but some use different types:
-
+### Stat Wrapper Types
 ```csharp
-// EggFloat stats (Most stats)
+// EggFloat stats
 player.PlayerStats.Power.SetValue(10);
 player.PlayerStats.MoveSpeed.SetValue(2.0f);
-player.PlayerStats.Area.SetValue(1.5f);
 
-// EggDouble stats (Only Revivals)
+// EggDouble stats
 player.PlayerStats.Revivals.SetValue(3);
 
-// Raw float stats (Shields, Shroud, Defang, InvulTimeBonus, Fever)
+// Raw types
 player.PlayerStats.Shields = 2.0f;
-player.PlayerStats.Shroud = 0.5f;
-
-// Raw int stats (Charm)
 player.PlayerStats.Charm = 1;
 ```
 
-### 3. Handle Nullable Types
-
-```csharp
-if (characterData.startingWeapon.HasValue)
-{
-    WeaponType weapon = characterData.startingWeapon.Value;
-}
-```
-
-### 4. Character vs Enemy
-
-Remember that both players and enemies use CharacterController:
-
+### Character vs Enemy
 ```csharp
 if (character is EnemyController enemy)
 {

@@ -1,12 +1,11 @@
-# Stage System Documentation
+# Stage System
 
-## Overview
-Vampire Survivors uses a sophisticated stage management system that controls enemy spawning, environmental effects, and gameplay progression. The stage system is responsible for creating the core gameplay experience through dynamic enemy placement and spawn pattern management.
+Manages enemy spawning, environmental effects, and gameplay progression through dynamic enemy placement and spawn patterns.
 
 ## Core Stage Architecture
 
-### Stage Class - Main Controller
-The `Stage` class serves as the primary controller for stage mechanics and enemy spawning:
+### Stage Class
+Primary controller for stage mechanics and enemy spawning:
 
 ```csharp
 // Key properties for stage management
@@ -100,36 +99,26 @@ public List<EnemyController> GetAllEnemiesInScreenBounds(float excludedBorderPer
 ```
 
 ### Performance Monitoring
-The stage system includes Unity Profiler markers for performance analysis:
+Includes Unity Profiler markers for performance analysis:
 
 ```csharp
-// Profiler markers for performance tracking
 public static ProfilerMarker MarkerSpawnEnemy;
 public static ProfilerMarker MarkerFindClosestEnemy;
 public static ProfilerMarker MarkerHandleSpawning;
-public static ProfilerMarker MarkerSpawnEnemyUnit;
-public static ProfilerMarker MarkerSpawnEnemyResolve;
 public static ProfilerMarker MarkerUpdateCulling;
-public static ProfilerMarker MarkerDespawnEnemyIfOutsideRect;
 ```
 
 ## Stage Event Management
 
 ### StageEventManager
-The `StageEventManager` handles stage-specific events beyond basic spawning:
-- Timed events and special encounters triggered by game progression
-- Stage transitions and boss triggers based on conditions
-- Dynamic difficulty adjustments and spawn modifications
-- Environmental effects and interactive mechanics
-- Cardinal and sub-cardinal directional event handling
-- Event target positioning and tracking systems
+Handles stage-specific events beyond basic spawning:
+- Timed events and special encounters
+- Stage transitions and boss triggers
+- Dynamic difficulty adjustments
+- Environmental effects
 
 ### Event-Driven Gameplay
-Stages can trigger various events:
-- Boss spawning at specific times
-- Environmental hazard activation
-- Special enemy wave patterns
-- Stage-specific mechanics activation
+Stages trigger boss spawning, environmental hazards, special enemy waves, and stage-specific mechanics.
 
 ## Spawn Boundaries and Zones
 
@@ -210,20 +199,7 @@ public Dictionary<DlcType, Dictionary<StageType, List<StageData>>> AllDlcStageDa
 
 ## Performance Considerations
 
-### High-Frequency Operations
-Stage systems involve performance-critical operations:
-- Enemy spawning calculations (every frame)
-- Distance calculations for enemy queries
-- Collision detection for spawn boundaries
-- Culling calculations for off-screen enemies
-
-### Optimization Guidelines
-1. **Avoid hooking high-frequency methods**: `HandleSpawning`, `FindClosestEnemy`, `UpdateCulling`, etc.
-2. **Use efficient spatial queries**: Leverage existing optimized methods like `GetEnemiesInCircle`
-3. **Cache spawn calculations**: Pre-calculate spawn locations when possible
-4. **Batch spawn operations**: Group multiple spawns together
-5. **Monitor profiler markers**: Use the built-in profiler markers to identify performance bottlenecks
-6. **Respect culling boundaries**: Work with the existing culling system rather than against it
+Stage systems involve performance-critical operations. Avoid hooking high-frequency methods, use efficient spatial queries, cache calculations, and batch operations.
 
 ## Common Modding Scenarios
 
@@ -280,11 +256,7 @@ public static bool CustomEnemySelection(ref EnemyType enemyType, Vector2 spawnPo
 ## Enemy Culling and Cleanup
 
 ### Automatic Culling
-The stage system includes automatic enemy culling through the `UpdateCulling()` method:
-- Enemies outside spawn boundaries are despawned
-- Off-screen enemies may be culled for performance
-- Dead enemies are cleaned up automatically
-- Profiler marker `MarkerDespawnEnemyIfOutsideRect` tracks culling performance
+Includes automatic enemy culling through `UpdateCulling()`. Enemies outside boundaries are despawned, off-screen enemies culled for performance, and dead enemies cleaned up automatically.
 
 ### Manual Enemy Management
 ```csharp

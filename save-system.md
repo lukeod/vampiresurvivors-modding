@@ -1,12 +1,11 @@
-# Save System Documentation
+# Save System
 
-## Overview
-Vampire Survivors implements a comprehensive save system that handles player progress, character unlocks, achievements, and game settings. The system supports multiple platforms, backup functionality, and cloud synchronization.
+Handles player progress, character unlocks, achievements, and game settings with multi-platform support, backup functionality, and cloud synchronization.
 
 ## Core Save Architecture
 
-### SaveSerializer - Data Serialization Engine
-The `SaveSerializer` class handles converting game data to and from storage formats:
+### SaveSerializer
+Handles converting game data to and from storage formats:
 
 ```csharp
 // Generic serialization methods for different data types
@@ -17,12 +16,7 @@ public void SerializeObjectEnumEnum<T1, T2>(Dictionary<T1, T2> obj)
 ```
 
 ### Data Serialization Patterns
-The serializer supports various data structures commonly used in game saves:
-- Enum arrays and collections with optional exclusion lists
-- Dictionary mappings between enums and values/arrays
-- Complex nested data structures
-- JSON-based serialization with proper type handling
-- Version-compatible serialization formats
+Supports enum arrays, dictionary mappings, nested data structures, and JSON-based serialization with version compatibility.
 
 ### Serialization Methods
 ```csharp
@@ -40,8 +34,8 @@ public static string Serialize(PlayerOptionsData data)
 
 ## File System Integration
 
-### PhaserSaveDataUtils - File Management
-The `PhaserSaveDataUtils` class manages save file operations and paths:
+### PhaserSaveDataUtils
+Manages save file operations and paths:
 
 ```csharp
 // Core file/folder constants
@@ -80,10 +74,10 @@ public static Il2CppStringArray GetTempFolders()
 ## Backup and Recovery System
 
 ### Automatic Backup Creation
-The save system creates multiple backup layers:
+Creates multiple backup layers:
 - **Save Backup**: Regular backup of current save
-- **Last Run Backup**: Backup from the previous game session
-- **Local Backups**: Multiple timestamped backups
+- **Last Run Backup**: Previous game session backup
+- **Local Backups**: Timestamped backups
 
 ### Backup Management Methods
 ```csharp
@@ -98,11 +92,7 @@ public static PlayerOptionsData LoadSaveFiles()
 ```
 
 ### Recovery Scenarios
-The backup system protects against:
-- Game crashes during save operations
-- Corrupted save files
-- User error or accidental deletions
-- Version compatibility issues
+Protects against game crashes, corrupted saves, accidental deletions, and version compatibility issues.
 
 ## Platform Integration
 
@@ -208,11 +198,7 @@ public static void HandleConflictResolution(byte[] dataA, byte[] dataB,
 ## Error Handling and Recovery
 
 ### Save Corruption Recovery
-When save corruption is detected:
-1. Attempt to load last run backup
-2. Try previous local backups in chronological order
-3. Offer manual backup selection to player
-4. Create new save as last resort
+When corruption detected: load last run backup, try previous backups chronologically, offer manual selection, or create new save.
 
 ### Validation Methods
 ```csharp
@@ -338,16 +324,7 @@ public static void SafeModifySave(Action<PlayerOptionsData> modifyAction)
 
 ## Performance Considerations
 
-### Save Operation Timing
-- Save operations should not block gameplay
-- Large saves may require background processing
-- Consider save frequency to avoid performance impact
-
-### File I/O Optimization
-1. **Minimize file operations**: Batch multiple changes
-2. **Use buffered streams**: For large save files
-3. **Async operations**: When possible, avoid blocking main thread
-4. **Cache validation**: Avoid repeated file system checks
+Save operations should not block gameplay. Minimize file operations, use buffered streams, prefer async operations, and cache validation checks.
 
 ## Security and Integrity
 

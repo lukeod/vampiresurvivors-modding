@@ -1,10 +1,10 @@
 # Vampire Survivors Modding Reference
 
-Comprehensive technical reference for modding Vampire Survivors using MelonLoader and IL2CPP decompiled source code.
+Technical reference for modding Vampire Survivors using MelonLoader.
 
 ## Overview
 
-This documentation provides detailed technical information about the internal structure and systems of Vampire Survivors, gathered through IL2CPP decompilation and analysis. It serves as a reference for mod developers working with MelonLoader to create modifications for the game.
+Documentation of Vampire Survivors' internal structure and systems for mod development.
 
 ## Documentation Structure
 
@@ -28,26 +28,19 @@ This documentation provides detailed technical information about the internal st
 
 ## Quick Start
 
-For modders looking to get started quickly:
+1. [Core Architecture](core-architecture.md) - Game structure and systems
+2. [Hook Points](hook-points.md) - Mod entry points
+3. [Data Manager](data-manager.md) - Data access and modification
+4. [IL2CPP Guide](il2cpp-guide.md) - IL2CPP specifics
+5. [Common Pitfalls](common-pitfalls.md) - Common issues and solutions
 
-1. Start with [Core Architecture](core-architecture.md) to understand the basic game structure
-2. Review [Hook Points](hook-points.md) to find the best entry point for your mod
-3. Check [Data Manager](data-manager.md) to learn how to access and modify game data
-4. Read [IL2CPP Guide](il2cpp-guide.md) for important IL2CPP-specific considerations
-5. Consult [Common Pitfalls](common-pitfalls.md) to avoid common mistakes
+## Key Points
 
-## Key Technical Insights
-
-1. **GM.Core** is the official static accessor for GameManager
-2. **DataManager** accessible through `GameManager.DataManager` property
-3. **GetConverted Methods** - Use these for accessing game data with absolute values
-4. **Weapon levels 2-8** store incremental deltas in JSON, but GetConvertedWeapons() returns absolute values
-5. **ReloadAllData Hook** - Best place to know when all data is loaded and ready
-6. **IL2Cpp Collections** - Can be iterated with foreach, always null-check
-7. **MelonEnvironment** - Use UserDataDirectory for safe file I/O
-8. **Zenject DI** - No singleton pattern, uses dependency injection
-9. **AddStartingWeapon** is the best hook for gameplay mods
-10. **Tick-based architecture** - Performance-critical system, avoid hooking OnTick methods
+- `GM.Core` - Static accessor for GameManager
+- `DataManager.GetConverted*()` - Returns absolute values (levels 2-8 store deltas)
+- `ReloadAllData` - Hook point for data loading completion
+- `AddStartingWeapon` - Recommended gameplay hook point
+- Avoid hooking `OnTick` methods (performance-critical)
 
 ## Prerequisites
 
@@ -74,10 +67,3 @@ using MelonLoader;
 using HarmonyLib;
 ```
 
-## Contributing
-
-This documentation is based on analysis of the decompiled IL2CPP code and empirical testing. As the game updates, some information may become outdated. Contributions and corrections are welcome.
-
-## Disclaimer
-
-This documentation is for educational and modding purposes only. Always respect the game's EULA and the developers' wishes regarding modifications.

@@ -2,18 +2,14 @@
 
 ## Overview
 
-Vampire Survivors uses a modular architecture with dependency injection (Zenject) and centralized static accessors. Understanding these core systems is essential for effective modding.
+Vampire Survivors uses dependency injection (Zenject) with centralized static accessors.
 
 ## Static Accessors
 
 ### GM.Core - GameManager Access
 **Location**: `Il2CppVampireSurvivors.Framework.GM`
-**Actual Namespace**: `VampireSurvivors.Framework`
-
-The primary static accessor for accessing the GameManager instance:
 
 ```csharp
-// Static accessor for GameManager
 public static GameManager Core { get; set; }
 
 // Usage
@@ -21,14 +17,11 @@ var gameManager = GM.Core;
 var dataManager = gameManager?.DataManager;
 ```
 
-**Important**: GM.Core may be null in certain game states (e.g., main menu). Always use null-conditional operators.
+**Note**: GM.Core is null in menu states. Use null-conditional operators.
 
-## GameManager - Core Game Controller
+## GameManager
 
 **Location**: `Il2CppVampireSurvivors.Framework.GameManager`
-**Actual Namespace**: `VampireSurvivors.Framework`
-
-The central controller that manages all game systems.
 
 ### Key Properties
 
@@ -73,7 +66,6 @@ CharacterController GeneratePlayerCharacter(CharacterType characterType, int pla
 ### Access Pattern
 
 ```csharp
-// Through GM.Core static accessor
 var gameManager = GM.Core;
 if (gameManager != null)
 {
@@ -81,20 +73,48 @@ if (gameManager != null)
     var currentStage = gameManager._stage;
     var player = gameManager.Player;
 }
-
-// Direct access through static reference
-var dataManager = GM.Core?._dataManager;
 ```
 
 ## Dependency Injection (Zenject)
 
-The game uses Zenject for dependency injection rather than traditional singleton patterns.
+### Installer Architecture
 
-### GameInstaller
+The game uses multiple installer classes following Zenject patterns:
+
+#### GameInstaller
 **Location**: `Il2CppVampireSurvivors.Installers.GameInstaller`
-**Actual Namespace**: `VampireSurvivors.Installers`
 
-Configures dependency injection bindings for the game.
+Main game-level dependency installer with methods:
+- `InstallBindings()` - Main binding configuration
+- `Install()` - Core installation logic
+- `InstallData()` - Data system bindings
+- `InstallUI()` - UI component bindings
+- `InstallMobile()` - Mobile-specific bindings
+
+#### CoreInstaller
+**Location**: `Il2CppVampireSurvivors.Installers.CoreInstaller`
+
+Handles core system bindings including:
+- Debug console and profiling tools
+- DLC catalog management
+- Base game data configuration
+- Main menu background factory
+
+#### FactoriesInstaller
+**Location**: `Il2CppVampireSurvivors.Installers.FactoriesInstaller`
+
+Manages factory pattern bindings for all content creation:
+- `WeaponFactory` - Weapon prefab management
+- `ProjectileFactory` - Projectile creation
+- `CharacterFactory` - Character instantiation
+- `EnemyFactory` - Enemy spawning with pooling
+- `AccessoriesFactory` - Item/accessory creation
+- Additional factories for destructibles, pickups, VFX, fonts, and assets
+
+#### DataManagerSettingsInstaller
+**Location**: `Il2CppVampireSurvivors.Installers.DataManagerSettingsInstaller`
+
+Extends `ScriptableObjectInstaller<DataManagerSettingsInstaller>` for configuration injection.
 
 ### GameManager Constructor
 
@@ -116,7 +136,30 @@ public void Construct(SignalBus signalBus, DiContainer diContainer,
     ParticleManager particleManager)
 ```
 
-**Important**: This means there are no static Instance properties. Always use GM.Core or injected references.
+The `DiContainer` is stored as `_diContainer` for runtime object creation.
+
+### Signal System
+
+The game uses Zenject's signal system extensively:
+
+#### SignalsInstaller
+**Location**: `Il2CppVampireSurvivors.Signals.SignalsInstaller`
+
+Declares signal types for decoupled communication:
+- `DeclareUISignals()` - UI event signals
+- `DeclareOptionsSignals()` - Settings/options signals
+- `DeclareCharacterSignals()` - Character event signals
+- `DeclareLevelUpFactorySignals()` - Level-up system signals
+- `DeclareAutomationSignals()` - Automation/testing signals
+
+### Runtime Object Creation
+
+While direct `DiContainer.InstantiateComponentOnNewGameObject()` calls are not common in the decompiled code, the pattern exists through:
+- Factory classes that manage prefab instantiation
+- `ProjectContext.Instance.Container` for runtime access
+- Asset reference system with lazy loading
+
+No static Instance properties. Use GM.Core or injected references.
 
 ## Initialization Flow
 
@@ -197,106 +240,38 @@ var stage = GM.Core?._stage;
 var spawnedEnemies = stage?._spawnedEnemies;
 ```
 
-## Best Practices
+## Timing Considerations
 
-### Accessing Core Systems
+- **Startup**: GM.Core is null
+- **Menu**: GM.Core remains null, data loaded
+- **Game Session**: GM.Core available after `GameManager.Awake()`
+- **In-Game**: Full system access through GM.Core
 
-```csharp
-// Always null-check GM.Core
-if (GM.Core != null)
-{
-    var dataManager = GM.Core.DataManager;
-    // Safe to use dataManager
-}
+## Integration Points
 
-// Use null-conditional for chains
-var weaponData = GM.Core?.DataManager?.GetConvertedWeapons();
-if (weaponData != null)
-{
-    // Process weapon data
-}
-```
-
-### Timing Considerations
-
-- **During Startup**: GM.Core is null, only DataManager operations available
-- **Menu State**: GM.Core remains null, data is loaded but no active game session
-- **Game Session Start**: GM.Core becomes available when `GameManager.Awake()` is called
-- **In-Game**: Full access to all systems through GM.Core
-- **Best Hooks**:
-  - `DataManager.ReloadAllData()` for data modifications
-  - `GameManager.Awake()` for session-specific setup
-  - Monitor GM.Core in `OnUpdate()` for reliable detection
-
-### Memory Management
-
-- Game uses object pooling extensively
-- Respect existing pools to avoid performance issues
-- Use weak references for Unity objects
-- Clean up event subscriptions properly
-
-## Common Integration Points
-
-### For Data Modifications
-Hook into DataManager initialization or access data through `GM.Core.DataManager` properties.
-
-### For Gameplay Changes
-Hook into `GameManager.Construct()` for initialization or use methods like `StartEnterWeaponSelection()` and `GeneratePlayerCharacter()`.
-
-### For UI Modifications
-Access `GameManager.MainUI` for HUD and interface changes.
-
-### For Save System
-Hook into `SaveSerializer` methods for save data manipulation.
-**Location**: `Il2CppVampireSurvivors.Framework.Saves.SaveSerializer`
-
-### For Player Management
-Use `GM.Core.AllPlayers`, `GM.Core.MainPlayers`, or `GM.Core.GetClosestPlayer()` for player queries.
+- **Data**: Hook `DataManager` or access through `GM.Core.DataManager`
+- **Gameplay**: Hook `GameManager.Construct()` or `AddStartingWeapon()`
+- **UI**: Access `GameManager.MainUI`
+- **Saves**: Hook `SaveSerializer` methods
+- **Players**: Use `GM.Core.AllPlayers` or `GM.Core.GetClosestPlayer()`
 
 ## Thread Safety
 
-Most game systems are **not** thread-safe:
-- All modifications should happen on the main Unity thread
-- Use Unity's main thread dispatcher for async operations
-- Avoid concurrent modifications to game state
+Game systems are not thread-safe. Modify only on main Unity thread.
 
-## Performance Considerations
-
-- GameManager methods are called frequently
-- Avoid expensive operations in per-frame methods
-- Cache references when possible
-- Use object pooling for spawned entities
-
-## Additional Architecture Notes
+## Architecture Patterns
 
 ### Base Classes
-- **GameManager** extends `GameMonoBehaviour` (custom MonoBehaviour base)
-- **Stage** extends `GameMonoBehaviour` 
-- **ArcanaManager** extends `GameTickable` (for frame-by-frame updates)
+- `GameMonoBehaviour` - Base for GameManager, Stage
+- `GameTickable` - Base for tick-based systems (ArcanaManager)
 
-### Facade Pattern Usage
-The game uses Facade pattern extensively for complex subsystems:
-- **WeaponsFacade** - Weapon system interface
-- **AccessoriesFacade** - Accessories system interface
-- **BackendFacade** - Platform backend abstraction
+### Facades
+- `WeaponsFacade` - Weapon system
+- `AccessoriesFacade` - Accessories
+- `BackendFacade` - Platform backend
 
-### Additional Managers
-- **LimitBreakManager** - Limit break system
-- **GizmoManager** - Gizmo/utility management
-- **GlimmerManager** - Visual effects
-- **PhysicsManager** - Physics calculations
-- **ParticleManager** - Particle effects
-
-### Factory Pattern Usage
-- **LevelUpFactory** - Creates level-up components
-- **CharacterFactory** - Character instantiation
-- **TreasureFactory** - Treasure generation  
-- **ProjectileFactory** - Projectile creation
-- **FontFactory** - Font management
-
-### Data Architecture
-Data is stored in JSON format and converted at runtime:
-- Base game data in core files
-- DLC data merged separately
-- Runtime conversion to C# objects
-- Caching for performance
+### Factories
+- `LevelUpFactory` - Level-up components
+- `CharacterFactory` - Characters
+- `TreasureFactory` - Treasures
+- `ProjectileFactory` - Projectiles

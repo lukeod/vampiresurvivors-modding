@@ -1,8 +1,6 @@
 # Data Manager
 
-## Overview
-
-The DataManager is the central repository for all game data in Vampire Survivors. It handles loading, storing, and providing access to JSON-based configuration data for weapons, characters, enemies, stages, and more.
+Central repository for game data in Vampire Survivors. Handles loading, storing, and providing access to JSON-based configuration data.
 
 **Location**: `Il2CppVampireSurvivors.Data.DataManager`
 
@@ -68,25 +66,18 @@ var dataManager = GM.Core?.DataManager;
 var dataManager = SoundManager._dataManager;
 ```
 
-### GetConverted Methods (Recommended)
+### GetConverted Methods
 
-DataManager provides converted data methods that return strongly-typed objects with **absolute values** (not incremental deltas):
+DataManager provides converted data methods that return strongly-typed objects with absolute values:
 
 ```csharp
-// Get all weapons with absolute values
 Dictionary<WeaponType, List<WeaponData>> weapons = dataManager.GetConvertedWeapons();
-
-// Get specific weapon levels
-List<WeaponData> whipLevels = weapons[WeaponType.WHIP];
-WeaponData level3Whip = whipLevels[2]; // 0-indexed
-
-// Other data types
 var characters = dataManager.GetConvertedCharacterData();
 var enemies = dataManager.GetConvertedEnemyData();
 var powerups = dataManager.GetConvertedPowerUpData();
 var stages = dataManager.GetConvertedStages();
 
-// Access item and arcana data through properties (not GetConverted methods)
+// Properties for other data types
 var items = dataManager.AllItems;         // Dictionary<ItemType, ItemData>
 var arcanas = dataManager.AllArcanas;     // Dictionary<ArcanaType, ArcanaData>
 
@@ -116,11 +107,6 @@ var adventureBestiary = dataManager.AdventureBestiaryData;      // Dictionary<En
 PropData specificProp = dataManager.GetPropData(PropType.CANDLE);
 ```
 
-**Benefits of GetConverted Methods:**
-- Returns strongly-typed objects (not JObject/JArray)
-- Values are already absolute (no delta calculation needed)
-- Works with IL2Cpp collections naturally
-- Includes all base game and DLC content
 
 ## Direct JSON Manipulation
 
@@ -141,26 +127,24 @@ string weaponName = whipLevels[0]["name"].Value<string>();
 ### Modifying JSON Data
 
 ```csharp
-// CRITICAL: Remember levels 2-8 are incremental deltas!
 JArray whipLevels = weaponJson["WHIP"] as JArray;
 
 // Level 1: Absolute values
-whipLevels[0]["power"] = 50;  // Sets base power to 50
+whipLevels[0]["power"] = 50;
 
 // Levels 2-8: Incremental deltas
-whipLevels[1]["power"] = 20;  // Adds 20 to level 1 (total: 70)
-whipLevels[2]["power"] = 15;  // Adds 15 to level 2 (total: 85)
+whipLevels[1]["power"] = 20;  // Adds to level 1
+whipLevels[2]["power"] = 15;  // Adds to level 2
 
-// Apply changes
 dataManager.ReloadAllData();
 ```
 
 ## Incremental Level System
 
-**CRITICAL**: Weapon and PowerUp levels use an incremental delta system:
+Weapon and PowerUp levels use an incremental delta system:
 
-- **Level 1**: Contains absolute base values
-- **Levels 2-8**: Contain incremental changes from the previous level
+- **Level 1**: Absolute base values
+- **Levels 2-8**: Incremental changes from previous level
 
 ### Example JSON Structure
 
@@ -224,22 +208,18 @@ public void ReloadAllData()
 ### Hook Points
 
 ```csharp
-// Hook after initial data load
 [HarmonyPatch(typeof(DataManager), "LoadBaseJObjects")]
 [HarmonyPostfix]
 public static void OnDataLoad(DataManager __instance)
 {
-    // Data is loaded and ready for modification
+    // Data loaded and ready for modification
 }
 
-// Hook after data reload (called multiple times)
 [HarmonyPatch(typeof(DataManager), "ReloadAllData")]
 [HarmonyPostfix]
 public static void OnDataReload(DataManager __instance)
 {
-    // Called 5+ times during startup for DLC loading
-    // Each call processes base game or DLC data
-    // Data has been reloaded
+    // Called multiple times during startup
     // Safe to access GetConverted methods
 }
 ```
@@ -275,20 +255,17 @@ foreach (var kvp in weapons)
 }
 ```
 
-## Best Practices
+## Usage Guidelines
 
-### 1. Use GetConverted Methods
-Prefer `GetConverted*` methods over direct JSON manipulation:
-- Strongly typed
-- Absolute values
-- Easier to work with
+### Use GetConverted Methods
+Prefer `GetConverted*` methods over direct JSON manipulation for strongly typed, absolute values.
 
-### 2. Remember the Delta System
-When modifying JSON directly, always remember:
+### Delta System
+When modifying JSON directly:
 - Level 1 = absolute values
 - Levels 2+ = incremental deltas
 
-### 3. Null Check IL2Cpp Objects
+### Null Safety
 ```csharp
 var weapons = dataManager?.GetConvertedWeapons();
 if (weapons != null && weapons.Count > 0)
@@ -297,40 +274,78 @@ if (weapons != null && weapons.Count > 0)
 }
 ```
 
-### 4. Call ReloadAllData After Modifications
+### Apply Changes
 ```csharp
-// Modify JSON
 weaponJson["WHIP"][0]["power"] = 100;
-
-// Must reload for changes to take effect
 dataManager.ReloadAllData();
 ```
 
-### 5. Cache Expensive Lookups
-```csharp
-// Cache converted data if using multiple times
-private static Dictionary<WeaponType, List<WeaponData>> _cachedWeapons;
+## DataManagerSettings Structure
 
-public static void RefreshCache()
+**Location**: `Il2CppVampireSurvivors.App.Data.DataManagerSettings`
+
+Centralized configuration container for all game data JSON assets:
+
+### Core Game Data Assets
+- `_AchievementDataJsonAsset` - Achievement definitions and requirements
+- `_ArcanaDataJsonAsset` - Arcana cards and their effects
+- `_CharacterDataJsonAsset` - Character stats, abilities, and properties
+- `_EnemyDataJsonAsset` - Enemy statistics and behaviors
+- `_ItemDataJsonAsset` - Item definitions and effects
+- `_WeaponDataJsonAsset` - Weapon statistics and behaviors
+- `_StageDataJsonAsset` - Stage configurations and layouts
+- `_SecretsDataJsonAsset` - Hidden content and unlockables
+- `_PropsDataJsonAsset` - Environmental objects and decorations
+- `_PowerUpDataJsonAsset` - Power-up effects and statistics
+- `_MusicDataJsonAsset` - Audio track configurations
+- `_HitVfxDataJsonAsset` - Visual effects for hits and impacts
+- `_LimitBreakDataJsonAsset` - Limit break mechanics
+- `_AlbumDataJsonAsset` - Music album information
+- `_CustomMerchantsDataJsonAsset` - Custom merchant configurations
+
+### Adventure Mode Data Assets
+- `_AdventureDataJsonAsset` - Adventure mode configurations
+- `_AdventuresStageSetDataJsonAsset` - Adventure stage set definitions
+- `_AdventuresMerchantsDataJsonAsset` - Adventure-specific merchant data
+
+### Asset Loading
+Each field provides access through IL2CPP runtime invocation:
+```csharp
+public TextAsset GetWeaponDataJsonAsset()
 {
-    _cachedWeapons = GM.Core?.DataManager?.GetConvertedWeapons();
+    return Il2CppObjectPool.Get<TextAsset>(intPtr);
 }
 ```
 
 ## Common Data Types
 
-### Enumerations
-- `WeaponType` - Weapon identifiers
-- `CharacterType` - Character identifiers
-- `EnemyType` - Enemy identifiers
-- `StageType` - Stage identifiers
-- `PowerUpType` - PowerUp identifiers
-- `ItemType` - Item/pickup identifiers
-- `ArcanaType` - Arcana identifiers
+### Enumerations with Safe ID Ranges
+
+#### Core Content Types
+- `WeaponType` - Weapon identifiers (0-1599 used, **safe: 5000+**)
+- `CharacterType` - Character identifiers (0-314 used, **safe: 5000+**)
+- `EnemyType` - Enemy identifiers (0-1122 used, **safe: 5000+**)
+- `StageType` - Stage identifiers (0-1064 used, **safe: 5000+**)
+- `ItemType` - Item/pickup identifiers (0-230 used, **safe: 5000+**)
+- `ArcanaType` - Arcana identifiers (0-52 used, **safe: 1000+**)
+- `PowerUpType` - PowerUp identifiers (exists as separate enum, values overlap with WeaponType 50-68)
+- `DlcType` - DLC pack identifiers (0-5 used, **safe: 100+**)
+
+#### Additional Types
 - `PropType` - Environment prop identifiers
-- `BgmType` - Background music identifiers
+- `BgmType` - Background music identifiers (0-1409 used, **safe: 10000+**)
+- `SfxType` - Sound effect identifiers (0-517 used, **safe: 10000+**)
 - `AdventureType` - Adventure mode identifiers
-- `DlcType` - DLC pack identifiers (Moonspell, Foscari, Chalcedony, FirstBlood, Emeralds, ThosePeople)
+- `SkinType` - Character skin identifiers (0-1076 used, **safe: 10000+**)
+
+### Enum ID Assignment Patterns
+- **Base Game**: Generally uses lower ranges (0-200)
+- **DLC Content**: Uses specific reserved ranges:
+  - 300s: Foscari DLC (FB_ prefix)
+  - 360s-410s: Emergency Meeting DLC (EME_ prefix)
+  - 1400s-1500s: Tides of the Foscari (TP_ prefix)
+- **Special Values**: Some enums use -1 for VOID/NULL values
+- **Reserved Gaps**: Large gaps suggest space for future content
 
 ### Data Classes
 - `WeaponData` - Weapon configuration

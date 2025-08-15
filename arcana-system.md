@@ -1,7 +1,6 @@
-# Arcana System Documentation
+# Arcana System
 
-## Overview
-The Arcana system in Vampire Survivors provides powerful passive effects that significantly alter gameplay mechanics. Arcanas are unlockable tarot-themed modifiers that trigger on specific game events and can dramatically change how weapons, characters, and game mechanics function.
+Provides powerful passive effects that alter gameplay mechanics. Arcanas are unlockable tarot-themed modifiers that trigger on specific game events.
 
 ## Arcana Types
 
@@ -73,7 +72,7 @@ public enum ArcanaType
 
 ## Arcana Manager System
 
-The `ArcanaManager` class handles all arcana-related functionality, including tracking active arcanas and responding to game events.
+Handles arcana functionality, tracking active arcanas and responding to game events.
 
 ### Active Arcana Tracking
 The ArcanaManager maintains a list of currently active arcanas:
@@ -121,10 +120,7 @@ public void OnPlayerLevelUp(CharacterController character)
 ```
 
 ### Event-Driven Architecture
-Arcanas operate on an event-driven system where:
-1. Game events trigger arcana checks
-2. Active arcanas respond to relevant events
-3. Effects are applied based on arcana-specific logic
+Game events trigger arcana checks, active arcanas respond to relevant events, and effects are applied based on arcana-specific logic.
 
 ## Weapon Integration
 
@@ -143,33 +139,13 @@ public void CheckBeginningArcana()  // For T10_BEGINNING (Waltz of Pearls)
 ```
 
 ### Weapon Behavior Modification
-Arcanas can fundamentally change how weapons behave:
-- Modify damage calculations
-- Alter firing patterns
-- Change visual effects
-- Add special interactions with enemies or pickups
+Arcanas can modify damage calculations, alter firing patterns, change visual effects, and add special interactions.
 
-## Arcana Effects Categories
+## Arcana Effects
 
-### Stat Modification Arcanas
-Some arcanas provide direct stat bonuses or penalties:
-- Increased damage, area, speed, or other weapon stats
-- Character stat improvements (health, movement, etc.)
-- Multiplicative vs. additive bonuses
-
-### Behavior Modification Arcanas
-Others change fundamental game mechanics:
-- Weapon evolution requirements
-- Pickup effects and spawning
-- Enemy behavior and interactions
-- Time manipulation effects
-
-### Event-Triggered Arcanas
-Many arcanas activate on specific conditions:
-- Taking damage below certain thresholds
-- Leveling up characters
-- Killing specific enemy types
-- Time-based triggers
+- **Stat Modification**: Direct stat bonuses or penalties
+- **Behavior Modification**: Changes to game mechanics
+- **Event-Triggered**: Activate on specific conditions
 
 ## Data Storage and Configuration
 
@@ -310,17 +286,7 @@ public class ModdedWeapon : Weapon
 
 ## Performance Considerations
 
-### Event Frequency
-Arcana checks can occur frequently during gameplay:
-- Every weapon attack for combat arcanas
-- Every frame for continuous effect arcanas
-- Every game event for trigger-based arcanas
-
-### Optimization Guidelines
-1. **Cache arcana states**: Avoid repeated lookups for the same arcana
-2. **Efficient condition checking**: Use fast comparisons for trigger conditions
-3. **Batch arcana effects**: Group similar modifications together
-4. **Avoid complex calculations**: Keep arcana effect calculations simple
+Arcana checks occur frequently. Optimize by caching states, using efficient condition checking, batching effects, and avoiding complex calculations.
 
 ## Advanced Arcana Patterns
 
@@ -336,20 +302,11 @@ Advanced arcanas may have effects that change over time:
 - Time-limited powerful effects
 - Effects that trigger under specific combinations of conditions
 
-## Testing and Validation
-
-### Arcana Effect Testing
-When modifying arcana systems:
-1. Test with different character combinations
-2. Verify effects persist across game sessions
-3. Check for conflicts with weapon evolutions
-4. Ensure effects scale appropriately with difficulty
-
-### Common Issues
-1. **Effect stacking**: Multiple instances of the same effect
-2. **Save compatibility**: Modified arcana effects affecting save games
-3. **Performance impact**: Too many active arcana checks causing lag
-4. **Balance concerns**: Overpowered arcana combinations
+## Common Issues
+- **Effect stacking**: Multiple instances of same effect
+- **Save compatibility**: Modified effects affecting save games
+- **Performance**: Too many active checks causing lag
+- **Balance**: Overpowered combinations
 
 ## Debugging Arcana Systems
 

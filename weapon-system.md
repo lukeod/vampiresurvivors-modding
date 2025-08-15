@@ -1,14 +1,12 @@
 # Weapon System
 
-## Overview
-
-The weapon system in Vampire Survivors handles weapon behavior, stats, evolution, and unions. Understanding this system is crucial for creating weapon mods.
+Handles weapon behavior, stats, evolution, and unions in Vampire Survivors.
 
 ## WeaponType Enum
 
 **Location**: `Il2CppVampireSurvivors.Data.WeaponType`
 
-Weapon identifiers with over 500 entries:
+Weapon identifiers with over 1500 entries (VOID = 0, highest value = 1599):
 
 ### Categories
 
@@ -122,9 +120,9 @@ public bool sealable;                          // Can be sealed in modes
 public bool unexcludeSelf;                     // Don't exclude self
 ```
 
-## CRITICAL: Incremental Level System
+## Incremental Level System
 
-**Weapon levels use incremental deltas:**
+Weapon levels use incremental deltas:
 
 - **Level 1**: Absolute base values
 - **Levels 2-8**: Incremental changes from previous level
@@ -180,7 +178,7 @@ public virtual float PSpeedRepeatInterval()      // Repeat interval speed
 public virtual float PHitBoxDelayOverSpeed()     // Hitbox delay over speed
 ```
 
-**Important**: These are virtual methods. 70+ weapons override these for custom calculations.
+These are virtual methods. Many weapons override these for custom calculations.
 
 ### Damage Methods
 
@@ -349,26 +347,19 @@ public static float CalculateFinalDamage(Weapon weapon, CharacterController owne
 }
 ```
 
-## Best Practices
+## Usage Guidelines
 
-### 1. Use GetConverted Methods
-
+### Use GetConverted Methods
 ```csharp
-// Preferred: GetConverted returns absolute values
-var weapons = dataManager.GetConvertedWeapons();
-
-// Avoid: Direct JSON has deltas
-var json = dataManager._allWeaponDataJson;
+var weapons = dataManager.GetConvertedWeapons();  // Preferred
+var json = dataManager._allWeaponDataJson;        // Direct JSON has deltas
 ```
 
-### 2. Remember Level Deltas
-
-When modifying JSON directly:
+### Level Delta System
 - Level 1 = absolute values
 - Levels 2-8 = incremental deltas
 
-### 3. Check Nullable Values
-
+### Nullable Values
 ```csharp
 if (weaponData.duration.HasValue)
 {
@@ -376,13 +367,102 @@ if (weaponData.duration.HasValue)
 }
 ```
 
-### 4. Virtual Method Overrides
+## WeaponFactory Pattern
 
-Many weapons override stat calculation methods. Check specific weapon implementations.
+### Factory Class Structure
+**Location**: `Il2CppVampireSurvivors.Framework.WeaponFactory`
 
-### 5. Evolution Timing
+The WeaponFactory uses a ScriptableObject-based factory pattern:
 
-Evolutions only trigger when opening treasure chests, not automatically at max level.
+```csharp
+public class WeaponFactory : SerializedScriptableObject
+{
+    // Dictionary mapping WeaponType to prefabs
+    public class WeaponsDictionary : UnitySerializedDictionary<WeaponType, Weapon>
+    
+    // Main weapon storage
+    public WeaponsDictionary _weapons;
+    
+    // Linked factories for DLC/extension
+    public List<WeaponFactory> _LinkedFactories;
+    
+    // Main factory method
+    public Weapon GetWeaponPrefab(WeaponType weaponType, out WeaponType forcedWeaponType)
+}
+```
+
+### Linked Factory System
+Factories can be chained to support DLC and modular content:
+- Base game factory contains core weapons
+- DLC factories added to `_LinkedFactories`
+- Lookup traverses linked factories if weapon not found
+- Supports weapon substitution via `forcedWeaponType`
+
+### Factory Integration
+**Location**: `Il2CppVampireSurvivors.Installers.FactoriesInstaller`
+
+Factories are registered through dependency injection:
+
+```csharp
+public class FactoriesInstaller : MonoInstaller<FactoriesInstaller>
+{
+    public WeaponFactory _WeaponFactory;
+    public ProjectileFactory _ProjectileFactory;
+    public CharacterFactory _CharacterFactory;
+    // Additional factories...
+    
+    public override void InstallBindings()
+    {
+        // Registers factories with DI container
+    }
+}
+```
+
+### WeaponsFacade
+**Location**: `Il2CppVampireSurvivors.Framework.WeaponsFacade`
+
+High-level weapon management using the factory:
+
+```csharp
+public class WeaponsFacade
+{
+    private WeaponFactory _weaponFactory;
+    
+    // Weapon creation methods
+    public Weapon AddWeapon(WeaponType weaponType, CharacterController character, bool removeFromStore = true);
+    public Weapon CreateDetachedWeapon(WeaponType weaponType, CharacterController characterController);
+    public Weapon AddHiddenWeapon(WeaponType weaponType, CharacterController characterController, bool removeFromStore = true, bool allowDuplicates = false);
+}
+```
+
+### Creating Custom Weapon Factories
+
+```csharp
+// Create custom factory for mod weapons
+var customFactory = ScriptableObject.CreateInstance<WeaponFactory>();
+customFactory._weapons = new WeaponFactory.WeaponsDictionary();
+
+// Add custom weapons to factory
+foreach (var customWeapon in modWeapons)
+{
+    var prefab = CreateWeaponPrefab(customWeapon);
+    customFactory._weapons.Add(customWeapon.Type, prefab);
+}
+
+// Link to main factory system
+mainWeaponFactory._LinkedFactories.Add(customFactory);
+```
+
+### Factory Usage in DLC System
+DLC bundles include their own weapon factories:
+
+```csharp
+public class BundleManifestData
+{
+    public WeaponFactory _WeaponFactory;  // DLC-specific weapons
+    // Other DLC content...
+}
+```
 
 ## Hook Points
 

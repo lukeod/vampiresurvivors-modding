@@ -1,11 +1,10 @@
-# Stat System Documentation
+# Stat System
 
-## Overview
-Vampire Survivors uses a comprehensive stat modification system built around wrapper types and incremental calculation methods. Understanding this system is crucial for creating effective mods that modify character and weapon statistics.
+Comprehensive stat modification system built around wrapper types and incremental calculation methods.
 
 ## PlayerModifierStats Structure
 
-The core stat container is `PlayerModifierStats`, which stores all character stat modifiers using specialized wrapper types.
+Core stat container that stores character stat modifiers using specialized wrapper types.
 
 ### EggFloat Properties (Most Common)
 The majority of stats use the `EggFloat` wrapper type:
@@ -52,11 +51,11 @@ public unsafe float Fever { get; set; }
 public unsafe int Charm { get; set; }
 ```
 
-### Critical Implementation Notes
+### Implementation Notes
 
-1. **Mixed wrapper types**: Most stats use `EggFloat`, but `Revivals` uses `EggDouble`, and several use raw types
-2. **Exact casing matters**: Properties use specific casing like `ReRolls`, `MaxHp`, `InvulTimeBonus`
-3. **Type safety**: You must use the correct wrapper type or direct assignment will fail
+- Most stats use `EggFloat`, `Revivals` uses `EggDouble`, several use raw types
+- Properties use specific casing: `ReRolls`, `MaxHp`, `InvulTimeBonus`
+- Must use correct wrapper type for assignments
 
 ## EggFloat/EggDouble Wrappers
 
@@ -100,10 +99,7 @@ public virtual float SecondaryPAmount()// Secondary amount calculation
 ```
 
 ### Custom Weapon Overrides
-Over 70 weapons override these methods for custom calculations. This means:
-- Each weapon can have unique stat calculation formulas
-- Not all weapons follow the same mathematical patterns
-- Some weapons may have special caps, multipliers, or conditional bonuses
+Many weapons override these methods for custom calculations with unique formulas, patterns, and bonuses.
 
 ## Character Base Stats
 
@@ -140,12 +136,12 @@ public unsafe void Upgrade(ModifierStats other, bool multiplicativeMaxHp = false
 
 This method combines stat modifiers, with special handling for MaxHp which can be applied multiplicatively.
 
-## Incremental Level System for Weapons
+## Incremental Level System
 
-**Critical Understanding**: Weapon data uses an incremental delta system:
+Weapon data uses an incremental delta system:
 
-- **Level 1**: Contains absolute base values
-- **Levels 2-8**: Contains incremental changes from the previous level
+- **Level 1**: Absolute base values
+- **Levels 2-8**: Incremental changes from previous level
 
 ### Example JSON Structure
 ```json
@@ -171,19 +167,15 @@ public static float CalculatePowerAtLevel(JArray levels, int targetLevel)
 }
 ```
 
-## Recommended Data Access Pattern
+## Data Access
 
-### Use GetConverted Methods
-Instead of manually calculating deltas, use DataManager's converted methods:
+Use DataManager's converted methods for absolute values:
 
 ```csharp
-// Get weapons with absolute values (no delta calculation needed)
 var weapons = dataManager.GetConvertedWeapons();
 var characters = dataManager.GetConvertedCharacterData();
 var powerups = dataManager.GetConvertedPowerUpData();
 ```
-
-These methods return strongly-typed objects with absolute values already calculated.
 
 ## Common Modding Patterns
 
@@ -206,15 +198,7 @@ if (player?.PlayerStats != null)
 }
 ```
 
-### Applying Changes
-After modifying JSON data directly, always call:
+### Apply Changes
 ```csharp
 dataManager.ReloadAllData();
 ```
-
-## Performance Considerations
-
-- Stat calculations happen frequently during gameplay
-- Use cached values when possible
-- Avoid hooking into per-frame calculation methods
-- Prefer one-time modifications during initialization

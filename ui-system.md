@@ -1,77 +1,36 @@
-# UI System Documentation
+# UI System
 
-## Overview
-Vampire Survivors uses a comprehensive UI system built on Unity's UI framework with extensive TextMeshPro integration. The UI system handles in-game HUD elements, menus, character selection, and various gameplay interfaces.
-
-**Key Framework Dependencies**:
-- Unity UI (UnityEngine.UI)
-- TextMeshPro (Il2CppTMPro)
-- Doozy Engine UI framework
-- Rewired input system
-- Zenject dependency injection
-- Custom signal-based event system
+Comprehensive UI system built on Unity's UI framework with TextMeshPro integration. Handles in-game HUD elements, menus, character selection, and gameplay interfaces.
 
 ## Core UI Architecture
 
 ### BaseUIPage System
-The game uses a page-based UI architecture where different screens extend `BaseUIPage` (which inherits from MonoBehaviour):
-- Character selection screens (`CharacterSelectionPage`)
-- Main menu interfaces
-- In-game HUD components (`MainGamePage`)
-- Settings and configuration pages
-- Collections and bestiary pages (`CollectionsPage`)
-- Director mode pages (`DirectorPage`)
-- Level bonus selection (`LevelBonusSelectionPage`)
+Page-based UI architecture where screens extend `BaseUIPage`:
+- Character selection (`CharacterSelectionPage`)
+- Main game HUD (`MainGamePage`)  
+- Collections (`CollectionsPage`)
+- Director mode (`DirectorPage`)
+- Level selection (`LevelBonusSelectionPage`)
 
-**Key BaseUIPage Features**:
-- Provides text parsing functionality for localization
-- Manages UI page lifecycle (Awake, OnShowStart, Update)
-- Integrates with Doozy Engine UI framework
-- Supports Rewired input system integration
-
-### MainGamePage - Primary HUD Controller
-The `MainGamePage` class serves as the main in-game UI controller and extends `BaseUIPage`:
+### MainGamePage
+Main in-game UI controller:
 
 ```csharp
-// Access through GameManager
-var mainUI = GM.Core?.MainUI;  // Gets the MainGamePage instance
+var mainUI = GM.Core?.MainUI;
 ```
 
-The MainGamePage manages:
-- Experience progress bar (`_ExperienceProgress`)
-- Kill counters and enemy statistics (`_EnemiesText`, `KillsText`, `KillsIcon`)
-- Coin displays (`_CoinsText`)
-- Time display (`_TimeText`)
-- Level display (`_LevelText`)
-- Equipment panel container (`_EquipmentPanelContainer`)
-- Gold Fever UI (`_GoldFever`)
-- XP Bar toggle functionality (`_XPBar`)
-- Scene transition effects (`_SceneTransitionFader`)
-- Pause and fast forward controls (`_PauseButton`, `_FastForwardButton`)
-- Twitch integration panel (`_TwitchStageEventsPanel`)
-- Glimmer technique carousel (`_GlimmerTechniqueCarousel`)
+Manages experience bar, kill counters, coin display, time, level, equipment panels, and game controls.
 
 ## TextMeshPro Integration
 
 ### Widespread TextMeshPro Usage
 Multiple UI classes extensively use TextMeshPro for text rendering:
 
-**Core UI Classes with TextMeshPro**:
-- `CoinsUI` - Currency display (`PriceValue` TextMeshPro field)
-- `CharacterSelectionPage` - Character selection interface
-- `CollectionsPage` - Item and achievement collections
-- `TutorialPopup` - Tutorial and help text
-- `CustomDropDown` - Dropdown menu components
-- `MainGamePage` - Multiple TextMeshPro fields (`_EnemiesText`, `_CoinsText`, `_TimeText`, `_LevelText`)
-- `LevelUpItemUI` - Level up selection items
-- `CollectionItemUI` - Collection display items
+**Key UI Classes with TextMeshPro**:
+- `CoinsUI`, `CharacterSelectionPage`, `CollectionsPage`
+- `MainGamePage`, `LevelUpItemUI`, `CustomDropDown`
 
-### Text Rendering Benefits
-TextMeshPro provides:
-- High-quality text rendering
-- Rich text formatting support
-- Efficient font atlas management
-- Dynamic text styling capabilities
+TextMeshPro provides high-quality text rendering, rich formatting, and efficient font management.
 
 ## HUD Update System
 
@@ -86,14 +45,8 @@ public void UpdateExperienceProgress(GameplaySignals.CharacterXpChangedSignal si
 public void UpdateCoins()              // Coin display updates
 ```
 
-**Important Note**: `UpdateExperienceProgress` is not called per frame but is triggered by character XP change signals, making it more efficient than continuous polling.
-
 ### Performance Considerations
-These update methods run every frame and should be optimized:
-- Avoid hooking into high-frequency update methods
-- Cache UI element references
-- Use efficient text formatting
-- Minimize string allocations
+Update methods run every frame. Avoid hooking high-frequency methods, cache UI references, and minimize string allocations.
 
 ## UI Component Categories
 
@@ -198,13 +151,8 @@ The `DebugUIHider` class provides minimal debug UI functionality:
 - Limited debug console features
 - Development-time UI management
 
-### Limited Debug Features
-Unlike some games, Vampire Survivors has minimal exposed debug UI:
-- `DebugUIHider` class provides basic debug UI management
-- No extensive in-game console
-- Limited debug visualization
-- Primarily for internal development use
-- Debug panel is accessible through `_CheatsPanel` in MainGamePage
+### Debug Features
+Minimal debug UI with `DebugUIHider` class and `_CheatsPanel` in MainGamePage.
 
 ## Common Modding Scenarios
 
@@ -310,22 +258,12 @@ The game uses I2 Localization system for internationalization:
   - Use proper text encoding for international characters
   - Respect the existing localization framework
 
-## Testing and Validation
-
-### UI Testing Guidelines
-When modifying UI systems:
-1. Test across different screen resolutions
-2. Verify text readability and scaling
-3. Check UI responsiveness and performance
-4. Validate input handling and navigation
-5. Test with different languages if applicable
-
-### Common UI Issues
-1. **Performance degradation**: Too many UI updates per frame
-2. **Text overflow**: Long text not fitting in UI containers
-3. **Missing references**: UI components not properly initialized
-4. **Input conflicts**: Custom UI interfering with game controls
-5. **Memory leaks**: UI elements not properly cleaned up
+## Common Issues
+- **Performance**: Too many UI updates per frame
+- **Text overflow**: Long text not fitting containers
+- **Missing references**: Components not initialized
+- **Input conflicts**: Custom UI interfering with controls
+- **Memory leaks**: Elements not cleaned up
 
 ## Advanced UI Features
 

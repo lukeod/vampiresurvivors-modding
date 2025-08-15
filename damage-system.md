@@ -1,101 +1,53 @@
-# Damage System Documentation
+# Damage System
 
-## ⚠️ Updated with Verified Native Code Analysis
-*Previous documentation has been updated based on actual GameAssembly.dll.c analysis. See DAMAGE_CALCULATIONS_VERIFIED.md for verification details.*
+Comprehensive damage calculation pipeline that flows from character base power through weapon-specific calculations to final damage application.
 
-## Overview
-Vampire Survivors implements a comprehensive damage calculation pipeline that flows from character base power through weapon-specific calculations to final damage application. This documentation has been verified against the native C code.
+## Core Damage Flow
 
-## Core Damage Flow - VERIFIED
+### Character Power Calculation
+Foundation of damage calculation:
 
-### 1. Character Power Calculation (VERIFIED)
-The foundation of damage calculation starts with character power:
-
-**Found at**: Line 14752390 in GameAssembly.dll.c
-```c
-// CharacterController::PPower - Returns base character power
-float VampireSurvivors_Objects_Characters_CharacterController__PPower()
-{
-    // Reads from fields._slowMultiplier structure
-    // Returns sum of two float values at offsets 0x10 and 0x14
-}
+```csharp
+public virtual float PPower()      // Base character power
+public virtual float PPowerFinal() // Final power with modifiers and cap
 ```
 
-**Found at**: Line 14752325 in GameAssembly.dll.c
-```c
-// CharacterController::PPowerFinal - Applies modifiers and cap
-float PPowerFinal()
-{
-    float power = PPower() + RapidFire_Life;
-    if (SineBonus exists)
-        power = power * SineBonus.Value;
-    return MIN(10.0, power);  // VERIFIED: Capped at 10.0, not 100.0
-}
+Character power is capped at 10.0 in the final calculation.
+
+### Weapon Power Calculation
+Weapons calculate effective power using virtual methods:
+
+```csharp
+public virtual float PPower()               // Primary power
+public virtual float SecondaryPPower()      // Secondary attack power  
+public virtual float SecondaryCursePPower() // Curse-based secondary power
 ```
 
-### 2. Weapon Power Calculation (VERIFIED)
-Each weapon calculates its effective power using virtual methods:
+## Damage Application Methods
 
-**Virtual Method Table Indices** (Verified in multiple VTables):
-- Index 45: `PPower` - Primary power calculation
-- Index 46: `SecondaryPPower` - Secondary attack power  
-- Index 47: `SecondaryCursePPower` - Curse-based secondary power
-
-These are virtual methods, allowing individual weapons to implement custom damage formulas. However, the actual implementations are compiled and not visible in the native code.
-
-## Damage Application Methods (VERIFIED)
-
-### Primary Damage Methods
-**Found**: GetDamaged implementations exist but details are compiled
-
-**Verified GetDamaged Functions** (GameAssembly.dll.c):
-- Line 548682: `VampireSurvivors_Objects_Destructible__GetDamaged`
-- Line 724498: `VampireSurvivors_Objects_Props_PropFoscariSeal1__GetDamaged`
-- Line 727568: `VampireSurvivors_Objects_Props_Prop_AnimatedExplosive__GetDamaged`
-
-Note: Function signatures match documentation but implementations are not visible in decompiled code.
-
-### Weapon-Specific Damage Methods (100% VERIFIED)
-
-**Found at Line 14741764** in GameAssembly.dll.c:
-```c
-void VampireSurvivors_Objects_Weapons_Weapon__DealDamage(
-    Weapon_o *__this, IDamageable_o *other)
-{
-    float power = (vtable._45_PPower)();      // Get weapon power
-    float critMul = (vtable._67_CalcCritMul)(); // Get crit multiplier
-    (vtable._59_DealDamage)(other, power * critMul); // Apply damage
-}
+### Weapon Damage Methods
+```csharp
+public virtual void DealDamage(IDamageable other)
+public virtual void DealDamageRetaliation(IDamageable other)
+public virtual void DealDamage(IDamageable other, float damageOverride)
+public void DamageAllEnemies(float value)
 ```
 
-**Found at Line 14741785**: `DealDamageRetaliation` exists
-**Found at Line 14741878**: `DealDamage` with damage parameter
-**Found at Line 14741920**: `DamageAllEnemies` implementation
+### Damage Formula
+`Final Damage = Weapon.PPower × CritMultiplier`
 
-**VERIFIED FORMULA**: `Final Damage = Weapon.PPower × CritMultiplier`
-
-## Critical Hit System (PARTIALLY VERIFIED)
+## Critical Hit System
 
 ### Critical Hit Calculation
-**VERIFIED**: Virtual method at index 67 (`CalcCritMul`) calculates critical multiplier
-**Location**: Referenced at Line 14741772 in GameAssembly.dll.c
-
-```c
-// In Weapon::DealDamage
-float critMul = (vtable._67_CalcCritMul)();  // Get critical multiplier
-damage = weaponPower * critMul;               // Apply to damage
+```csharp
+public virtual float CalcCritMul()  // Calculate critical multiplier
 ```
 
 ### Critical Hit Stats
-**UNVERIFIED**: Field names from IL2CPP decompilation suggest:
-- `critChance` - Probability of critical hit (0-1)
-- `critMul` - Critical hit damage multiplier
-
-Note: These field names come from IL2CPP analysis, not native code.
-
-### Critical Hit Implementation
-**VERIFIED**: Critical multiplication happens in DealDamage (Line 14741772)
-**UNVERIFIED**: Exact critical chance calculation and RNG logic
+```csharp
+public float critChance;  // Critical hit probability (0-1)
+public float critMul;     // Critical hit damage multiplier
+```
 
 ## Visual and Audio Effects
 
@@ -185,59 +137,47 @@ Damage calculations occur very frequently during gameplay:
 
 ## Common Modding Scenarios
 
-### Accessing Data Structures
-The decompiled code reveals these key access patterns:
-
+### Accessing Game Data
 ```csharp
-// Access game manager and core systems
 var gameManager = GM.Core;
 var dataManager = gameManager.DataManager;
 var player = gameManager.Player;
 
-// Access player stats
 if (player?.PlayerStats != null)
 {
     var ownedPowerUps = player.PlayerStats.GetOwnedPowerUps();
-    var allPowerUps = player.PlayerStats.GetAllPowerUps();
 }
 ```
 
-### Increasing Weapon Damage
+### Modifying Weapon Damage
 ```csharp
-// Access weapon data through DataManager
 var dataManager = GM.Core.DataManager;
-// Note: Exact method names may vary - verify in decompiled code
 var weaponData = dataManager.GetWeaponData(WeaponType.WHIP);
 if (weaponData != null)
 {
-    weaponData.power *= 2.0f;  // Double base damage
-    // Note: Changes to weapon data affect all instances of that weapon
+    weaponData.power *= 2.0f;
 }
 ```
 
 ### Custom Damage Multipliers
 ```csharp
-// Hook into damage application (use sparingly due to performance)
 [HarmonyPatch(typeof(Weapon), "DealDamage")]
 [HarmonyPrefix]
 public static void ModifyDamage(ref float damageOverride)
 {
-    damageOverride *= 1.5f;  // 50% damage increase
+    damageOverride *= 1.5f;
 }
 ```
 
 ### Character Damage Bonuses
 ```csharp
-// Access player stats through the PowerUpType enum
 var player = GM.Core.Player;
 if (player?.PlayerStats != null)
 {
-    // Get current power stat and modify it
     var powerStats = player.PlayerStats.GetOwnedPowerUps();
     if (powerStats.ContainsKey(PowerUpType.POWER))
     {
-        // Modify power stat (exact implementation depends on PlayerStat structure)
-        // Note: Direct manipulation may require different approach
+        // Modify power stat
     }
 }
 ```
@@ -307,30 +247,17 @@ if (stats.ContainsKey(PowerUpType.CURSE))
 }
 ```
 
-### Available PowerUp Types
-The PowerUpType enum includes all stats that can affect damage:
-- PowerUpType.POWER (base damage multiplier)
-- PowerUpType.AREA (weapon area/size)
-- PowerUpType.COOLDOWN (weapon cooldown reduction)
-- PowerUpType.DURATION (weapon effect duration)
-- PowerUpType.AMOUNT (projectile/effect count)
-- PowerUpType.LUCK (affects item drops, not damage directly)
-- PowerUpType.CURSE (affects enemy scaling and other mechanics)
+### PowerUp Types
+PowerUpType exists as a separate enum, but WeaponType also includes these values starting at 50:
+- `WeaponType.POWER = 50` - Base damage multiplier
+- `WeaponType.AREA = 51` - Weapon area/size
+- `WeaponType.SPEED = 52` - Projectile speed
+- `WeaponType.COOLDOWN = 53` - Cooldown reduction
+- `WeaponType.DURATION = 54` - Effect duration
+- `WeaponType.AMOUNT = 55` - Projectile/effect count
 
-## Testing and Debugging
-
-### Damage Validation
-When modifying damage systems:
-1. Test against different enemy types
-2. Verify critical hit calculations
-3. Check for overflow or underflow in damage values
-4. Ensure damage scales appropriately with level progression
-
-### Common Issues
-1. **Integer overflow**: Very high damage values may wrap around
-2. **Performance degradation**: Too many damage modifications can impact frame rate
-3. **Balance concerns**: Excessive damage can trivialize gameplay
-4. **Save compatibility**: Damage modifications may affect save game balance
-
-### Method Verification Note
-All method signatures and property names in this documentation have been verified against the decompiled IL2CPP source code. However, exact DataManager method names like `GetWeaponData` should be verified in your specific version, as they may use different internal naming conventions or access patterns than shown in the examples.
+## Common Issues
+- **Performance**: Too many damage modifications impact frame rate
+- **Balance**: Excessive damage trivializes gameplay  
+- **Overflow**: Very high damage values may wrap around
+- **Compatibility**: Modifications may affect save game balance

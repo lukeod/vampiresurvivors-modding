@@ -1,20 +1,19 @@
 # IL2CPP Guide Documentation
 
 ## Overview
-Vampire Survivors is built using Unity's IL2CPP backend, which converts C# IL code to optimized C++ for better performance. Understanding IL2CPP's limitations and patterns is crucial for effective modding with MelonLoader.
+Vampire Survivors uses Unity's IL2CPP backend, which converts C# IL code to optimized C++. Understanding IL2CPP limitations and patterns is essential for effective MelonLoader modding.
 
 ## IL2CPP Architecture
 
 ### Code Compilation Process
 1. **C# Source** → **IL (Intermediate Language)** → **C++ Code** → **Native Binary**
-2. Original method implementations are replaced with `IL2CPP.il2cpp_runtime_invoke()` calls
-3. Actual logic executes in compiled C++ code, not visible in decompiled output
+2. Method implementations are replaced with `IL2CPP.il2cpp_runtime_invoke()` calls
+3. Logic executes in compiled C++ code, not visible in decompiled output
 
 ### Method Implementation Visibility
-**Critical Limitation**: IL2CPP decompilation shows method bodies that call IL2CPP runtime functions:
+IL2CPP decompilation shows method bodies that call IL2CPP runtime functions:
 
 ```csharp
-// What you actually see in decompiled code
 public unsafe override float PPower()
 {
     IL2CPP.Il2CppObjectBaseToPtrNotNull((Il2CppObjectBase)(object)this);
@@ -31,47 +30,44 @@ public unsafe override float PPower()
 }
 ```
 
-**Impact on Modding**:
-- Cannot see actual mathematical operations (*, +, -, /)
-- Cannot determine if stats are additive or multiplicative from code
-- Cannot identify hard-coded caps, limits, or special conditions
-- Need runtime debugging or empirical testing for formulas
+**Modding Impact**:
+- Cannot see mathematical operations (*, +, -, /)
+- Cannot determine if stats are additive or multiplicative
+- Cannot identify hard-coded caps or limits
+- Requires runtime debugging or empirical testing for formulas
 
-## Type System Differences
+## Type System
 
 ### IL2CPP Type Prefixes
-All game types require the `Il2Cpp` prefix when referenced in mods:
+All game types require the `Il2Cpp` prefix:
 
 ```csharp
-// Correct IL2CPP type references
+// Game types
 Il2CppVampireSurvivors.Framework.GameManager
 Il2CppVampireSurvivors.Data.DataManager
 Il2CppVampireSurvivors.Objects.Characters.CharacterController
 
-// IL2CPP System types (with Il2Cpp prefix)
+// IL2CPP System types
 Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue>
 Il2CppSystem.String
 Il2CppSystem.Single
 
-// Standard .NET types (no prefix needed)
+// Standard .NET types (no prefix)
 System.Collections.Generic.Dictionary<TKey, TValue>
 System.String
 System.Single
 ```
 
-### Mixed Type Environments
-Mods operate in a mixed environment with both IL2CPP and System types:
-
+### Mixed Type Environment
 ```csharp
 // IL2CPP collection from game
 Il2CppSystem.Collections.Generic.Dictionary<WeaponType, List<WeaponData>> il2cppDict;
 
-// Convert to System collection for easier manipulation
+// Convert to System collection
 var systemDict = new System.Collections.Generic.Dictionary<string, object>();
 
 foreach (var kvp in il2cppDict)
 {
-    // Bridge between IL2CPP and System types
     systemDict[kvp.Key.ToString()] = ProcessWeaponData(kvp.Value);
 }
 ```
@@ -79,24 +75,19 @@ foreach (var kvp in il2cppDict)
 ## Collection Handling
 
 ### IL2CPP Collections
-Game collections use IL2CPP variants of standard .NET collections:
-
 ```csharp
-// IL2CPP collections from game data
 Il2CppSystem.Collections.Generic.List<WeaponData>
-Dictionary<WeaponType, List<WeaponData>>  // Note: Often no Il2CppSystem prefix
-Il2CppStructArray<WeaponType>  // IL2CPP array type
+Dictionary<WeaponType, List<WeaponData>>
+Il2CppStructArray<WeaponType>
 Il2CppInterop.Runtime.InteropTypes.Arrays.Il2CppStructArray<Vector3>
 ```
 
-### Safe Iteration Patterns
+### Safe Iteration
 ```csharp
-// Safe iteration of IL2CPP collections
 if (il2cppDict != null && il2cppDict.Count > 0)
 {
     foreach (var entry in il2cppDict)
     {
-        // Always null-check IL2CPP objects
         if (entry.Value != null && entry.Value.Count > 0)
         {
             foreach (var item in entry.Value)
@@ -111,10 +102,11 @@ if (il2cppDict != null && il2cppDict.Count > 0)
 }
 ```
 
-### Collection Conversion Utilities
+### Collection Conversion
 ```csharp
 public static class Il2CppConverters
 {
+    // List conversions
     public static List<T> ToSystemList<T>(Il2CppSystem.Collections.Generic.List<T> il2cppList)
     {
         var systemList = new List<T>();
@@ -129,6 +121,21 @@ public static class Il2CppConverters
         return systemList;
     }
     
+    public static Il2CppSystem.Collections.Generic.List<T> ToIl2CppList<T>(List<T> systemList)
+    {
+        var il2cppList = new Il2CppSystem.Collections.Generic.List<T>();
+        if (systemList != null)
+        {
+            foreach (var item in systemList)
+            {
+                if (item != null)
+                    il2cppList.Add(item);
+            }
+        }
+        return il2cppList;
+    }
+    
+    // Dictionary conversions
     public static Dictionary<TKey, TValue> ToSystemDictionary<TKey, TValue>(
         Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue> il2cppDict)
     {
@@ -143,34 +150,82 @@ public static class Il2CppConverters
         }
         return systemDict;
     }
+    
+    public static Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue> ToIl2CppDictionary<TKey, TValue>(
+        Dictionary<TKey, TValue> systemDict)
+    {
+        var il2cppDict = new Il2CppSystem.Collections.Generic.Dictionary<TKey, TValue>();
+        if (systemDict != null)
+        {
+            foreach (var kvp in systemDict)
+            {
+                if (kvp.Key != null && kvp.Value != null)
+                    il2cppDict.Add(kvp.Key, kvp.Value);
+            }
+        }
+        return il2cppDict;
+    }
+    
+    // HashSet conversions
+    public static HashSet<T> ToHashSet<T>(Il2CppSystem.Collections.Generic.HashSet<T> il2cppSet)
+    {
+        var systemSet = new HashSet<T>();
+        if (il2cppSet != null)
+        {
+            foreach (var item in il2cppSet)
+            {
+                if (item != null)
+                    systemSet.Add(item);
+            }
+        }
+        return systemSet;
+    }
+    
+    public static Il2CppSystem.Collections.Generic.HashSet<T> ToIl2CppHashSet<T>(HashSet<T> systemSet)
+    {
+        var il2cppSet = new Il2CppSystem.Collections.Generic.HashSet<T>();
+        if (systemSet != null)
+        {
+            foreach (var item in systemSet)
+            {
+                if (item != null)
+                    il2cppSet.Add(item);
+            }
+        }
+        return il2cppSet;
+    }
+}
+```
+
+### Extension Method Approach
+For cleaner code, implement as extension methods:
+
+```csharp
+public static class Il2CppExtensions
+{
+    public static List<T> ToSystemList<T>(this Il2CppSystem.Collections.Generic.List<T> il2cppList)
+    {
+        return Il2CppConverters.ToSystemList(il2cppList);
+    }
+    
+    public static Il2CppSystem.Collections.Generic.List<T> ToIl2CppList<T>(this List<T> systemList)
+    {
+        return Il2CppConverters.ToIl2CppList(systemList);
+    }
+    
+    // Usage examples
+    var weapons = gameManager.Weapons.ToSystemList();
+    var il2cppWeapons = myWeaponList.ToIl2CppList();
 }
 ```
 
 ## Exception Handling
 
-### IL2CPP Exception Characteristics
-IL2CPP uses `Il2CppException.RaiseExceptionIfNecessary()` pattern throughout:
-
+### IL2CPP Exception Pattern
 ```csharp
-// Typical IL2CPP method pattern with exception handling
-public unsafe SomeType GetSomeData()
-{
-    IL2CPP.Il2CppObjectBaseToPtrNotNull((Il2CppObjectBase)(object)this);
-    System.IntPtr* ptr = null;
-    Unsafe.SkipInit(out System.IntPtr intPtr2);
-    System.IntPtr intPtr = IL2CPP.il2cpp_runtime_invoke(
-        NativeMethodInfoPtr_GetSomeData_Public_SomeType_0, 
-        IL2CPP.Il2CppObjectBaseToPtrNotNull((Il2CppObjectBase)(object)this), 
-        (void**)ptr, ref intPtr2);
-    Il2CppException.RaiseExceptionIfNecessary(intPtr2);  // Key exception handling
-    return (intPtr != (System.IntPtr)0) ? Il2CppObjectPool.Get<SomeType>(intPtr) : null;
-}
-
-// Safe IL2CPP exception handling pattern in mods
 try 
 {
     var result = il2cppObject.GetSomeData();
-    // Work with result
 }
 catch (System.NullReferenceException ex)
 {
@@ -187,22 +242,17 @@ catch (System.Exception ex)
 ```
 
 ### Recovery Strategies
-1. **Null Checks**: Always validate IL2CPP objects before use
-2. **Fallback Values**: Have defaults for missing or corrupted data
-3. **Defensive Programming**: Validate inputs from game systems
-4. **State Recovery**: Reset to known-good state on error
-5. **Logging**: Use MelonLogger for debugging IL2CPP issues
+- Validate IL2CPP objects before use
+- Provide fallback values for missing data
+- Reset to known-good state on error
+- Use MelonLogger for debugging IL2CPP issues
 
 ## Memory Management
 
-### IL2CPP Garbage Collection
-IL2CPP uses a different GC strategy than standard Mono:
-
+### Object Caching
 ```csharp
-// Good practices for IL2CPP memory management
 public static class MemoryManager
 {
-    // Cache frequently accessed IL2CPP objects
     private static WeakReference<GameManager> _gameManagerRef;
     
     public static GameManager GetGameManager()
@@ -215,7 +265,6 @@ public static class MemoryManager
         return gm;
     }
     
-    // Minimize object creation in hot paths
     private static readonly List<WeaponData> _reusableList = new();
     
     public static List<WeaponData> GetWeaponDataSafely()
@@ -246,20 +295,15 @@ public static class MemoryManager
 
 ## IL2CPP Interop Layer
 
-### Core IL2CPP Runtime Components
-The decompiled code reveals several key IL2CPP interop components that mod developers should understand:
-
+### Core Runtime Components
 ```csharp
-// Key imports found in every IL2CPP file
 using Il2CppInterop.Runtime;
 using Il2CppInterop.Runtime.InteropTypes;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using Il2CppInterop.Runtime.Runtime;
 ```
 
-### Native Class Pointer Management
-Every IL2CPP class uses a static constructor pattern for native class setup:
-
+### Native Class Pointers
 ```csharp
 static GameManager()
 {
@@ -271,9 +315,7 @@ static GameManager()
 }
 ```
 
-### Field Access Patterns
-IL2CPP field access goes through native field pointers:
-
+### Field Access
 ```csharp
 public unsafe float SomeFloatProperty
 {
@@ -292,17 +334,11 @@ public unsafe float SomeFloatProperty
 ```
 
 ### Object Pool Usage
-IL2CPP uses object pooling for performance:
-
 ```csharp
-// Common pattern for returning IL2CPP objects
 return (intPtr != (System.IntPtr)0) ? Il2CppObjectPool.Get<SomeType>(intPtr) : null;
 ```
 
 ## Runtime Type Resolution
-
-### Dynamic Type Access
-Some IL2CPP types may require runtime resolution:
 
 ```csharp
 public static class TypeResolver
@@ -316,11 +352,9 @@ public static class TypeResolver
             
         try
         {
-            // Try direct resolution first
             var type = Type.GetType(typeName);
             if (type == null)
             {
-                // Search in loaded assemblies
                 foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
                 {
                     type = assembly.GetType(typeName);
@@ -340,13 +374,10 @@ public static class TypeResolver
 }
 ```
 
-## Unsafe Code Considerations
+## Unsafe Code Patterns
 
-### Prevalent Unsafe Patterns
-IL2CPP decompiled code heavily uses unsafe operations that mod developers should understand:
-
+### Common Unsafe Operations
 ```csharp
-// Common unsafe patterns you'll see everywhere
 public unsafe SomeMethod()
 {
     // Pointer arithmetic for field access
@@ -365,22 +396,17 @@ public unsafe SomeMethod()
 }
 ```
 
-### Working With Unsafe IL2CPP Code
-When interacting with IL2CPP objects, be aware of these patterns:
-
+### Safe Wrappers
 ```csharp
-// Safe wrapper for unsafe IL2CPP operations
 public static T SafeGetValue<T>(object il2cppObject, string fieldName, T defaultValue = default(T))
 {
     try
     {
         if (il2cppObject == null) return defaultValue;
         
-        // IL2CPP objects often require pointer validation
         var ptr = IL2CPP.Il2CppObjectBaseToPtr((Il2CppObjectBase)il2cppObject);
         if (ptr == System.IntPtr.Zero) return defaultValue;
         
-        // Get field using reflection (safer than direct pointer access)
         var field = il2cppObject.GetType().GetField(fieldName);
         if (field == null) return defaultValue;
         
@@ -395,7 +421,7 @@ public static T SafeGetValue<T>(object il2cppObject, string fieldName, T default
 }
 ```
 
-## IL2CPP-Specific Modding Patterns
+## Modding Patterns
 
 ### Safe Property Access
 ```csharp
@@ -440,7 +466,7 @@ public static class SafeAccess
 }
 ```
 
-### Method Invocation Patterns
+### Method Invocation
 ```csharp
 public static class MethodInvoker
 {
@@ -465,20 +491,17 @@ public static class MethodInvoker
 }
 ```
 
-## Harmony Transpiler Limitations
+## Harmony Limitations
 
-### Transpilers Do Not Work with IL2CPP
-**Important**: Harmony transpilers cannot be used with IL2CPP games. Here's why:
-
-1. **No IL to Modify**: IL2CPP compiles C# code directly to C++, eliminating the intermediate language (IL) that transpilers operate on
-2. **Native Code**: The game runs as compiled native C++ code, not .NET bytecode
-3. **Runtime Differences**: The IL2CPP runtime doesn't maintain the IL representation needed for transpiler patches
+### Transpilers Not Supported
+Harmony transpilers cannot be used with IL2CPP:
+- IL2CPP compiles to C++, eliminating IL
+- Game runs as native C++ code
+- IL2CPP runtime doesn't maintain IL representation
 
 ### Alternative Approaches
-Instead of transpilers, use these IL2CPP-compatible techniques:
-
 ```csharp
-// Prefix hooks to intercept and modify parameters
+// Prefix hooks to modify parameters
 [HarmonyPrefix]
 public static void BeforeMethod(ref int parameter)
 {
@@ -492,7 +515,7 @@ public static void AfterMethod(ref int __result)
     __result = ModifyResult(__result);
 }
 
-// Complete method replacement with Prefix returning false
+// Complete method replacement
 [HarmonyPrefix]
 public static bool ReplaceMethod(ref int __result)
 {
@@ -501,30 +524,14 @@ public static bool ReplaceMethod(ref int __result)
 }
 ```
 
-## Performance Considerations
+## Performance Optimization
 
-### IL2CPP Performance Characteristics
-1. **Faster execution**: Compiled C++ code runs faster than interpreted IL
-2. **Slower startup**: More overhead during game initialization
-3. **Memory efficiency**: Better memory layout and GC performance
-4. **Interop costs**: Crossing IL2CPP/managed boundaries has overhead
-
-### Optimization Strategies
+### Boundary Crossing Minimization
 ```csharp
-// Minimize boundary crossings
 public static class BoundaryOptimizer
 {
-    // BAD: Multiple IL2CPP calls
-    public static void BadPattern(Il2CppObject obj)
-    {
-        var prop1 = obj.Property1;  // IL2CPP call
-        var prop2 = obj.Property2;  // IL2CPP call
-        var prop3 = obj.Property3;  // IL2CPP call
-        ProcessData(prop1, prop2, prop3);
-    }
-    
-    // GOOD: Batch IL2CPP data extraction
-    public static void GoodPattern(Il2CppObject obj)
+    // Batch IL2CPP data extraction
+    public static void OptimizedPattern(Il2CppObject obj)
     {
         var data = ExtractAllData(obj);  // Single IL2CPP interaction
         ProcessData(data.Prop1, data.Prop2, data.Prop3);  // Pure managed code
@@ -532,11 +539,10 @@ public static class BoundaryOptimizer
 }
 ```
 
-## Common IL2CPP Issues
+## Common Issues
 
-### 1. Null Reference Patterns
+### Object Validation
 ```csharp
-// IL2CPP objects can become null unexpectedly
 public static bool IsValidIl2CppObject(object obj)
 {
     try
@@ -545,14 +551,13 @@ public static bool IsValidIl2CppObject(object obj)
     }
     catch
     {
-        return false;  // Object is invalid/destroyed
+        return false;
     }
 }
 ```
 
-### 2. String Handling
+### String Handling
 ```csharp
-// IL2CPP strings need special handling
 public static string SafeToString(object il2cppObject)
 {
     try
@@ -566,9 +571,8 @@ public static string SafeToString(object il2cppObject)
 }
 ```
 
-### 3. Array and Collection Issues
+### Array Access
 ```csharp
-// Safe array access pattern
 public static T SafeGetArrayElement<T>(Il2CppStructArray<T> array, int index, T defaultValue = default(T))
 {
     try
@@ -585,9 +589,9 @@ public static T SafeGetArrayElement<T>(Il2CppStructArray<T> array, int index, T 
 }
 ```
 
-## Debugging IL2CPP Code
+## Debugging
 
-### Logging Strategies
+### Object Information Logging
 ```csharp
 public static class Il2CppDebugger
 {
@@ -604,7 +608,6 @@ public static class Il2CppDebugger
             var type = il2cppObject.GetType();
             MelonLogger.Msg($"{context}: Type = {type.Name}");
             
-            // Log properties
             foreach (var prop in type.GetProperties())
             {
                 try
@@ -642,8 +645,6 @@ public static class Validator
             
             var player = gm?.Player;
             MelonLogger.Msg($"Player valid: {player != null}");
-            
-            // Validate critical game objects
         }
         catch (Exception ex)
         {
@@ -653,47 +654,28 @@ public static class Validator
 }
 ```
 
-## Best Practices Summary
-
-1. **Always use Il2Cpp prefixes** for game types
-2. **Understand the unsafe context** - IL2CPP code is heavily pointer-based
-3. **Null-check everything** - IL2CPP objects can become invalid unexpectedly
-4. **Handle exceptions gracefully** - Use `Il2CppException.RaiseExceptionIfNecessary()` pattern awareness
-5. **Minimize boundary crossings** - Batch IL2CPP operations to reduce interop overhead
-6. **Cache frequently accessed objects** - Use `Il2CppObjectPool` patterns when possible
-7. **Validate pointer integrity** - Check `IL2CPP.Il2CppObjectBaseToPtr()` results
-8. **Test thoroughly** - IL2CPP runtime behavior differs significantly from standard .NET
-9. **Log extensively** - Debug information is crucial for IL2CPP interop issues
-10. **Use safe wrappers** - Encapsulate unsafe IL2CPP access in try-catch blocks
-11. **Be aware of object lifecycle** - IL2CPP objects may be garbage collected differently
-12. **Understand native method tokens** - Method calls go through `IL2CPP.GetIl2CppMethodByToken()`
-
-## Vampire Survivors Specific IL2CPP Patterns
+## Vampire Survivors Patterns
 
 ### Core Game Access
-The game uses these specific access patterns confirmed in the decompiled source:
-
 ```csharp
 // Primary game manager access
-var gameManager = GM.Core;  // Static property, not GM.Instance
+var gameManager = GM.Core;
 
-// Data manager access through game manager
+// Data manager access
 var dataManager = gameManager?.DataManager;
 
-// Converted weapon data access (confirmed method signature)
+// Weapon data access
 var weapons = dataManager?.GetConvertedWeapons();  // Returns Dictionary<WeaponType, List<WeaponData>>
 ```
 
-### Common IL2CPP Assembly References
-Based on the decompiled code structure, mods typically need these assemblies:
-
+### Assembly References
 ```csharp
-// Core game assemblies
-Il2CppVampireSurvivors.Runtime.dll      // Main game logic
-Il2CppSystem.dll                        // IL2CPP system types
-Il2CppInterop.Runtime.dll              // IL2CPP interop layer
+// Core assemblies
+Il2CppVampireSurvivors.Runtime.dll
+Il2CppSystem.dll
+Il2CppInterop.Runtime.dll
 
-// Key namespaces to import
+// Key namespaces
 using Il2CppVampireSurvivors.Framework;
 using Il2CppVampireSurvivors.Data;
 using Il2CppVampireSurvivors.Data.Weapons;
@@ -701,28 +683,15 @@ using Il2CppVampireSurvivors.Objects.Characters;
 using Il2CppVampireSurvivors.Objects.Weapons;
 ```
 
-### Observed IL2CPP Method Patterns
-From analyzing the decompiled source, these patterns are consistently used:
+## Best Practices
 
-```csharp
-// Method signature pattern for weapon power calculation
-public unsafe override float PPower()
-{
-    // Native pointer validation
-    IL2CPP.Il2CppObjectBaseToPtrNotNull((Il2CppObjectBase)(object)this);
-    System.IntPtr* ptr = null;
-    Unsafe.SkipInit(out System.IntPtr intPtr2);
-    
-    // Virtual method call through IL2CPP
-    System.IntPtr intPtr = IL2CPP.il2cpp_runtime_invoke(
-        IL2CPP.il2cpp_object_get_virtual_method(
-            IL2CPP.Il2CppObjectBaseToPtr((Il2CppObjectBase)(object)this), 
-            NativeMethodInfoPtr_PPower_Public_Virtual_Single_0), 
-        IL2CPP.Il2CppObjectBaseToPtrNotNull((Il2CppObjectBase)(object)this), 
-        (void**)ptr, ref intPtr2);
-    
-    // Exception handling and result extraction
-    Il2CppException.RaiseExceptionIfNecessary(intPtr2);
-    return *(float*)IL2CPP.il2cpp_object_unbox(intPtr);
-}
-```
+1. Use Il2Cpp prefixes for game types
+2. Null-check all IL2CPP objects
+3. Handle exceptions gracefully
+4. Minimize boundary crossings
+5. Cache frequently accessed objects
+6. Validate pointer integrity
+7. Log extensively for debugging
+8. Use safe wrappers for unsafe operations
+9. Understand object lifecycle differences
+10. Batch IL2CPP operations when possible
