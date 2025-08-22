@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyTitle>Multiplayer Safe Example Mod</AssemblyTitle>
+    <AssemblyDescription>Example mod demonstrating multiplayer-safe patterns</AssemblyDescription>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\Il2CppInterop.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2CppInterop.Common">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\Il2CppInterop.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
+    </Reference>
+    <Reference Include="MelonLoader">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\MelonLoader.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\Il2CppAssemblies\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2CppVampireSurvivors.Runtime">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\Il2CppAssemblies\Il2CppVampireSurvivors.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2CppCoherence.Toolkit">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\Il2CppAssemblies\Il2CppCoherence.Toolkit.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2CppRewired_Core">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\Il2CppAssemblies\Il2CppRewired_Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Il2CppZenject">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\Il2CppAssemblies\Il2CppZenject.dll</HintPath>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>F:\vampire\VampireSurvivors\MelonLoader\0Harmony.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

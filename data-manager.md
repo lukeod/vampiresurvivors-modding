@@ -1,16 +1,19 @@
-# Data Manager
+# Data Manager - Complete v1.0+ Reference
 
-Central repository for game data in Vampire Survivors. Handles loading, storing, and providing access to JSON-based configuration data.
+Central repository for game data in Vampire Survivors. Handles loading, storing, and providing access to JSON-based configuration data with comprehensive online multiplayer synchronization support.
 
 **Location**: `Il2CppVampireSurvivors.Data.DataManager`
+
+**Version**: Updated for v1.0+ with multiplayer and new data types
 
 ## JSON Data Storage
 
 DataManager stores game data as JObject instances (from Newtonsoft.Json):
 
-### Core Data Properties
+### Core Data Properties (Line 897-983 in DataManager.cs)
 
 ```csharp
+// Traditional game data (unchanged)
 public JObject _allWeaponDataJson;     // Weapon configurations
 public JObject _allCharactersJson;     // Character definitions
 public JObject _allEnemiesJson;        // Enemy data
@@ -25,23 +28,123 @@ public JObject _allLimitBreakDataJson; // Limit break data
 public JObject _allAchievementsJson;   // Achievement definitions
 public JObject _allSecretsJson;        // Secret unlocks
 public JObject _allAdventuresJson;     // Adventure mode data
-public JObject _allStageSetJson;       // Stage set configurations
-public JObject _allAdventureStagesJson; // Adventure stage data (new)
 public JObject _allAdventureMerchantsJson; // Adventure merchant data
 public JObject _allCustomMerchantsJson;   // Custom merchant configurations
-public JObject _allAlbumData;             // Album/music collection data
-public JObject _allCPUJson;               // CPU/AI behavior data (new)
+
+// NEW DATA TYPES (v1.0+)
+public JObject _allStageSetJson;          // Stage set configurations for adventures
+public JObject _allAdventureStagesJson;   // Adventure-specific stage definitions 
+public JObject _allAlbumData;             // Music album/collection system
+public JObject _allCPUJson;               // AI behavior configurations for multiplayer
 ```
 
-### Online Data Tracking Properties
+### Online Synchronization Tracking (Lines 502-564 in DataManager.cs)
+
+**NEW in v1.0+**: DataManager now tracks when data is modified for online multiplayer synchronization.
 
 ```csharp
 public bool _characterDataChangedForOnline;  // Character data modified for online play
-public bool _powerUpDataChangedForOnline;    // PowerUp data modified for online play
+public bool _powerUpDataChangedForOnline;    // PowerUp data modified for online play  
 public bool _stageDataChangedForOnline;      // Stage data modified for online play
 public bool _weaponDataChangedForOnline;     // Weapon data modified for online play
 public bool _enemyDataChangedForOnline;      // Enemy data modified for online play
 ```
+
+**Status**: These flags are declared but **not currently used** in the codebase. They appear to be preparation for future online synchronization features.
+
+**Purpose**: When implemented, these flags will allow the game to track which data types have been modified by mods and need to be synchronized across online multiplayer clients.
+
+## NEW Data Types Deep Dive (v1.0+)
+
+### CPU/AI Data System (_allCPUJson)
+
+**Purpose**: Defines AI behaviors for multiplayer bots and CPU-controlled characters.
+
+**Access**: `dataManager.AllCPU` → `Dictionary<AIType, AIData>`
+
+**AIType Enum Values** (from AIType.cs):
+```csharp
+None,                    // No AI behavior
+Aggressive,              // Attacks aggressively
+Defensive,               // Focuses on survival
+ChaoticAF,              // Unpredictable behavior
+MirrorInput,            // Mirrors player input
+DelayedInputCopy,       // Copies input with delay
+DelayedPositionCopy,    // Follows position with delay
+GreedyForPickups,       // Prioritizes item collection
+StandsStill,            // Stationary behavior
+Masochistic,            // Takes damage intentionally
+AlwaysRight,            // Always moves right
+AngleDistance,          // Movement based on angles
+DeathSequence,          // Special death behavior
+AngleDistanceMirrorInput, // Combination behavior
+Conga                   // Follows in a line
+```
+
+**AIData Structure** (from AIData.cs):
+```csharp
+string AINameLocalTerm;  // Localization key for AI name
+string AIIconSprite;     // Sprite name for AI icon
+string AIIconTexture;    // Texture path for AI icon
+```
+
+### Album Data System (_allAlbumData)
+
+**Purpose**: Music collection/gallery system for tracking unlocked albums.
+
+**Access**: `dataManager.AllAlbumData` → `Dictionary<AlbumType, AlbumData>`
+
+**AlbumType Enum Values** (from AlbumType.cs):
+```csharp
+VampireSurvivorsA,       // Base game album A
+VampireSurvivorsB,       // Base game album B  
+VampireSurvivorsC,       // Base game album C
+LegacyOfTheMoonspell,    // Moonspell DLC album
+TidesOfTheFoscari,       // Foscari DLC album
+HOTI,                    // Heart of the Islands
+EmergencyMeeting,        // Emergency Meeting DLC
+OperationGuns,           // Operation Guns DLC
+OdeToCastlevaniaA,       // Castlevania collab A
+OdeToCastlevaniaB,       // Castlevania collab B
+EmeraldDiorama           // Emerald Diorama content
+```
+
+**AlbumData Structure** (from AlbumData.cs):
+```csharp
+bool isUnlocked;                    // Whether album is unlocked
+string title;                       // Album display name
+string icon;                        // Album icon reference
+List<BgmType> trackList;           // List of tracks in album
+ContentGroupType contentGroupType;  // Content group classification
+```
+
+### Stage Set Data System (_allStageSetJson)
+
+**Purpose**: Groups stages into sets for adventure mode progression.
+
+**Access**: `dataManager.AllStageSetData` → `Dictionary<StageSetType, JObject>`
+
+**StageSetType Enum Values** (from StageSetType.cs):
+```csharp
+STAGE_DATA_ADV_M001,     // Adventure mode set M001
+STAGE_DATA_ADV_0001,     // Adventure mode set 0001
+STAGESET_POE,            // Poe stage set
+STAGESET_IMELDA,         // Imelda stage set
+STAGESET_CHALCEDONY,     // Chalcedony stage set
+STAGESET_FIRSTBLOOD,     // First Blood stage set
+STAGESET_SHEMOON,        // Moonspell stage set
+STAGESET_FOSCARI         // Foscari stage set
+```
+
+**Purpose**: Each stage set defines a collection of stages that form a cohesive adventure experience, typically themed around specific DLC content or character storylines.
+
+### Adventure Stage Data (_allAdventureStagesJson)
+
+**Purpose**: Adventure mode-specific stage configurations that differ from regular stages.
+
+**Access**: Via JSON only (no direct converted access method found)
+
+**Relationship**: Works with `_allStageSetJson` to define complete adventure experiences with stage progression, special rules, and unique configurations not available in standard stages.
 
 ## DLC Data Storage
 
@@ -73,11 +176,21 @@ Dictionary<CharacterType, CustomMerchantData> _adventureMerchantsData;
 ### Getting DataManager Instance
 
 ```csharp
-// Primary method - through GameManager
+// Primary method - through GameManager (recommended)
+var dataManager = GM.Core?._data;  // Note: _data is the actual field name
+
+// Alternative - through GameManager.DataManager property
 var dataManager = GM.Core?.DataManager;
 
-// Alternative - through SoundManager static field
+// Legacy - through SoundManager static field (still works)
 var dataManager = SoundManager._dataManager;
+
+// Always null-check in multiplayer contexts
+if (dataManager == null)
+{
+    MelonLogger.Error("DataManager not available!");
+    return;
+}
 ```
 
 ### GetConverted Methods
@@ -130,10 +243,10 @@ var adventureCharacters = dataManager.AdventureCharacterData;   // Dictionary<Ch
 var adventureStages = dataManager.AdventureStageData;           // Dictionary<StageType, List<StageData>>
 var adventureBestiary = dataManager.AdventureBestiaryData;      // Dictionary<EnemyType, List<EnemyData>>
 
-// New data types
-var albumData = dataManager.AllAlbumData; // Dictionary<AlbumType, AlbumData>
-var cpuData = dataManager.AllCPU;         // Dictionary<AIType, AIData>
-var stageSetData = dataManager.AllStageSetData; // Dictionary<StageSetType, JObject>
+// NEW DATA TYPES (v1.0+) with detailed descriptions
+var albumData = dataManager.AllAlbumData;       // Dictionary<AlbumType, AlbumData> - Music collection system
+var cpuData = dataManager.AllCPU;               // Dictionary<AIType, AIData> - AI behavior for multiplayer
+var stageSetData = dataManager.AllStageSetData; // Dictionary<StageSetType, JObject> - Adventure stage sets
 
 // Individual data access
 PropData specificProp = dataManager.GetPropData(PropType.CANDLE);
@@ -208,51 +321,140 @@ public static float CalculatePowerAtLevel(JArray levels, int targetLevel)
 }
 ```
 
-## Data Loading and Reload
+## Data Loading Process (Verified from Source)
 
-### Initial Load
+### DataManager Lifecycle
+
+**DataManager** implements `IInitializable` and `IDisposable` patterns:
 
 ```csharp
-// Called during game initialization
+// Called during GameManager initialization
+public void Initialize()  // Line 2539 in DataManager.cs
+{
+    // Sets up DataManager for operation
+    // Called once during game startup
+}
+
+// Called when GameManager is destroyed
+public void Dispose()     // Line 2553 in DataManager.cs  
+{
+    // Cleanup DataManager resources
+    // Called during game shutdown
+}
+```
+
+### Data Loading Methods
+
+**LoadBaseJObjects** (Line 2784 in DataManager.cs):
+```csharp
 public void LoadBaseJObjects()
 {
     // Loads all JSON data from game files
-    // Populates _all*Json properties
+    // Populates _all*Json properties from DataManagerSettings
+    // Called: 2 times according to CallCount annotation
 }
 ```
 
-### Reload Data
-
+**ReloadAllData** (Line 2564 in DataManager.cs):
 ```csharp
-// Force reload all data (applies JSON modifications)
 public void ReloadAllData()
 {
-    // Called multiple times during startup:
-    // - Once for base game data
-    // - Once for each DLC
-    // - Final call for data validation
-    // Re-processes all JSON data
-    // Updates converted data caches
-    // Triggers data reload events
+    // Re-processes all JSON data into converted objects
+    // Updates AllWeaponData, AllCharacters, etc. properties
+    // Called: 7 times according to CallCount annotation
+    // Timing: Once for base game + once per DLC + validation
 }
 ```
 
-### Hook Points
+**LoadDataFromJson** (Line 2795 in DataManager.cs):
+```csharp
+public void LoadDataFromJson()
+{
+    // Internal method for processing JSON into object collections
+    // Called: 3 times according to CallCount annotation
+    // Converts JObject data to strongly-typed collections
+}
+```
 
+### Data Loading Order
+
+1. **Initialize()** - Sets up DataManager
+2. **LoadBaseJObjects()** - Loads JSON from files (called 2x)
+3. **LoadDataFromJson()** - Converts JSON to objects (called 3x) 
+4. **ReloadAllData()** - Final processing (called 7x: base + 6 DLCs)
+5. **BuildConvertedData()** - Creates typed object collections
+
+### Profiling Markers
+
+DataManager includes Unity Profiler markers for performance monitoring:
+
+```csharp
+ProfilerMarker MarkerReloadAllData;      // Tracks ReloadAllData performance
+ProfilerMarker MarkerLoadDataFromJson;   // Tracks JSON processing
+ProfilerMarker MarkerBuildConvertedData; // Tracks object conversion
+ProfilerMarker MarkerLoadBaseJObjects;   // Tracks initial JSON loading
+```
+
+### Hook Points (Updated for v1.0+)
+
+**LoadBaseJObjects Hook** - JSON Data Ready:
 ```csharp
 [HarmonyPatch(typeof(DataManager), "LoadBaseJObjects")]
 [HarmonyPostfix]
 public static void OnDataLoad(DataManager __instance)
 {
-    // Data loaded and ready for modification
+    // Raw JSON data loaded and ready for modification
+    // Called 2 times during startup
+    // Safe to modify _all*Json properties here
+    
+    // Example: Modify AI data
+    if (__instance._allCPUJson != null)
+    {
+        // Add custom AI behaviors
+    }
 }
+```
+
+**ReloadAllData Hook** - Converted Data Ready:
+```csharp
+private static int reloadCount = 0;
 
 [HarmonyPatch(typeof(DataManager), "ReloadAllData")]
-[HarmonyPostfix]
+[HarmonyPostfix] 
 public static void OnDataReload(DataManager __instance)
 {
-    // Called multiple times during startup
-    // Safe to access GetConverted methods
+    reloadCount++;
+    // Called 7 times: base game + 6 DLCs
+    // Safe to access GetConverted methods and All* properties
+    
+    if (reloadCount >= 7) // Final call
+    {
+        // All data fully loaded and converted
+        // Safe to access new data types:
+        var cpuData = __instance.AllCPU;
+        var albumData = __instance.AllAlbumData;
+        var stageSetData = __instance.AllStageSetData;
+    }
+}
+```
+
+**Multiplayer-Safe Modification Hook**:
+```csharp
+[HarmonyPatch(typeof(DataManager), "LoadDataFromJson")]
+[HarmonyPostfix]
+public static void OnDataConversion(DataManager __instance)
+{
+    // Called 3 times during data processing
+    // Best place for multiplayer-aware modifications
+    
+    // Check if in multiplayer mode before modifying
+    if (GM.Core?.IsOnlineMultiplayer == true)
+    {
+        // Handle online multiplayer data constraints
+        return; // Skip modifications for online play
+    }
+    
+    // Safe to modify data for single player/local coop
 }
 ```
 
@@ -287,29 +489,117 @@ foreach (var kvp in weapons)
 }
 ```
 
-## Usage Guidelines
+## Multiplayer Considerations (NEW in v1.0+)
 
-### Use GetConverted Methods
+### Online Multiplayer Data Restrictions
+
+**Critical**: Mods must check multiplayer state before modifying data:
+
+```csharp
+[HarmonyPatch(typeof(DataManager), "ReloadAllData")]
+[HarmonyPostfix]
+public static void SafeDataModification(DataManager __instance)
+{
+    // ALWAYS check multiplayer mode first
+    if (GM.Core?.IsOnlineMultiplayer == true)
+    {
+        // SKIP data modifications in online multiplayer
+        // Modifications could desync clients or cause crashes
+        return;
+    }
+    
+    if (GM.Core?.IsLocalMultiplayer == true)
+    {
+        // Local coop: modifications usually safe
+        // But test thoroughly with multiple players
+    }
+    
+    // Single player: all modifications safe
+    ModifyGameData(__instance);
+}
+```
+
+### Data Change Tracking (Future-Ready)
+
+```csharp
+// When modifying data, prepare for future synchronization
+public static void ModifyWeaponData(DataManager dataManager)
+{
+    // Modify weapon data
+    dataManager._allWeaponDataJson["WHIP"][0]["power"] = 200;
+    
+    // Mark for future online synchronization
+    dataManager._weaponDataChangedForOnline = true;
+    
+    // Apply changes
+    dataManager.ReloadAllData();
+}
+```
+
+### IsOnline Method
+
+DataManager includes a private `IsOnline()` method (Line 2777) that checks multiplayer state. This suggests internal logic for handling online vs offline data differently.
+
+## Usage Guidelines (Updated)
+
+### 1. Multiplayer Awareness (CRITICAL)
+
+```csharp
+// ALWAYS check multiplayer state first
+if (GM.Core?.IsOnlineMultiplayer == true)
+{
+    return; // Skip modifications
+}
+```
+
+### 2. Use GetConverted Methods
 Prefer `GetConverted*` methods over direct JSON manipulation for strongly typed, absolute values.
 
-### Delta System
+### 3. Delta System (Unchanged)
 When modifying JSON directly:
 - Level 1 = absolute values
 - Levels 2+ = incremental deltas
 
-### Null Safety
+### 4. Null Safety with IL2CPP
 ```csharp
 var weapons = dataManager?.GetConvertedWeapons();
 if (weapons != null && weapons.Count > 0)
 {
-    // Safe to use
+    // IL2CPP collections require careful null checking
+    foreach (var kvp in weapons)
+    {
+        if (kvp.Value != null) // Always check IL2CPP objects
+        {
+            // Safe to use
+        }
+    }
 }
 ```
 
-### Apply Changes
+### 5. Apply Changes Safely
 ```csharp
-weaponJson["WHIP"][0]["power"] = 100;
-dataManager.ReloadAllData();
+// Check multiplayer state before any modification
+if (GM.Core?.IsOnlineMultiplayer != true)
+{
+    weaponJson["WHIP"][0]["power"] = 100;
+    dataManager.ReloadAllData();
+}
+```
+
+### 6. New Data Type Access
+```csharp
+// Access new v1.0+ data types
+var aiData = dataManager.AllCPU; // Dictionary<AIType, AIData>
+foreach (var ai in aiData)
+{
+    MelonLogger.Msg($"AI: {ai.Key} - {ai.Value?.AINameLocalTerm}");
+}
+
+var albums = dataManager.AllAlbumData; // Dictionary<AlbumType, AlbumData>
+foreach (var album in albums)
+{
+    MelonLogger.Msg($"Album: {album.Key} - {album.Value?.title}");
+}
 ```
 
 ## DataManagerSettings Structure
@@ -399,8 +689,31 @@ public TextAsset GetWeaponDataJsonAsset()
 - `MusicData` - Music/BGM configuration
 - `AdventureData` - Adventure mode configuration
 - `CustomMerchantData` - Merchant configuration data
-- `AIData` - CPU/AI behavior configuration
-- `AlbumData` - Music album information
+- `AIData` - CPU/AI behavior configuration (NEW v1.0+)
+- `AlbumData` - Music album information (NEW v1.0+)  
 - `HitVfxData` - Hit visual effect configuration
 - `SecretData` - Secret unlock data
 - `AchievementData` - Achievement configuration data
+
+### New Data Classes (v1.0+) - Detailed
+
+**AIData Fields** (from AIData.cs):
+```csharp
+string AINameLocalTerm;   // Localization key for AI name display
+string AIIconSprite;      // Sprite asset name for AI icon
+string AIIconTexture;     // Texture asset path for AI icon
+```
+
+**AlbumData Fields** (from AlbumData.cs):
+```csharp
+bool isUnlocked;                      // Album unlock status
+string title;                         // Album display name
+string icon;                          // Album icon asset reference
+List<BgmType> trackList;             // Music tracks in album
+ContentGroupType contentGroupType;    // Content group (base/DLC classification)
+```
+
+**StageSetType Usage**:
+- Used with `AllStageSetData` returning `Dictionary<StageSetType, JObject>`
+- Contains raw JSON configuration for adventure stage progression
+- Links to specific DLC content (POE, IMELDA, CHALCEDONY, etc.)

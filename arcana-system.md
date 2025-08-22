@@ -107,7 +107,7 @@ Handles arcana functionality, tracking active arcanas and responding to game eve
 The ArcanaManager maintains a list of currently active arcanas:
 
 ```csharp
-public List<ArcanaType> ActiveArcanas;  // Currently active arcanas
+public List<ArcanaType> ActiveArcanas { get; set; }  // Property for currently active arcanas
 ```
 
 The manager also tracks specific arcana states through boolean properties:
@@ -124,13 +124,13 @@ public bool _hasCrystalCries;     // D12_CRYSTAL_CRIES active
 public bool _hasMadMoon;          // D13_MAD_MOON active
 public bool _hasVictorianHorror;  // D18_VICTORIAN_HORROR active
 
-// Additional effect states
-public bool HealOnCoins;          // Heal when collecting coins
-public bool CoinFever;            // Coin fever effect active
-public bool MadGroove;            // Mad groove effect active
-public bool CanGather;            // Can gather items effect
-public bool HasDivineBloodline;   // Divine bloodline effect active
-public bool PewPew;               // Pew pew effect active
+// Additional effect states (properties with backing fields)
+public bool HealOnCoins { get; set; }     // Heal when collecting coins
+public bool CoinFever { get; set; }       // Coin fever effect active
+public bool MadGroove { get; set; }       // Mad groove effect active
+public bool CanGather { get; private set; } // Can gather items effect (private setter)
+public bool HasDivineBloodline { get; set; } // Divine bloodline effect active
+public bool PewPew { get; set; }          // Pew pew effect active
 ```
 
 ### Core Event Handling
@@ -184,27 +184,28 @@ Arcanas can modify damage calculations, alter firing patterns, change visual eff
 Arcana configurations are stored in the DataManager:
 
 ```csharp
-public JObject _allArcanasJson;  // Raw JSON data for all arcanas
-public Dictionary<ArcanaType, ArcanaData> AllArcanas; // Converted arcana data dictionary
+public JObject _allArcanasJson { get; set; }  // Raw JSON data for all arcanas
+public Dictionary<ArcanaType, ArcanaData> AllArcanas { get; }  // Converted arcana data dictionary property
+public static string JsonPartFileNameArcana { get; set; }  // JSON part file name for arcana data
 ```
 
-The `ArcanaData` class contains the following properties:
+The `ArcanaData` class contains the following properties (all are properties with backing fields):
 ```csharp
-public class ArcanaData
+public class ArcanaData : Il2CppSystem.Object
 {
-    public int arcanaType;                    // Enum value cast to int
-    public string name;                       // Display name
-    public string description;                // Effect description
-    public List<Il2CppSystem.Object> weapons; // Associated weapons
-    public List<Il2CppSystem.Object> items;   // Associated items
-    public string texture;                   // UI texture name
-    public string frameName;                 // UI frame name
-    public bool enabled;                     // Whether arcana is enabled
-    public bool unlocked;                    // Whether arcana is unlocked
-    public bool major;                       // Whether it's a major arcana
-    public bool hidden;                      // Whether hidden from UI
-    public bool alwaysHidden;               // Whether permanently hidden
-    public ContentGroupType contentGroup;   // DLC/content group association
+    public int arcanaType { get; set; }                    // Enum value cast to int
+    public string name { get; set; }                       // Display name
+    public string description { get; set; }                // Effect description
+    public List<Il2CppSystem.Object> weapons { get; set; } // Associated weapons
+    public List<Il2CppSystem.Object> items { get; set; }   // Associated items
+    public string texture { get; set; }                    // UI texture name
+    public string frameName { get; set; }                  // UI frame name
+    public bool enabled { get; set; }                      // Whether arcana is enabled
+    public bool unlocked { get; set; }                     // Whether arcana is unlocked
+    public bool major { get; set; }                        // Whether it's a major arcana
+    public bool hidden { get; set; }                       // Whether hidden from UI
+    public bool alwaysHidden { get; set; }                 // Whether permanently hidden
+    public ContentGroupType contentGroup { get; set; }     // DLC/content group association
     
     // Localization methods
     public string GetLocalizedNameTerm(ArcanaType t);

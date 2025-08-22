@@ -2,7 +2,14 @@
 
 ## Overview
 
-Vampire Survivors uses dependency injection (Zenject) with centralized static accessors.
+Vampire Survivors uses dependency injection (Zenject) with centralized static accessors. As of v1.0+, the architecture has been significantly expanded with multiplayer support, Unity 6000 upgrade, and new visual systems while maintaining core patterns.
+
+**Key Changes in v1.0+:**
+- GameManager now injects 28 dependencies (up from ~20)
+- Added multiplayer properties (`IsOnlineMultiplayer`, `IsLocalMultiplayer`)
+- New managers: ParticleManager, GizmoManager, MultiplayerManager
+- New factories: FontFactory, ShopFactory with multiplayer support
+- Coherence Toolkit integration for online networking
 
 ## Static Accessors
 
@@ -35,12 +42,16 @@ public List<CharacterController> MainPlayers;     // Main players only
 public CharacterController Player;                // Primary player
 public CharacterController PlayerOne;             // Player one specifically
 public MainGamePage MainUI;                       // Main UI controller
+
+// Multiplayer Properties (v1.0+)
+public bool IsOnlineMultiplayer { get; }          // Network multiplayer (318 references)
+public bool IsLocalMultiplayer { get; }           // Local coop multiplayer
 ```
 
 ### Key Methods
 
 ```csharp
-// Constructor injection method
+// Constructor injection method - 28 dependencies (v1.0+)
 void Construct(SignalBus signalBus, DiContainer diContainer, 
     PlayerOptions playerOptions, LootManager lootManager, WeaponsFacade weaponsFacade, 
     Stage stage, GameSessionData gameSessionData, LevelUpFactory levelUpFactory, 
@@ -71,6 +82,22 @@ if (gameManager != null)
     var dataManager = gameManager.DataManager;
     var currentStage = gameManager._stage;
     var player = gameManager.Player;
+    
+    // Check multiplayer mode (v1.0+)
+    if (gameManager.IsOnlineMultiplayer)
+    {
+        // Handle online multiplayer logic
+        var latency = gameManager.GetPlayer(0)?.AverageLatencyMs ?? 0;
+    }
+    else if (gameManager.IsLocalMultiplayer)
+    {
+        // Handle local coop logic
+        var playerCount = gameManager._multiplayerManager.GetPlayerCount();
+    }
+    else
+    {
+        // Single player logic
+    }
 }
 ```
 
@@ -118,23 +145,48 @@ Extends `ScriptableObjectInstaller<DataManagerSettingsInstaller>` for configurat
 
 ### GameManager Constructor
 
-Services are injected through the constructor:
+Services are injected through the constructor (28 total dependencies in v1.0+):
 
 ```csharp
 // Full constructor signature with all injected dependencies
-public void Construct(SignalBus signalBus, DiContainer diContainer, 
-    PlayerOptions playerOptions, LootManager lootManager, WeaponsFacade weaponsFacade, 
-    Stage stage, GameSessionData gameSessionData, LevelUpFactory levelUpFactory, 
-    CharacterFactory characterFactory, AccessoriesFacade accessoriesFacade, 
-    DataManager dataManager, PlayerStats playerStats, ArcanaManager arcanaManager, 
-    PhysicsManager physicsManager, EggManager egg, LimitBreakManager limitBreakManager, 
-    GizmoManager gizmoManager, TreasureFactory treasureFactory, 
-    ProjectileFactory projectileFactory, SpellsManager spellsManager, 
-    AchievementManager achievementManager, MainGamePage mainGamePage, 
-    MultiplayerManager multiplayer, AdventureManager adventureManager, 
-    FontFactory fontFactory, AssetReferenceLibrary assetReferenceLibrary, 
-    ParticleManager particleManager, ShopFactory shopFactory)
+public void Construct(
+    SignalBus signalBus,              // Event system
+    DiContainer diContainer,          // Dependency injection
+    PlayerOptions playerOptions,      // Player configuration
+    LootManager lootManager,          // Loot distribution
+    WeaponsFacade weaponsFacade,      // Weapon management
+    Stage stage,                      // Stage/level management
+    GameSessionData gameSessionData,  // Session state
+    LevelUpFactory levelUpFactory,    // Level progression
+    CharacterFactory characterFactory, // Character instantiation
+    AccessoriesFacade accessoriesFacade, // Accessory management
+    DataManager dataManager,          // Game data
+    PlayerStats playerStats,          // Player statistics
+    ArcanaManager arcanaManager,      // Arcana system
+    PhysicsManager physicsManager,    // Physics simulation
+    EggManager egg,                   // Egg/secret management
+    LimitBreakManager limitBreakManager, // Limit break system
+    GizmoManager gizmoManager,        // Visual effects (v1.0+)
+    TreasureFactory treasureFactory,  // Treasure generation
+    ProjectileFactory projectileFactory, // Projectile management
+    SpellsManager spellsManager,      // Spell system
+    AchievementManager achievementManager, // Achievement tracking
+    MainGamePage mainGamePage,        // Main UI
+    MultiplayerManager multiplayer,   // Multiplayer coordination (v1.0+)
+    AdventureManager adventureManager, // Adventure mode
+    FontFactory fontFactory,          // Font management (v1.0+)
+    AssetReferenceLibrary assetReferenceLibrary, // Asset loading
+    ParticleManager particleManager,  // Particle effects (v1.0+)
+    ShopFactory shopFactory           // Shop generation (v1.0+)
+)
 ```
+
+**New Dependencies in v1.0+:**
+- **GizmoManager**: Visual effects and UI overlays (level-up animations, weapon icons)
+- **MultiplayerManager**: Multiplayer coordination and player management
+- **FontFactory**: Centralized font asset management
+- **ParticleManager**: Particle system lifecycle and rendering
+- **ShopFactory**: Shop inventory generation with multiplayer support
 
 The `DiContainer` is stored as `_diContainer` for runtime object creation.
 
@@ -208,10 +260,10 @@ No static Instance properties. Use GM.Core or injected references.
 
 ### Core Components
 
-1. **GameManager** - Central game controller
-2. **DataManager** - Data repository and loading
+1. **GameManager** - Central game controller with multiplayer awareness
+2. **DataManager** - Data repository and loading with online sync tracking
 3. **Stage** - Level and environment management
-4. **CharacterController** - Player/enemy entities
+4. **CharacterController** - Player/enemy entities with network synchronization
 5. **WeaponsFacade** - Weapon system facade
 6. **ArcanaManager** - Arcana effects system
 7. **StageEventManager** - Scripted events and spawning
@@ -219,8 +271,12 @@ No static Instance properties. Use GM.Core or injected references.
 9. **LootManager** - Loot generation and management
 10. **AccessoriesFacade** - Accessories system
 11. **SpellsManager** - Spell system management
-12. **MultiplayerManager** - Multiplayer functionality
+12. **MultiplayerManager** - Multiplayer functionality and coordination (v1.0+)
 13. **AdventureManager** - Adventure mode management
+14. **ParticleManager** - Particle system lifecycle and rendering (v1.0+)
+15. **GizmoManager** - Visual effects and UI overlays (v1.0+)
+16. **FontFactory** - Centralized font asset management (v1.0+)
+17. **ShopFactory** - Shop generation with multiplayer support (v1.0+)
 
 ### Communication Patterns
 
@@ -232,12 +288,75 @@ var weaponData = dataManager?.WeaponData;
 // Event-based (through SignalBus)
 signalBus.Fire<PlayerLevelUpSignal>();
 
-// Player queries
+// Player queries (multiplayer-aware)
 var closestPlayer = GM.Core?.GetClosestPlayer(position, PlayerInclusionMode.AliveOrDead, maxRange, true);
 
 // Stage access
 var stage = GM.Core?._stage;
 var spawnedEnemies = stage?._spawnedEnemies;
+
+// Multiplayer-specific patterns (v1.0+)
+if (GM.Core.IsOnlineMultiplayer)
+{
+    // Network-aware modifications
+    var players = GM.Core._multiplayerManager.GetPlayers();
+    // Consider host authority and synchronization
+}
+```
+
+## Multiplayer Considerations (v1.0+)
+
+### Multiplayer Detection
+
+```csharp
+// Check if any multiplayer mode is active
+if (GM.Core._multiplayerManager?.IsMultiplayer == true)
+{
+    // Multiplayer-specific logic
+}
+
+// Check specific multiplayer types
+if (GM.Core.IsOnlineMultiplayer)
+{
+    // Network multiplayer - consider latency, host authority
+    var players = GM.Core._multiplayerManager.GetPlayers();
+    foreach (var player in players)
+    {
+        var latency = player.PlayerInfo?.AverageLatencyMs ?? 0;
+        // Handle network-aware logic
+    }
+}
+else if (GM.Core.IsLocalMultiplayer)
+{
+    // Local coop - shared screen, no network concerns
+    var playerCount = GM.Core._multiplayerManager.GetPlayerCount();
+    // Handle local multiplayer logic
+}
+else
+{
+    // Single player mode
+}
+```
+
+### Important Notes for Modders
+
+- **Always check multiplayer mode** before modifying game state
+- **Online multiplayer** requires network synchronization awareness
+- **Local multiplayer** has different camera and UI considerations
+- **Host authority**: Only the host should modify certain game states in online play
+- **Test in all modes**: Single player, local coop, and online multiplayer
+
+### Multiplayer Manager Access
+
+```csharp
+var multiplayerManager = GM.Core._multiplayerManager;
+if (multiplayerManager != null)
+{
+    var isMultiplayer = multiplayerManager.IsMultiplayer;
+    var players = multiplayerManager.GetPlayers();
+    var playerCount = multiplayerManager.GetPlayerCount();
+    var coopConfig = multiplayerManager.CoopConfig; // Extensive configuration
+}
 ```
 
 ## Timing Considerations
@@ -254,6 +373,24 @@ var spawnedEnemies = stage?._spawnedEnemies;
 - **UI**: Access `GameManager.MainUI`
 - **Saves**: Hook `SaveSerializer` methods
 - **Players**: Use `GM.Core.AllPlayers` or `GM.Core.GetClosestPlayer()`
+- **Multiplayer**: Check `IsOnlineMultiplayer`/`IsLocalMultiplayer` before modifications
+- **New Systems**: Access via dependency injection or through GameManager references
+
+## Stable Architecture Elements (v1.0+)
+
+Despite major multiplayer and system additions, these core patterns remain unchanged:
+
+- **GM.Core** static accessor pattern - Primary access method
+- **Zenject** dependency injection - All systems still use constructor injection
+- **SignalBus** event system - Decoupled communication remains the same
+- **Basic manager relationships** - Core manager hierarchy unchanged
+- **Data loading sequences** - DataManager patterns remain consistent
+- **Single player core mechanics** - Base gameplay systems unchanged
+
+This means existing mods can often be updated by:
+1. Adding multiplayer mode checks
+2. Handling the new dependencies if needed
+3. Testing in all game modes (single, local coop, online)
 
 ## Thread Safety
 
@@ -275,4 +412,5 @@ Game systems are not thread-safe. Modify only on main Unity thread.
 - `CharacterFactory` - Characters
 - `TreasureFactory` - Treasures
 - `ProjectileFactory` - Projectiles
-- `ShopFactory` - Shops and merchants
+- `ShopFactory` - Shops and merchants (v1.0+ with multiplayer support)
+- `FontFactory` - Font asset management (v1.0+)
