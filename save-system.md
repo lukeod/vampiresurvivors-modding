@@ -156,6 +156,8 @@ The `PlayerOptionsData` class contains comprehensive save data including:
 - Platform-specific data and achievements
 - Statistical data (coins, survival time, etc.)
 
+For detailed information about PlayerOptionsData fields and PlayerOptions methods, see [Player Data System](player-data-system.md).
+
 ### Game Progress Data
 Save files contain various types of progress data:
 - Character unlocks and levels

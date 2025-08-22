@@ -11,6 +11,7 @@ Documentation of Vampire Survivors' internal structure and systems for mod devel
 ### Core Systems
 - [Core Architecture](core-architecture.md) - Static accessors, GameManager, and dependency injection
 - [Data Manager](data-manager.md) - Central data repository and JSON storage system
+- [Player Data System](player-data-system.md) - PlayerOptionsData structure and PlayerOptions management
 - [Character System](character-system.md) - CharacterController and CharacterData structures
 - [Weapon System](weapon-system.md) - Weapons, evolution, unions, and limit breaks
 - [Stat System](stat-system.md) - Stat calculations, modifiers, and EggFloat/EggDouble wrappers
