@@ -18,9 +18,17 @@ bool isMulti = gm._multiplayerManager.IsMultiplayer; // Any multiplayer
 if (isOnline && !CanModifyEntity(entity)) return; // No authority
 ```
 
+## Authority Types
+
+Coherence Toolkit has **two types** of authority:
+- `HasStateAuthority` - for modifying entity state (health, stats, position)
+- `HasInputAuthority` - for sending input commands
+- There is **NO** simple `HasAuthority` property!
+
 ## Copy-Paste Authority Checker
 
 ```csharp
+// Checks state authority - use this for most entity modifications
 public static bool CanModifyEntity(MonoBehaviour entity)
 {
     var gm = GM.Core;
@@ -29,11 +37,29 @@ public static bool CanModifyEntity(MonoBehaviour entity)
     try
     {
         var sync = entity?.GetComponent<CoherenceSync>();
-        return sync?.HasAuthority == true;
+        return sync?.HasStateAuthority == true;
     }
     catch (Exception ex)
     {
         LogError($"Authority check failed: {ex.Message}");
+        return false;
+    }
+}
+
+// Check if entity has input authority (for player control)
+public static bool HasInputAuthority(MonoBehaviour entity)
+{
+    var gm = GM.Core;
+    if (gm?.IsOnlineMultiplayer != true) return true;
+    
+    try
+    {
+        var sync = entity?.GetComponent<CoherenceSync>();
+        return sync?.HasInputAuthority == true;
+    }
+    catch (Exception ex)
+    {
+        LogError($"Input authority check failed: {ex.Message}");
         return false;
     }
 }
@@ -125,7 +151,7 @@ public static void ModifyData(DataManager __instance)
     try
     {
         // Data modifications are safe in all modes
-        var weapons = __instance.GetConvertedWeapons();
+        var weapons = __instance.GetConvertedWeaponData();
         if (weapons?.ContainsKey(WeaponType.WHIP) == true)
         {
             foreach (var level in weapons[WeaponType.WHIP])

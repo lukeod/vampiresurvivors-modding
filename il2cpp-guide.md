@@ -273,7 +273,7 @@ public static class MemoryManager
         
         try
         {
-            var weapons = GetGameManager()?.DataManager?.GetConvertedWeapons();
+            var weapons = GetGameManager()?.DataManager?.GetConvertedWeaponData();
             if (weapons != null)
             {
                 foreach (var weaponList in weapons.Values)
@@ -665,7 +665,7 @@ var gameManager = GM.Core;
 var dataManager = gameManager?.DataManager;
 
 // Weapon data access
-var weapons = dataManager?.GetConvertedWeapons();  // Returns Dictionary<WeaponType, List<WeaponData>>
+var weapons = dataManager?.GetConvertedWeaponData();  // Returns Dictionary<WeaponType, List<WeaponData>>
 ```
 
 ### Assembly References

@@ -54,9 +54,7 @@ public unsafe int Charm { get; set; }
 
 ### Implementation Notes
 
-- Most stats use `EggFloat`, `Revivals` uses `EggDouble`, several use raw types
-- Properties use specific casing: `ReRolls`, `MaxHp`, `InvulTimeBonus`
-- Must use correct wrapper type for assignments
+Most stats use `EggFloat`, `Revivals` uses `EggDouble`, several use raw types. Properties use specific casing: `ReRolls`, `MaxHp`, `InvulTimeBonus`. Assignments must use correct wrapper type.
 
 ## EggFloat/EggDouble Wrappers
 
@@ -100,7 +98,7 @@ public virtual float SecondaryPAmount()// Secondary amount calculation
 ```
 
 ### Custom Weapon Overrides
-Many weapons override these methods for custom calculations with unique formulas, patterns, and bonuses.
+Weapons override these methods for calculations with unique formulas, patterns, and bonuses.
 
 ## Character Base Stats
 
@@ -135,7 +133,7 @@ The primary method for applying stat modifications:
 public unsafe void Upgrade(ModifierStats other, bool multiplicativeMaxHp = false)
 ```
 
-This method combines stat modifiers, with special handling for MaxHp which can be applied multiplicatively.
+This method combines stat modifiers, with special handling for MaxHp applied multiplicatively.
 
 ## Incremental Level System
 
@@ -170,10 +168,10 @@ public static float CalculatePowerAtLevel(JArray levels, int targetLevel)
 
 ## Data Access
 
-Use DataManager's converted methods for absolute values:
+DataManager converted methods provide absolute values:
 
 ```csharp
-var weapons = dataManager.GetConvertedWeapons();
+var weapons = dataManager.GetConvertedWeaponData();
 var characters = dataManager.GetConvertedCharacterData();
 var powerups = dataManager.GetConvertedPowerUpData();
 ```
@@ -184,8 +182,8 @@ var powerups = dataManager.GetConvertedPowerUpData();
 ```csharp
 var characterData = dataManager.GetConvertedCharacterData();
 var myCharacter = characterData[CharacterType.ANTONIO][0];
-myCharacter.power = 200;  // Double base power
-myCharacter.maxHp = 150;  // Increase base HP
+myCharacter.power = 200;
+myCharacter.maxHp = 150;
 ```
 
 ### Modifying Player Runtime Stats
@@ -196,7 +194,7 @@ if (player?.PlayerStats != null)
     player.PlayerStats.Power.SetValue(100);
     player.PlayerStats.MaxHp.SetValue(200);
     player.PlayerStats.Revivals.SetValue(5);
-    player.PlayerStats.Recycle.SetValue(10);  // New in Unity 6000.0.36f1
+    player.PlayerStats.Recycle.SetValue(10);
 }
 ```
 

@@ -29,7 +29,7 @@ Comprehensive weapon configuration:
 ### Identity & Metadata
 
 ```csharp
-public int level;                    // Weapon level (1-8 typically)
+public int level;                    // Weapon level (1-8)
 public WeaponType bulletType;        // Projectile type if applicable
 public string name;                  // Display name
 public bool hidden;                  // Hidden from selection
@@ -191,7 +191,7 @@ public virtual float PSpeedRepeatInterval()      // Repeat interval speed
 public virtual float PHitBoxDelayOverSpeed()     // Hitbox delay over speed
 ```
 
-These are virtual methods. Many weapons override these for custom calculations.
+Many weapons override these methods for custom calculations.
 
 ### Damage Methods
 
@@ -208,10 +208,7 @@ public void DamageAllEnemies(float value)
 
 ### Evolution Requirements
 
-Evolutions require:
-1. Base weapon at max level (usually level 8)
-2. Specific synergy item(s)
-3. Opening a treasure chest
+Evolutions require base weapon at max level (level 8), specific synergy item(s), and opening a treasure chest.
 
 ### Evolution Data Structure
 
@@ -235,7 +232,7 @@ public bool HasEvolutionRequirements(WeaponData data, List<Equipment> held)
 
 ### Special Evolution Cases
 
-Some weapons have unique requirements:
+Weapons with unique requirements:
 
 ```csharp
 // Special handlers
@@ -278,7 +275,7 @@ public class LimitBreakData
 var dataManager = GM.Core?.DataManager;
 if (dataManager != null)
 {
-    var weapons = dataManager.GetConvertedWeapons();
+    var weapons = dataManager.GetConvertedWeaponData();
     foreach (var kvp in weapons)
     {
         WeaponType type = kvp.Key;
@@ -362,15 +359,14 @@ public static float CalculateFinalDamage(Weapon weapon, CharacterController owne
 
 ## Usage Guidelines
 
-### Use GetConverted Methods
+### GetConverted Methods
 ```csharp
-var weapons = dataManager.GetConvertedWeapons();  // Preferred
-var json = dataManager._allWeaponDataJson;        // Direct JSON has deltas
+var weapons = dataManager.GetConvertedWeaponData();  // Returns absolute values
+var json = dataManager._allWeaponDataJson;        // Raw JSON contains deltas
 ```
 
 ### Level Delta System
-- Level 1 = absolute values
-- Levels 2-8 = incremental deltas
+Level 1 contains absolute values. Levels 2-8 contain incremental deltas.
 
 ### Nullable Values
 ```csharp
@@ -385,7 +381,7 @@ if (weaponData.duration.HasValue)
 ### Factory Class Structure
 **Location**: `Il2CppVampireSurvivors.Framework.WeaponFactory`
 
-The WeaponFactory uses a ScriptableObject-based factory pattern:
+ScriptableObject-based factory pattern:
 
 ```csharp
 public class WeaponFactory : SerializedScriptableObject
@@ -405,7 +401,7 @@ public class WeaponFactory : SerializedScriptableObject
 ```
 
 ### Linked Factory System
-Factories can be chained to support DLC and modular content:
+Factories are chained to support DLC and modular content:
 - Base game factory contains core weapons
 - DLC factories added to `_LinkedFactories`
 - Lookup traverses linked factories if weapon not found

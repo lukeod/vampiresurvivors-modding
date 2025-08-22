@@ -70,19 +70,19 @@ public void OnGetDamaged(string hexColor = "#ff0000", float vulnerabilityDelay =
 ```
 
 ### Hit VFX Types
-Different damage types can trigger different visual effects through the `HitVfxType` enum.
+Damage types trigger different visual effects through the `HitVfxType` enum.
 
 ## Damage Modifiers and Special Effects
 
 ### Penetration System
-Weapons can pierce through enemies:
+Weapon piercing through enemies:
 
 ```csharp
 public int penetrating;     // Number of enemies weapon can pierce
 ```
 
 ### Knockback System
-Damage can include knockback effects:
+Damage with knockback effects:
 
 ```csharp
 public Il2CppSystem.Nullable<float> knockback;  // Knockback force
@@ -114,32 +114,29 @@ Evolved weapons often have completely different damage calculations from their b
 ## Damage Types and Resistances
 
 ### Weapon Type Classification
-Each weapon has a `WeaponType` that can affect damage calculations:
+Each weapon has a `WeaponType` that affects damage calculations:
 
 ```csharp
 WeaponType damageType = WeaponType.VOID  // Default damage type
 ```
 
-The WeaponType enum includes many specific weapon types like:
+The WeaponType enum includes specific weapon types:
 - WeaponType.WHIP, WeaponType.KNIFE, WeaponType.GARLIC
 - WeaponType.GUNS, WeaponType.LIGHTNING, WeaponType.HOLY_WATER
-- And many more specialized weapon types
+- Additional specialized weapon types
 
 ### Element-Based Damage
-Some weapons may have elemental properties that affect damage against specific enemy types. This is typically implemented in individual weapon classes through custom PPower() calculations.
+Weapons with elemental properties affect damage against specific enemy types through custom PPower() calculations in individual weapon classes.
 
 ## Performance Considerations
 
-### High-Frequency Operations
-Damage calculations occur very frequently during gameplay:
-- Multiple times per frame for rapid-fire weapons
-- Hundreds of calculations per second in crowded scenarios
+Damage calculations occur multiple times per frame for rapid-fire weapons and hundreds of times per second in crowded scenarios.
 
-### Optimization Guidelines
-1. **Avoid hooking damage methods**: These are called extremely frequently
-2. **Cache damage calculations**: Pre-calculate values when possible
-3. **Use efficient formulas**: Minimize complex mathematical operations
-4. **Batch damage operations**: Group similar damage applications together
+**Optimization Guidelines:**
+- Avoid hooking damage methods due to high call frequency
+- Cache damage calculations and pre-calculate values when possible
+- Minimize complex mathematical operations
+- Group similar damage applications together
 
 ## Common Modding Scenarios
 
@@ -206,11 +203,10 @@ if (weaponData != null)
 var player = GM.Core.Player;
 if (player?.PlayerStats != null)
 {
-    // Access luck stat through PowerUpType.LUCK
     var stats = player.PlayerStats.GetOwnedPowerUps();
     if (stats.ContainsKey(PowerUpType.LUCK))
     {
-        // Note: Luck affects item drop rates, not directly critical chance
+        // Luck affects item drop rates, not critical chance
         // Critical chance is weapon-specific through critChance property
     }
 }
@@ -236,7 +232,7 @@ Shields provide damage absorption and are accessed through PowerUpType.SHIELD in
 ## Advanced Damage Interactions
 
 ### Arcana System Integration
-Some Arcanas modify damage calculations. Weapons can check for active Arcanas:
+Arcanas modify damage calculations. Weapons check for active Arcanas:
 
 ```csharp
 public bool HasActiveArcanaOfType(ArcanaType type)
@@ -244,7 +240,7 @@ public virtual void CheckArcanas()
 ```
 
 ### Curse Effects
-Curse can affect damage in complex ways and is accessed through PowerUpType.CURSE:
+Curse affects damage in complex ways and is accessed through PowerUpType.CURSE:
 
 ```csharp
 // Access curse level through player stats
@@ -265,7 +261,7 @@ PowerUpType exists as a separate enum, but WeaponType also includes these values
 - `WeaponType.AMOUNT = 55` - Projectile/effect count
 
 ## Common Issues
-- **Performance**: Too many damage modifications impact frame rate
-- **Balance**: Excessive damage trivializes gameplay  
-- **Overflow**: Very high damage values may wrap around
-- **Compatibility**: Modifications may affect save game balance
+- **Performance**: Excessive damage modifications impact frame rate
+- **Balance**: High damage values affect gameplay difficulty
+- **Overflow**: Very high damage values wrap around
+- **Compatibility**: Modifications affect save game balance

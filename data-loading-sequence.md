@@ -24,7 +24,7 @@
   - `LoadManifestDirect()` - Direct manifest loading
 
 **DataManager**
-- `LoadBaseJObjects()` - Loads raw JSON data
+- `LoadBaseJObjects()` - Loads raw JSON data (private method)
 - `ReloadAllData()` - Called 7+ times during startup (1 base + 6 DLCs)
 
 ## Loading Sequence
@@ -33,7 +33,7 @@
 2. `PlatformIntegration.LoadDlc()` - DLC loading initiation
 3. `DlcSystem` - DLC coordination
 4. `LoadingManager` - DLC orchestration
-5. `DataManager.LoadBaseJObjects()` - JSON loading
+5. `DataManager.LoadBaseJObjects()` - JSON loading (private method)
 6. `DataManager.ReloadAllData()` - Called for base game + each DLC
 7. `LoadingManager.ValidateVersion()` - Final validation
 

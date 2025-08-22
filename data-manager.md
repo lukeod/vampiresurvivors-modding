@@ -1,10 +1,8 @@
-# Data Manager - Complete v1.0+ Reference
+# Data Manager
 
-Central repository for game data in Vampire Survivors. Handles loading, storing, and providing access to JSON-based configuration data with comprehensive online multiplayer synchronization support.
+Central repository for game data in Vampire Survivors. Handles loading, storing, and providing access to JSON-based configuration data with online multiplayer synchronization support.
 
 **Location**: `Il2CppVampireSurvivors.Data.DataManager`
-
-**Version**: Updated for v1.0+ with multiplayer and new data types
 
 ## JSON Data Storage
 
@@ -40,7 +38,7 @@ public JObject _allCPUJson;               // AI behavior configurations for mult
 
 ### Online Synchronization Tracking (Lines 502-564 in DataManager.cs)
 
-**NEW in v1.0+**: DataManager now tracks when data is modified for online multiplayer synchronization.
+DataManager tracks when data is modified for online multiplayer synchronization.
 
 ```csharp
 public bool _characterDataChangedForOnline;  // Character data modified for online play
@@ -50,11 +48,11 @@ public bool _weaponDataChangedForOnline;     // Weapon data modified for online 
 public bool _enemyDataChangedForOnline;      // Enemy data modified for online play
 ```
 
-**Status**: These flags are declared but **not currently used** in the codebase. They appear to be preparation for future online synchronization features.
+These flags are declared but not currently used in the codebase. They prepare for future online synchronization features.
 
-**Purpose**: When implemented, these flags will allow the game to track which data types have been modified by mods and need to be synchronized across online multiplayer clients.
+These flags will track which data types have been modified by mods and need synchronization across online multiplayer clients.
 
-## NEW Data Types Deep Dive (v1.0+)
+## v1.0+ Data Types
 
 ### CPU/AI Data System (_allCPUJson)
 
@@ -136,15 +134,15 @@ STAGESET_SHEMOON,        // Moonspell stage set
 STAGESET_FOSCARI         // Foscari stage set
 ```
 
-**Purpose**: Each stage set defines a collection of stages that form a cohesive adventure experience, typically themed around specific DLC content or character storylines.
+Each stage set defines a collection of stages that form a cohesive adventure experience, themed around specific DLC content or character storylines.
 
 ### Adventure Stage Data (_allAdventureStagesJson)
 
-**Purpose**: Adventure mode-specific stage configurations that differ from regular stages.
+Adventure mode-specific stage configurations that differ from regular stages.
 
 **Access**: Via JSON only (no direct converted access method found)
 
-**Relationship**: Works with `_allStageSetJson` to define complete adventure experiences with stage progression, special rules, and unique configurations not available in standard stages.
+Works with `_allStageSetJson` to define complete adventure experiences with stage progression, special rules, and unique configurations not available in standard stages.
 
 ## DLC Data Storage
 
@@ -198,7 +196,7 @@ if (dataManager == null)
 DataManager provides converted data methods that return strongly-typed objects with absolute values:
 
 ```csharp
-Dictionary<WeaponType, List<WeaponData>> weapons = dataManager.GetConvertedWeapons();
+Dictionary<WeaponType, List<WeaponData>> weapons = dataManager.GetConvertedWeaponData();
 var characters = dataManager.GetConvertedCharacterData();
 var enemies = dataManager.GetConvertedEnemyData();
 var powerups = dataManager.GetConvertedPowerUpData();
@@ -243,7 +241,7 @@ var adventureCharacters = dataManager.AdventureCharacterData;   // Dictionary<Ch
 var adventureStages = dataManager.AdventureStageData;           // Dictionary<StageType, List<StageData>>
 var adventureBestiary = dataManager.AdventureBestiaryData;      // Dictionary<EnemyType, List<EnemyData>>
 
-// NEW DATA TYPES (v1.0+) with detailed descriptions
+// v1.0+ DATA TYPES with detailed descriptions
 var albumData = dataManager.AllAlbumData;       // Dictionary<AlbumType, AlbumData> - Music collection system
 var cpuData = dataManager.AllCPU;               // Dictionary<AIType, AIData> - AI behavior for multiplayer
 var stageSetData = dataManager.AllStageSetData; // Dictionary<StageSetType, JObject> - Adventure stage sets
@@ -347,7 +345,7 @@ public void Dispose()     // Line 2553 in DataManager.cs
 
 **LoadBaseJObjects** (Line 2784 in DataManager.cs):
 ```csharp
-public void LoadBaseJObjects()
+private void LoadBaseJObjects()
 {
     // Loads all JSON data from game files
     // Populates _all*Json properties from DataManagerSettings
@@ -368,7 +366,7 @@ public void ReloadAllData()
 
 **LoadDataFromJson** (Line 2795 in DataManager.cs):
 ```csharp
-public void LoadDataFromJson()
+private void LoadDataFromJson()
 {
     // Internal method for processing JSON into object collections
     // Called: 3 times according to CallCount annotation
@@ -465,7 +463,7 @@ The GetConverted methods return IL2Cpp collections:
 ```csharp
 // IL2Cpp Dictionary (from game)
 using Il2CppSystem.Collections.Generic;
-Dictionary<WeaponType, List<WeaponData>> weapons = dataManager.GetConvertedWeapons();
+Dictionary<WeaponType, List<WeaponData>> weapons = dataManager.GetConvertedWeaponData();
 
 // Iterate with foreach
 foreach (var kvp in weapons)
@@ -489,11 +487,11 @@ foreach (var kvp in weapons)
 }
 ```
 
-## Multiplayer Considerations (NEW in v1.0+)
+## Multiplayer Considerations
 
 ### Online Multiplayer Data Restrictions
 
-**Critical**: Mods must check multiplayer state before modifying data:
+Mods must check multiplayer state before modifying data:
 
 ```csharp
 [HarmonyPatch(typeof(DataManager), "ReloadAllData")]
@@ -503,7 +501,7 @@ public static void SafeDataModification(DataManager __instance)
     // ALWAYS check multiplayer mode first
     if (GM.Core?.IsOnlineMultiplayer == true)
     {
-        // SKIP data modifications in online multiplayer
+        // Skip data modifications in online multiplayer
         // Modifications could desync clients or cause crashes
         return;
     }
@@ -538,14 +536,14 @@ public static void ModifyWeaponData(DataManager dataManager)
 
 ### IsOnline Method
 
-DataManager includes a private `IsOnline()` method (Line 2777) that checks multiplayer state. This suggests internal logic for handling online vs offline data differently.
+DataManager includes a private `IsOnline()` method (Line 2777) that checks multiplayer state for handling online vs offline data.
 
-## Usage Guidelines (Updated)
+## Usage Guidelines
 
-### 1. Multiplayer Awareness (CRITICAL)
+### 1. Multiplayer Awareness
 
 ```csharp
-// ALWAYS check multiplayer state first
+// Check multiplayer state first
 if (GM.Core?.IsOnlineMultiplayer == true)
 {
     return; // Skip modifications
@@ -562,7 +560,7 @@ When modifying JSON directly:
 
 ### 4. Null Safety with IL2CPP
 ```csharp
-var weapons = dataManager?.GetConvertedWeapons();
+var weapons = dataManager?.GetConvertedWeaponData();
 if (weapons != null && weapons.Count > 0)
 {
     // IL2CPP collections require careful null checking
@@ -695,7 +693,7 @@ public TextAsset GetWeaponDataJsonAsset()
 - `SecretData` - Secret unlock data
 - `AchievementData` - Achievement configuration data
 
-### New Data Classes (v1.0+) - Detailed
+### v1.0+ Data Classes
 
 **AIData Fields** (from AIData.cs):
 ```csharp

@@ -23,9 +23,10 @@ Vampire Survivors uses the **Coherence Toolkit** for its online multiplayer func
 #### CoherenceSync
 - **Purpose**: Entity synchronization component for networked objects
 - **Key Properties**:
-  - `HasStateAuthority`: Can modify entity state
-  - `HasInputAuthority`: Can send input commands for entity
+  - `HasStateAuthority`: Can modify entity state (health, stats, position)
+  - `HasInputAuthority`: Can send input commands for entity control
   - `authorityTransferType`: How authority can be transferred (NotTransferable/Request/Stealing)
+  - **Note**: There is NO simple `HasAuthority` property - always use the specific type
 - **Key Methods**:
   - `RequestAuthority()`: Request authority over entity
   - `TransferAuthority()`: Transfer authority to another client
@@ -79,9 +80,22 @@ Vampire Survivors uses a **host authority** model where:
 - Authority can transfer between clients for certain objects
 
 ### Authority Types
-1. **State Authority**: Can modify entity's state and data
-2. **Input Authority**: Can send input commands for entity
-3. **Full Authority**: Both state and input authority
+
+**Important**: CoherenceSync has two distinct authority properties:
+
+1. **State Authority (`HasStateAuthority`)**: Permission to modify entity's state and data
+   - Health, stats, position, rotation
+   - Game state changes
+   - Most entity modifications
+
+2. **Input Authority (`HasInputAuthority`)**: Permission to send input commands for entity
+   - Player input processing
+   - Movement commands
+   - Action inputs
+
+3. **Full Authority**: Having both state and input authority
+
+**There is NO simple `HasAuthority` property** - you must always check the specific authority type you need.
 
 ### Authority Transfer Modes
 - **NotTransferable**: Authority cannot be transferred

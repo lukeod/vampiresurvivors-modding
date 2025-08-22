@@ -131,8 +131,16 @@ public static CharacterController GetPlayerCharacter(Player player)
 
 ### 3. Network Authority Checking
 
+#### Authority Types
+
+Coherence Toolkit provides two types of authority:
+- **State Authority (`HasStateAuthority`)**: Permission to modify entity state (health, stats, position)
+- **Input Authority (`HasInputAuthority`)**: Permission to send input commands for entity control
+
+**Important**: There is NO simple `HasAuthority` property. Always use the specific authority type you need.
+
 ```csharp
-// Check if we can safely modify a networked entity
+// Check if we can safely modify a networked entity's state
 public static bool CanModifyEntity(CharacterController character)
 {
     var gm = GM.Core;
@@ -147,8 +155,8 @@ public static bool CanModifyEntity(CharacterController character)
         var coherenceSync = character?.Sync;
         if (coherenceSync == null) return false;
         
-        // Only modify if we have authority
-        return coherenceSync.HasAuthority;
+        // Only modify if we have state authority
+        return coherenceSync.HasStateAuthority;
     }
     catch (Exception ex)
     {
@@ -221,7 +229,7 @@ private static void ModifyWeaponData(DataManager dataManager)
 {
     try
     {
-        var weapons = dataManager.GetConvertedWeapons();
+        var weapons = dataManager.GetConvertedWeaponData();
         if (weapons?.ContainsKey(WeaponType.WHIP) == true)
         {
             var whipLevels = weapons[WeaponType.WHIP];
@@ -362,7 +370,7 @@ public static bool SafePreventDamage(CharacterController __instance)
         
         // Only host or entity owner can modify health
         var sync = __instance.Sync;
-        if (sync?.HasAuthority != true) return true;
+        if (sync?.HasStateAuthority != true) return true;
     }
     
     // Safe to modify in single player or if we have authority
@@ -414,13 +422,13 @@ public static bool SafeSignalIntercept(Il2CppSystem.Object signal)
 public static class NetworkAuthority
 {
     // Check if local client has authority over an entity
-    public static bool HasAuthority(MonoBehaviour entity)
+    public static bool HasStateAuthority(MonoBehaviour entity)
     {
         var gm = GM.Core;
         if (gm?.IsOnlineMultiplayer != true) return true; // Always have authority in non-online modes
         
         var coherenceSync = entity?.GetComponent<CoherenceSync>();
-        return coherenceSync?.HasAuthority == true;
+        return coherenceSync?.HasStateAuthority == true;
     }
     
     // Check if local client is the host
@@ -483,7 +491,7 @@ public static void ModifyEntityHostOnly(CharacterController character, Action<Ch
         if (!NetworkAuthority.IsHost()) return;
         
         // Additional authority check
-        if (!NetworkAuthority.HasAuthority(character)) return;
+        if (!NetworkAuthority.HasStateAuthority(character)) return;
     }
     
     try
@@ -505,7 +513,7 @@ public static void ModifyOwnEntityOnly(CharacterController character, Action<Cha
     if (gm.IsOnlineMultiplayer)
     {
         // Only the entity owner can modify
-        if (!NetworkAuthority.HasAuthority(character)) return;
+        if (!NetworkAuthority.HasStateAuthority(character)) return;
     }
     
     try
@@ -622,7 +630,7 @@ public static void ModifyEnemyBehavior(EnemyController __instance)
         if (!NetworkAuthority.IsHost()) return;
         
         // Check if we have authority over this enemy
-        if (!NetworkAuthority.HasAuthority(__instance)) return;
+        if (!NetworkAuthority.HasStateAuthority(__instance)) return;
     }
     
     try
@@ -768,7 +776,7 @@ public static class ModTestHelper
                     var player = players[i];
                     var isLocal = NetworkAuthority.IsLocalPlayer(player);
                     var character = GM.Core._multiplayerManager.GetCharacter(player);
-                    var hasAuthority = character != null && NetworkAuthority.HasAuthority(character);
+                    var hasAuthority = character != null && NetworkAuthority.HasStateAuthority(character);
                     
                     LogInfo($"  Player {i}: ID={player.id}, Local={isLocal}, Authority={hasAuthority}");
                 }
@@ -823,7 +831,6 @@ public static class ModTestHelper
                 {
                     var power = stats[PowerUpType.POWER].GetValue();
                     LogInfo($"Character power: {power}");
-                }
             }
         }
         catch (Exception ex)
@@ -907,7 +914,7 @@ public static class TestingChecklist
                 var character = GetPlayerCharacter(player);
                 if (character != null)
                 {
-                    var hasAuthority = NetworkAuthority.HasAuthority(character);
+                    var hasAuthority = NetworkAuthority.HasStateAuthority(character);
                     LogInfo($"  - Player {player.id} authority: {hasAuthority}");
                 }
             }
@@ -925,7 +932,7 @@ public static class TestingChecklist
         
         if (gm?.DataManager != null)
         {
-            var weapons = gm.DataManager.GetConvertedWeapons();
+            var weapons = gm.DataManager.GetConvertedWeaponData();
             LogInfo($"  - Weapon data available: {weapons != null}");
             
             var characters = gm.DataManager.AllCharacters;
@@ -1033,7 +1040,7 @@ public static void SafeEntityModification(MonoBehaviour entity)
     if (gm?.IsOnlineMultiplayer == true)
     {
         var sync = entity.GetComponent<CoherenceSync>();
-        if (sync?.HasAuthority != true)
+        if (sync?.HasStateAuthority != true)
         {
             LogWarning($"No authority to modify {entity.name}");
             return;
@@ -1123,8 +1130,8 @@ public static class DebugCollector
             
             if (character != null)
             {
-                var hasAuthority = NetworkAuthority.HasAuthority(character);
-                LogInfo($"    Has Authority: {hasAuthority}");
+                var hasAuthority = NetworkAuthority.HasStateAuthority(character);
+                LogInfo($"    Has State Authority: {hasAuthority}");
                 LogInfo($"    Character Name: {character.name}");
             }
         }
@@ -1151,7 +1158,7 @@ public static class DebugCollector
             var sync = character.GetComponent<CoherenceSync>();
             if (sync != null)
             {
-                LogInfo($"    {character.name}: Authority={sync.HasAuthority}");
+                LogInfo($"    {character.name}: State Authority={sync.HasStateAuthority}, Input Authority={sync.HasInputAuthority}");
             }
         }
     }
@@ -1190,7 +1197,7 @@ public static bool CanModifyEntity(MonoBehaviour entity)
     if (gm?.IsOnlineMultiplayer != true) return true;
     
     var sync = entity?.GetComponent<CoherenceSync>();
-    return sync?.HasAuthority == true;
+    return sync?.HasStateAuthority == true;
 }
 
 // Safe player iteration
@@ -1249,7 +1256,7 @@ public static void SafeHook(SomeClass __instance)
 | Data modifications | ❌ NO | Affects all players equally |
 | UI changes | ❌ NO | Client-local |
 | Character stats | ⚠️ ONLINE ONLY | `CanModifyEntity(character)` |
-| Enemy behavior | ⚠️ ONLINE ONLY | `IsHost() && HasAuthority(enemy)` |
+| Enemy behavior | ⚠️ ONLINE ONLY | `IsHost() && HasStateAuthority(enemy)` |
 | Game state | ⚠️ ONLINE ONLY | `IsHost()` |
 
 ### Testing Modes

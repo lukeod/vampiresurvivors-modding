@@ -1,7 +1,5 @@
 # Hook Points Reference
 
-*Updated for Unity 6000.0.36f1*
-
 ## Data Hooks
 
 ### Data Loading
@@ -19,20 +17,20 @@ public static void OnDataLoad(DataManager __instance)
 [HarmonyPostfix]
 public static void OnDataReload(DataManager __instance)
 {
-    // Called 7+ times during startup (base + DLCs)
+    // Called 7 times during startup (base + DLCs)
 }
 ```
 
 ### DLC Content Injection
 ```csharp
-// Optimal point for custom DLC injection
+// Custom DLC injection point
 [HarmonyPatch(typeof(LoadingManager), "ValidateVersion")]
 [HarmonyPostfix]
 public static void OnValidateVersion(LoadingManager __instance, int index, Il2CppStructArray<DlcType> dlcs, Il2CppSystem.Action callback)
 {
-    // All base game and official DLCs are loaded
-    // Data is complete but gameplay hasn't started
-    // Safe to inject custom DLC content here
+    // All base game and official DLCs loaded
+    // Data complete, gameplay not started
+    // Safe for custom DLC content injection
 }
 
 // Alternative hook for manifest loading
@@ -41,7 +39,7 @@ public static void OnValidateVersion(LoadingManager __instance, int index, Il2Cp
 public static void OnBundleApplied(DlcType dlcType, BundleManifestData manifest, Il2CppSystem.Action<BundleManifestData> onComplete)
 {
     // Called when each DLC bundle is applied
-    // Can modify or extend DLC content
+    // Modify or extend DLC content
 }
 ```
 
@@ -53,14 +51,14 @@ public static void OnBundleApplied(DlcType dlcType, BundleManifestData manifest,
 [HarmonyPostfix]
 public static void OnGameManagerAwake(GameManager __instance)
 {
-    // GM.Core available, all systems initialized
+    // GM.Core available, systems initialized
 }
 
 [HarmonyPatch(typeof(GameManager), "AddStartingWeapon")]
 [HarmonyPostfix]
 public static void OnGameplayStart(GameManager __instance, CharacterController character)
 {
-    // Game fully started, player ready
+    // Game started, player ready
 }
 ```
 
@@ -72,7 +70,7 @@ public static void OnGameplayStart(GameManager __instance, CharacterController c
 [HarmonyPostfix]
 public static void OnPlayerStatsUpgrade(CharacterController __instance, ModifierStats other, bool multiplicativeMaxHp)
 {
-    // Stat progression modifications
+    // Stat progression modification
 }
 ```
 
@@ -82,7 +80,7 @@ public static void OnPlayerStatsUpgrade(CharacterController __instance, Modifier
 [HarmonyPostfix]
 public static void OnWeaponAdded(GameManager __instance, GameplaySignals.AddWeaponToCharacterSignal signal)
 {
-    // Weapon addition events
+    // Weapon addition event
 }
 ```
 
@@ -94,7 +92,7 @@ public static void OnWeaponAdded(GameManager __instance, GameplaySignals.AddWeap
 [HarmonyPostfix]
 public static void OnMainMenu(AppMainMenuState __instance)
 {
-    // Main menu initialization complete
+    // Main menu initialized
 }
 ```
 

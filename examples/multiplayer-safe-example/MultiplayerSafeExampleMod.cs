@@ -88,7 +88,8 @@ public class MultiplayerSafeExampleMod : MelonMod
     #region Authority and Safety Helpers
 
     /// <summary>
-    /// Check if we can safely modify a networked entity
+    /// Check if we can safely modify a networked entity's state (health, stats, position).
+    /// This checks HasStateAuthority - use HasInputAuthority for input control.
     /// </summary>
     public static bool CanModifyEntity(MonoBehaviour entity)
     {
@@ -98,7 +99,7 @@ public class MultiplayerSafeExampleMod : MelonMod
         try
         {
             var sync = entity?.GetComponent<CoherenceSync>();
-            return sync?.HasAuthority == true;
+            return sync?.HasStateAuthority == true; // Use HasStateAuthority for state modifications
         }
         catch (Exception ex)
         {

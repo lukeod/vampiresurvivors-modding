@@ -179,7 +179,7 @@ The UI system maintains consistent styling across:
 - Animation patterns
 
 ### Dynamic Theming
-Some UI elements may support:
+UI elements support:
 - Day/night themes
 - Character-specific styling
 - Unlockable UI customizations
@@ -187,32 +187,18 @@ Some UI elements may support:
 ## Performance Optimization
 
 ### UI Update Efficiency
-Key optimization strategies:
-1. **Conditional Updates**: Only update UI when values change
-2. **Object Pooling**: Reuse UI elements for dynamic content
-3. **Batched Operations**: Group multiple UI updates together
-4. **Cached References**: Store frequently accessed UI components
+Optimization strategies: conditional updates (only update UI when values change), object pooling (reuse UI elements for dynamic content), batched operations (group multiple UI updates together), and cached references (store frequently accessed UI components).
 
 ### Text Rendering Optimization
-TextMeshPro optimization techniques:
-1. **Font Atlas Management**: Efficient character set loading
-2. **String Pooling**: Reuse formatted strings
-3. **Dynamic Text Culling**: Hide off-screen text elements
+TextMeshPro optimization techniques: font atlas management (efficient character set loading), string pooling (reuse formatted strings), and dynamic text culling (hide off-screen text elements).
 
 ## Debug and Development UI
 
 ### CheatUIHider and DebugUIHider
-The game includes multiple debug/cheat UI management classes:
-- `CheatUIHider`: Manages cheat interface visibility and functionality
-- `DebugUIHider`: Provides minimal debug UI functionality for hiding debug elements
-- Limited debug console features for development-time UI management
+The game includes multiple debug/cheat UI management classes: `CheatUIHider` (manages cheat interface visibility and functionality), `DebugUIHider` (provides minimal debug UI functionality for hiding debug elements), and limited debug console features for development-time UI management.
 
 ### Debug Features
-Debug and cheat UI functionality includes:
-- Standard debug UI with `DebugUIHider` class
-- Cheat interfaces managed by `CheatUIHider`
-- Local cheats panel (`_CheatsPanel`) in MainGamePage
-- Online cheats panel (`_OnlineCheatsPanel`) for multiplayer features
+Debug and cheat UI functionality includes standard debug UI with `DebugUIHider` class, cheat interfaces managed by `CheatUIHider`, local cheats panel (`_CheatsPanel`) in MainGamePage, and online cheats panel (`_OnlineCheatsPanel`) for multiplayer features.
 
 ## Common Modding Scenarios
 
@@ -303,20 +289,10 @@ void UpdateUIElement()
 ## Accessibility and Localization
 
 ### Text Scaling and Formatting
-UI components should support:
-- Dynamic text scaling for accessibility
-- Various screen resolutions and aspect ratios
-- Different font sizes and styles
+UI components support dynamic text scaling for accessibility, various screen resolutions and aspect ratios, and different font sizes and styles.
 
 ### Localization Considerations
-The game uses I2 Localization system for internationalization:
-- LocalizedString structures for text content (`_levelString` in MainGamePage)
-- BaseUIPage provides text parsing for localized content
-- When modifying UI text:
-  - Consider text length variations in different languages
-  - Maintain UI layout flexibility
-  - Use proper text encoding for international characters
-  - Respect the existing localization framework
+The game uses I2 Localization system for internationalization with LocalizedString structures for text content (`_levelString` in MainGamePage) and BaseUIPage text parsing for localized content. UI text modifications require considering text length variations in different languages, maintaining UI layout flexibility, using proper text encoding for international characters, and respecting the existing localization framework.
 
 ## Common Issues
 - **Performance**: Too many UI updates per frame
@@ -328,35 +304,18 @@ The game uses I2 Localization system for internationalization:
 ## Advanced UI Features
 
 ### Dynamic UI Generation
-For complex mods, consider:
-- Runtime UI element creation using equipment panel prefabs (`_PlayerEquipmentPanelPrefab`)
-- Data-driven UI configuration
-- Modular UI component systems
-- Force layout rebuilds with `ForceEquipmentLayoutRebuild()`
+Complex mods can use runtime UI element creation using equipment panel prefabs (`_PlayerEquipmentPanelPrefab`), data-driven UI configuration, modular UI component systems, and force layout rebuilds with `ForceEquipmentLayoutRebuild()`.
 
 ### Animation and Effects
-UI animations can enhance user experience:
-- Smooth transitions between states
-- Visual feedback for user actions
-- Particle effects integrated with UI elements
+UI animations enhance user experience through smooth transitions between states, visual feedback for user actions, and particle effects integrated with UI elements.
 
 ### Custom Input Handling
-Advanced UI modifications may require:
-- Custom input event processing
-- Integration with game input systems
-- Support for various input devices
+Advanced UI modifications require custom input event processing, integration with game input systems, and support for various input devices.
 
 ## UI Asset Management
 
 ### Sprite and Icon Management
-UI elements use various assets:
-- Character portraits and icons
-- Weapon and item sprites
-- UI decoration and background elements
-- Status effect indicators
+UI elements use character portraits and icons, weapon and item sprites, UI decoration and background elements, and status effect indicators.
 
 ### Asset Loading and Caching
-Efficient asset management includes:
-- Lazy loading of UI assets
-- Proper asset disposal and cleanup
-- Shared asset pools for common elements
+Efficient asset management includes lazy loading of UI assets, proper asset disposal and cleanup, and shared asset pools for common elements.

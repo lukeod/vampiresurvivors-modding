@@ -2,13 +2,13 @@
 
 ## Overview
 
-Vampire Survivors uses dependency injection (Zenject) with centralized static accessors. As of v1.0+, the architecture has been significantly expanded with multiplayer support, Unity 6000 upgrade, and new visual systems while maintaining core patterns.
+Vampire Survivors uses dependency injection (Zenject) with centralized static accessors. The v1.0+ architecture includes multiplayer support, Unity 6000, and additional visual systems.
 
-**Key Changes in v1.0+:**
-- GameManager now injects 28 dependencies (up from ~20)
-- Added multiplayer properties (`IsOnlineMultiplayer`, `IsLocalMultiplayer`)
-- New managers: ParticleManager, GizmoManager, MultiplayerManager
-- New factories: FontFactory, ShopFactory with multiplayer support
+**v1.0+ Components:**
+- GameManager injects 28 dependencies
+- Multiplayer properties (`IsOnlineMultiplayer`, `IsLocalMultiplayer`)
+- Additional managers: ParticleManager, GizmoManager, MultiplayerManager
+- Additional factories: FontFactory, ShopFactory with multiplayer support
 - Coherence Toolkit integration for online networking
 
 ## Static Accessors
@@ -24,7 +24,7 @@ var gameManager = GM.Core;
 var dataManager = gameManager?.DataManager;
 ```
 
-**Note**: GM.Core is null in menu states. Use null-conditional operators.
+GM.Core is null in menu states. Use null-conditional operators.
 
 ## GameManager
 
@@ -67,7 +67,7 @@ void Construct(SignalBus signalBus, DiContainer diContainer,
 
 // Player and game state methods
 void QueueOpenWeaponSelection(CharacterController player, string weaponSelectionType)
-void OpenWeaponSelection(CharacterController player, Dictionary<string, Il2CppSystem.Object> args)
+// OpenWeaponSelection is private, use QueueOpenWeaponSelection
 CharacterController GetClosestPlayer(float2 position, PlayerInclusionMode inclusionMode, 
     float maxRangeSqrd, bool includeFollowers)
 CharacterController GeneratePlayerCharacter(CharacterType characterType, int playerIndex)
@@ -83,16 +83,15 @@ if (gameManager != null)
     var currentStage = gameManager._stage;
     var player = gameManager.Player;
     
-    // Check multiplayer mode (v1.0+)
+    // Check multiplayer mode
     if (gameManager.IsOnlineMultiplayer)
     {
-        // Handle online multiplayer logic
-        var latency = gameManager.GetPlayer(0)?.AverageLatencyMs ?? 0;
+        // Online multiplayer logic
     }
     else if (gameManager.IsLocalMultiplayer)
     {
-        // Handle local coop logic
-        var playerCount = gameManager._multiplayerManager.GetPlayerCount();
+        // Local coop logic
+        var playerCount = gameManager._multiplayer.GetPlayerCount();
     }
     else
     {
@@ -181,7 +180,7 @@ public void Construct(
 )
 ```
 
-**New Dependencies in v1.0+:**
+**v1.0+ Dependencies:**
 - **GizmoManager**: Visual effects and UI overlays (level-up animations, weapon icons)
 - **MultiplayerManager**: Multiplayer coordination and player management
 - **FontFactory**: Centralized font asset management
@@ -206,12 +205,12 @@ Declares signal types for decoupled communication:
 
 ### Runtime Object Creation
 
-While direct `DiContainer.InstantiateComponentOnNewGameObject()` calls are not common in the decompiled code, the pattern exists through:
+Runtime object creation patterns include:
 - Factory classes that manage prefab instantiation
 - `ProjectContext.Instance.Container` for runtime access
 - Asset reference system with lazy loading
 
-No static Instance properties. Use GM.Core or injected references.
+Access through GM.Core or injected references.
 
 ## Initialization Flow
 
@@ -299,8 +298,8 @@ var spawnedEnemies = stage?._spawnedEnemies;
 if (GM.Core.IsOnlineMultiplayer)
 {
     // Network-aware modifications
-    var players = GM.Core._multiplayerManager.GetPlayers();
-    // Consider host authority and synchronization
+    var players = GM.Core._multiplayer.GetPlayers();
+    // Host authority and synchronization required
 }
 ```
 
@@ -310,7 +309,7 @@ if (GM.Core.IsOnlineMultiplayer)
 
 ```csharp
 // Check if any multiplayer mode is active
-if (GM.Core._multiplayerManager?.IsMultiplayer == true)
+if (GM.Core._multiplayer?.IsMultiplayer == true)
 {
     // Multiplayer-specific logic
 }
@@ -318,18 +317,18 @@ if (GM.Core._multiplayerManager?.IsMultiplayer == true)
 // Check specific multiplayer types
 if (GM.Core.IsOnlineMultiplayer)
 {
-    // Network multiplayer - consider latency, host authority
-    var players = GM.Core._multiplayerManager.GetPlayers();
+    // Network multiplayer with latency and host authority
+    var players = GM.Core._multiplayer.GetPlayers();
     foreach (var player in players)
     {
         var latency = player.PlayerInfo?.AverageLatencyMs ?? 0;
-        // Handle network-aware logic
+        // Network-aware logic required
     }
 }
 else if (GM.Core.IsLocalMultiplayer)
 {
     // Local coop - shared screen, no network concerns
-    var playerCount = GM.Core._multiplayerManager.GetPlayerCount();
+    var playerCount = GM.Core._multiplayer.GetPlayerCount();
     // Handle local multiplayer logic
 }
 else
@@ -338,18 +337,18 @@ else
 }
 ```
 
-### Important Notes for Modders
+### Multiplayer Modding Requirements
 
-- **Always check multiplayer mode** before modifying game state
-- **Online multiplayer** requires network synchronization awareness
-- **Local multiplayer** has different camera and UI considerations
-- **Host authority**: Only the host should modify certain game states in online play
-- **Test in all modes**: Single player, local coop, and online multiplayer
+- Check multiplayer mode before modifying game state
+- Online multiplayer requires network synchronization awareness
+- Local multiplayer has different camera and UI considerations
+- Host authority: Only the host should modify certain game states in online play
+- Test in all modes: Single player, local coop, and online multiplayer
 
 ### Multiplayer Manager Access
 
 ```csharp
-var multiplayerManager = GM.Core._multiplayerManager;
+var multiplayerManager = GM.Core._multiplayer;
 if (multiplayerManager != null)
 {
     var isMultiplayer = multiplayerManager.IsMultiplayer;
@@ -376,20 +375,20 @@ if (multiplayerManager != null)
 - **Multiplayer**: Check `IsOnlineMultiplayer`/`IsLocalMultiplayer` before modifications
 - **New Systems**: Access via dependency injection or through GameManager references
 
-## Stable Architecture Elements (v1.0+)
+## Architecture Stability
 
-Despite major multiplayer and system additions, these core patterns remain unchanged:
+Core patterns in v1.0+:
 
 - **GM.Core** static accessor pattern - Primary access method
-- **Zenject** dependency injection - All systems still use constructor injection
-- **SignalBus** event system - Decoupled communication remains the same
-- **Basic manager relationships** - Core manager hierarchy unchanged
-- **Data loading sequences** - DataManager patterns remain consistent
-- **Single player core mechanics** - Base gameplay systems unchanged
+- **Zenject** dependency injection - All systems use constructor injection
+- **SignalBus** event system - Decoupled communication
+- **Basic manager relationships** - Core manager hierarchy
+- **Data loading sequences** - DataManager patterns
+- **Single player core mechanics** - Base gameplay systems
 
-This means existing mods can often be updated by:
+Existing mod compatibility requires:
 1. Adding multiplayer mode checks
-2. Handling the new dependencies if needed
+2. Handling new dependencies if needed
 3. Testing in all game modes (single, local coop, online)
 
 ## Thread Safety

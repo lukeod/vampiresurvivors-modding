@@ -1,17 +1,17 @@
-# Vampire Survivors Multiplayer System - Complete Reference
+# Vampire Survivors Multiplayer System
 
 ## Overview
 
-Vampire Survivors v1.0+ introduced a comprehensive multiplayer system supporting both local cooperative and online multiplayer gameplay. This system is built on top of the Unity Coherence Toolkit for network synchronization and Rewired for input management.
+Vampire Survivors v1.0+ includes a comprehensive multiplayer system supporting both local cooperative and online multiplayer gameplay. This system is built on Unity Coherence Toolkit for network synchronization and Rewired for input management.
 
-**File Locations (Source Verification):**
+**File Locations:**
 - `F:\vampire\melon_decompiled\Il2CppVampireSurvivors.Runtime\Il2CppVampireSurvivors.Framework\MultiplayerManager.cs`
 - `F:\vampire\melon_decompiled\Il2CppVampireSurvivors.Runtime\Il2CppVampireSurvivors.Framework\CoopConfig.cs`
 - `F:\vampire\melon_decompiled\Il2CppVampireSurvivors.Runtime\Il2CppVampireSurvivors.Framework\GameManager.cs` (Lines 7432, 7446)
 
 ## Core Components
 
-### 1. MultiplayerManager - Complete API Reference
+### 1. MultiplayerManager
 
 **Location:** `Il2CppVampireSurvivors.Framework.MultiplayerManager`  
 **Access:** `GM.Core._multiplayerManager`  
@@ -77,7 +77,7 @@ public Color GetPlayerColour(Player player);         // Get player-specific colo
 
 ### 2. Game Mode Detection
 
-**Critical:** These properties are located in **GameManager**, NOT MultiplayerManager.
+These properties are located in **GameManager**, NOT MultiplayerManager.
 
 ```csharp
 public class GameManager
@@ -131,7 +131,7 @@ else if (GM.Core.IsOnlineMultiplayer)
 }
 ```
 
-### 3. CoopConfig System - Complete Settings Reference
+### 3. CoopConfig System
 
 **Location:** `Il2CppVampireSurvivors.Framework.CoopConfig`  
 **Type:** ScriptableObject  
@@ -358,7 +358,7 @@ if (GM.Core.IsLocalMultiplayer && !GM.Core.IsOnlineMultiplayer)
 }
 ```
 
-#### Network Items and Synchronization
+#### Network Items System
 
 ```csharp
 // Network Items System
@@ -379,7 +379,7 @@ if (GM.Core.IsOnlineMultiplayer && NetworkItems.IsNetworkItem(itemType))
 
 ### 6. Data Change Tracking for Online Synchronization
 
-**Location:** `DataManager` class in `GameManager`
+**Location:** `DataManager` class
 
 ```csharp
 public class DataManager
@@ -395,7 +395,7 @@ public class DataManager
 
 ## Modding Guidelines and Best Practices
 
-### 1. Multiplayer-Aware Mod Development
+### 1. Multiplayer-Aware Development
 
 ```csharp
 [HarmonyPatch(typeof(SomeGameClass), "SomeMethod")]
@@ -403,16 +403,16 @@ public static class SomeGameClassPatch
 {
     public static void Postfix(SomeGameClass __instance)
     {
-        // ALWAYS check multiplayer state first
+        // Check multiplayer state first
         var gm = GM.Core;
         
         if (gm.IsOnlineMultiplayer)
         {
-            // Online multiplayer - be very careful
+            // Online multiplayer requirements:
             // - Check network authority before modifying entities
             // - Respect host/client relationships  
-            // - Be aware of synchronization delays
-            // - Test with actual network latency
+            // - Handle synchronization delays
+            // - Test with network latency
             
             if (IsHost()) // Implement host detection
             {
@@ -427,7 +427,7 @@ public static class SomeGameClassPatch
         }
         else if (gm.IsLocalMultiplayer)
         {
-            // Local cooperative - easier to work with
+            // Local cooperative features:
             // - No network concerns
             // - Immediate state updates
             // - Shared game state
@@ -436,7 +436,7 @@ public static class SomeGameClassPatch
         }
         else
         {
-            // Single player - full control
+            // Single player mode
             ModifyGameStateDirectly();
         }
     }
@@ -539,21 +539,21 @@ Debug.Assert(GM.Core.IsOnlineMultiplayer);
 
 ### 5. Common Pitfalls and Solutions
 
-#### Pitfall 1: Modifying Network Entities Without Authority
+#### Pitfall: Modifying Network Entities Without Authority
 ```csharp
-// WRONG - Direct modification in online mode
+// Incorrect - Direct modification in online mode
 if (GM.Core.IsOnlineMultiplayer)
 {
-    character.health = 100; // This might conflict with network sync
+    character.health = 100; // Conflicts with network sync
 }
 
-// RIGHT - Check authority first
+// Correct - Check authority first
 if (GM.Core.IsOnlineMultiplayer)
 {
     var sync = character.GetComponent<CoherenceSync>();
-    if (sync != null && sync.HasAuthority)
+    if (sync != null && sync.HasStateAuthority)
     {
-        character.health = 100; // Safe to modify
+        character.health = 100; // Safe
     }
     else
     {
@@ -562,16 +562,16 @@ if (GM.Core.IsOnlineMultiplayer)
 }
 else
 {
-    character.health = 100; // Safe in local/single player
+    character.health = 100; // Safe
 }
 ```
 
-#### Pitfall 2: Ignoring Game Mode Detection
+#### Pitfall: Ignoring Game Mode Detection
 ```csharp
-// WRONG - Assuming single player
+// Incorrect - Assuming single player
 ModifyGameDirectly();
 
-// RIGHT - Check mode first
+// Correct - Check mode first
 if (GM.Core._multiplayerManager.IsMultiplayer)
 {
     HandleMultiplayerModification();
@@ -582,25 +582,25 @@ else
 }
 ```
 
-#### Pitfall 3: Not Handling Player Count Changes
+#### Pitfall: Not Handling Player Count Changes
 ```csharp
-// WRONG - Caching player count
+// Incorrect - Caching player count
 private static int cachedPlayerCount = 1;
 
-// RIGHT - Always get current count
+// Correct - Get current count
 int currentPlayerCount = GM.Core._multiplayerManager.GetPlayerCount();
 ```
 
 ## Technical Architecture
 
-### Key Files and Line Numbers (Verified)
+### Key Files and Line Numbers
 - `MultiplayerManager.cs` - Lines 22-1976+ (class definition through GetPlayerFromID method)
 - `CoopConfig.cs` - Lines 14-784+ (complete class with all settings)
 - `GameManager.cs` - Lines 7432 (IsLocalMultiplayer), 7446 (IsOnlineMultiplayer)
 - `FollowerData.cs` - Lines 13-30+ (AI character configuration)
 - `NetworkItems.cs` - Lines 12-50+ (network synchronization items)
 
-### Reference Counts (From Source Analysis)
+### Reference Counts
 - `CoopConfig`: 738 references throughout codebase
 - `IsOnlineMultiplayer`: 318 references
 - `PlayerAdded`/`PlayerRemoved`: Event system with multiple subscribers
@@ -614,7 +614,7 @@ int currentPlayerCount = GM.Core._multiplayerManager.GetPlayerCount();
 
 ## Summary
 
-The Vampire Survivors multiplayer system is a comprehensive architecture that seamlessly handles single player, local cooperative (up to 4 players), and online multiplayer modes. For modders, the key requirements are:
+The Vampire Survivors multiplayer system handles single player, local cooperative (up to 4 players), and online multiplayer modes. Key requirements for modders:
 
 1. **Always check game mode** using `IsOnlineMultiplayer`, `IsLocalMultiplayer`, and `IsMultiplayer`
 2. **Respect network authority** in online modes
@@ -622,4 +622,4 @@ The Vampire Survivors multiplayer system is a comprehensive architecture that se
 4. **Test in all three modes** to ensure compatibility
 5. **Use the extensive CoopConfig** for customization options
 
-The system's modular design allows for targeted modifications while maintaining compatibility across all multiplayer modes.
+The system's modular design allows targeted modifications while maintaining compatibility across all multiplayer modes.

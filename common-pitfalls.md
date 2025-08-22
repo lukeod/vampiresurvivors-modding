@@ -1,6 +1,6 @@
 # Common Pitfalls Reference
 
-Quick solutions for common Vampire Survivors modding issues.
+Solutions for common Vampire Survivors modding issues.
 
 ## Data System
 
@@ -9,7 +9,7 @@ Weapon levels 2-8 contain incremental deltas, not absolute values.
 
 ```csharp
 // Use converted data for absolute values
-var weapons = dataManager.GetConvertedWeapons();
+var weapons = dataManager.GetConvertedWeaponData();
 var whipLevel3Power = weapons[WeaponType.WHIP][2].power;
 ```
 
@@ -84,10 +84,10 @@ if (!string.IsNullOrEmpty(name) && name.Equals("SomeName", StringComparison.Ordi
 ## Performance
 
 ### High-Frequency Method Hooks
-Avoid hooking methods that execute every frame.
+Do not hook methods that execute every frame.
 
 ```csharp
-// Hook initialization or event-driven methods instead
+// Hook initialization or event-driven methods
 [HarmonyPatch(typeof(GameManager), "AddStartingWeapon")]
 [HarmonyPostfix]
 public static void SafeHook() { }
@@ -147,7 +147,6 @@ public static void HighPriorityHook(ref float __result) { }
 ## Save System
 
 ### Safe Save Modification
-Create backups before modifying save files.
 
 ```csharp
 public static void SafeModifySave(string newData)
@@ -193,7 +192,6 @@ Directory.CreateDirectory(modDataPath);
 ```
 
 ### File Permission Validation
-Check permissions before file operations.
 
 ```csharp
 public static bool SafeWriteFile(string filePath, string data)
@@ -225,7 +223,6 @@ public static bool SafeWriteFile(string filePath, string data)
 ## UI and Threading
 
 ### Main Thread UI Updates
-Use coroutines for UI updates from background threads.
 
 ```csharp
 Task.Run(() =>
@@ -244,7 +241,6 @@ private static IEnumerator UpdateUICoroutine(string text)
 ## Build Configuration
 
 ### Required Dependencies
-Include all necessary DLL references.
 
 ```xml
 <ItemGroup>
@@ -258,7 +254,6 @@ Include all necessary DLL references.
 ```
 
 ### Target Framework
-Match game's framework requirements.
 
 ```xml
 <TargetFramework>netcoreapp6.0</TargetFramework>
@@ -282,7 +277,6 @@ playerStats.Revivals.SetValue(3.0);
 ## Namespace Resolution
 
 ### Correct Type References
-Use game-specific types, not Unity equivalents.
 
 ```csharp
 using Il2CppVampireSurvivors.Objects.Characters;
@@ -296,7 +290,7 @@ using Il2CppVampireSurvivors.Objects.Characters;
 - [ ] No high-frequency method hooks
 - [ ] Proper file operation directories
 - [ ] Correct wrapper types for PlayerModifierStats
-- [ ] GetConvertedWeapons() for weapon data
+- [ ] GetConvertedWeaponData() for weapon data
 - [ ] GM.Core null checks
 - [ ] GetValue()/SetValue() for EggFloat/EggDouble
 - [ ] Menu and gameplay state testing

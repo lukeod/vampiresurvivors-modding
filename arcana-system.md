@@ -156,7 +156,7 @@ Game events trigger arcana checks, active arcanas respond to relevant events, an
 ## Weapon Integration
 
 ### Arcana Detection in Weapons
-Weapons can check for and respond to active arcanas:
+Weapons check for and respond to active arcanas:
 
 ```csharp
 // Check if a specific arcana is currently active
@@ -170,7 +170,7 @@ public void CheckBeginningArcana()  // For T10_BEGINNING (Waltz of Pearls)
 ```
 
 ### Weapon Behavior Modification
-Arcanas can modify damage calculations, alter firing patterns, change visual effects, and add special interactions.
+Arcanas modify damage calculations, alter firing patterns, change visual effects, and add special interactions.
 
 ## Arcana Effects
 
@@ -225,11 +225,7 @@ var specificArcana = dataManager.AllArcanas[ArcanaType.T00_KILLER];
 ## Arcana Selection and Unlocking
 
 ### Unlock Requirements
-Arcanas typically have unlock requirements:
-- Specific achievements
-- Character level thresholds
-- Game progression milestones
-- DLC ownership for DLC arcanas
+Arcanas have unlock requirements including specific achievements, character level thresholds, game progression milestones, and DLC ownership for DLC arcanas.
 
 ### Selection Process
 Players choose arcanas during character selection or through special in-game events.
@@ -237,22 +233,13 @@ Players choose arcanas during character selection or through special in-game eve
 ## Integration with Other Systems
 
 ### Character System
-Arcanas can affect character abilities and stats:
-- Modify base character statistics
-- Change character-specific abilities
-- Alter character evolution paths
+Arcanas affect character abilities and stats by modifying base character statistics, changing character-specific abilities, and altering character evolution paths.
 
 ### Evolution System
-Some arcanas modify weapon evolution requirements:
-- Change required synergy items
-- Alter evolution conditions
-- Enable special evolution paths
+Arcanas modify weapon evolution requirements by changing required synergy items, altering evolution conditions, and enabling special evolution paths.
 
 ### Stage and Enemy Interactions
-Arcanas can affect stage mechanics:
-- Enemy spawn patterns
-- Environmental effects
-- Stage-specific bonuses or penalties
+Arcanas affect stage mechanics including enemy spawn patterns, environmental effects, and stage-specific bonuses or penalties.
 
 ## Common Modding Scenarios
 
@@ -346,16 +333,10 @@ Arcana checks occur frequently. Optimize by caching states, using efficient cond
 ## Advanced Arcana Patterns
 
 ### Conditional Arcana Stacking
-Some arcanas may interact with each other:
-- Multiplicative effects when multiple arcanas are active
-- Exclusive effects that override each other
-- Synergistic combinations that create new behaviors
+Arcanas interact with each other through multiplicative effects when multiple arcanas are active, exclusive effects that override each other, and synergistic combinations that create new behaviors.
 
 ### Dynamic Arcana Effects
-Advanced arcanas may have effects that change over time:
-- Scaling effects based on game progression
-- Time-limited powerful effects
-- Effects that trigger under specific combinations of conditions
+Advanced arcanas have effects that change over time through scaling effects based on game progression, time-limited powerful effects, and effects that trigger under specific combinations of conditions.
 
 ## Common Issues
 - **Effect stacking**: Multiple instances of same effect

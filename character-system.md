@@ -263,12 +263,12 @@ if (player != null)
 ### Healing/Damaging
 
 ```csharp
-// Damage - with optional parameters for knockback, damage type, etc.
+// Damage with optional parameters
 player.GetDamaged(50.0f, HitVfxType.Default, 1f, WeaponType.VOID, true);
 
 // Heal (add to current HP)
 player._currentHp += 20.0f;
-// Ensure not exceeding max - note: MaxHp is EggFloat
+// Ensure not exceeding max (MaxHp is EggFloat)
 var maxHp = player.PlayerStats.MaxHp.Value;
 if (player._currentHp > maxHp)
     player._currentHp = maxHp;
@@ -276,7 +276,7 @@ if (player._currentHp > maxHp)
 
 ## EggFloat and EggDouble Wrappers
 
-Most stats in PlayerModifierStats use specialized wrapper types:
+PlayerModifierStats uses specialized wrapper types for most stats:
 
 ### EggFloat Properties
 ```csharp
@@ -354,7 +354,6 @@ player.PlayerStats.Revivals.SetValue(3);
 
 // Raw types
 player.PlayerStats.Shields = 2.0f;
-player.PlayerStats.Recycle = 0.1f;
 player.PlayerStats.Charm = 1;
 ```
 
@@ -406,8 +405,8 @@ public static void OnAddXp(CharacterController __instance,
                           ref float value, 
                           XPMultiplierMode multiplierMode)
 {
-    // Can modify XP value before it's added
-    value *= 2.0f; // Double XP gain
+    // Modify XP value before addition
+    value *= 2.0f;
 }
 ```
 
