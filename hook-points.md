@@ -1,5 +1,7 @@
 # Hook Points Reference
 
+*Updated for Unity 6000.0.36f1*
+
 ## Data Hooks
 
 ### Data Loading
@@ -26,7 +28,7 @@ public static void OnDataReload(DataManager __instance)
 // Optimal point for custom DLC injection
 [HarmonyPatch(typeof(LoadingManager), "ValidateVersion")]
 [HarmonyPostfix]
-public static void OnValidateVersion(LoadingManager __instance)
+public static void OnValidateVersion(LoadingManager __instance, int index, Il2CppStructArray<DlcType> dlcs, Il2CppSystem.Action callback)
 {
     // All base game and official DLCs are loaded
     // Data is complete but gameplay hasn't started
@@ -36,7 +38,7 @@ public static void OnValidateVersion(LoadingManager __instance)
 // Alternative hook for manifest loading
 [HarmonyPatch(typeof(ManifestLoader), "ApplyBundleCore")]
 [HarmonyPostfix]
-public static void OnBundleApplied(DlcType dlcType, BundleManifestData manifest)
+public static void OnBundleApplied(DlcType dlcType, BundleManifestData manifest, Il2CppSystem.Action<BundleManifestData> onComplete)
 {
     // Called when each DLC bundle is applied
     // Can modify or extend DLC content
@@ -88,10 +90,12 @@ public static void OnWeaponAdded(GameManager __instance, GameplaySignals.AddWeap
 
 ### Main Menu
 ```csharp
-// Manual patching required
-var mainMenuType = typeof(Il2CppVampireSurvivors.AppMainMenuState);
-var onEnterMethod = mainMenuType.GetMethod("OnEnter");
-harmony.Patch(onEnterMethod, postfix: new HarmonyMethod(typeof(MyHooks).GetMethod("OnMainMenu")));
+[HarmonyPatch(typeof(AppMainMenuState), "OnEnter")]
+[HarmonyPostfix]
+public static void OnMainMenu(AppMainMenuState __instance)
+{
+    // Main menu initialization complete
+}
 ```
 
 ## Timing
@@ -172,6 +176,15 @@ var characterJson = dataManager._allCharactersJson;
 
 ### Player Stats
 ```csharp
-character.PlayerStats.Power.SetValue(150f);
-float power = character.PlayerStats.Power.GetValue();
+// Access stats via dictionary lookup
+var powerStat = character.PlayerStats.GetAllPowerUps()[PowerUpType.POWER];
+powerStat._value = 150.0;
+double power = powerStat._value;
+
+// Alternative direct field access to stats dictionary
+var stats = character.PlayerStats._stats;
+if (stats.ContainsKey(PowerUpType.POWER))
+{
+    stats[PowerUpType.POWER]._value = 150.0;
+}
 ```

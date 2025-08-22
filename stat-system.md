@@ -28,6 +28,7 @@ public unsafe EggFloat MaxHp { get; set; }
 public unsafe EggFloat Magnet { get; set; }
 public unsafe EggFloat Curse { get; set; }
 public unsafe EggFloat Banish { get; set; }
+public unsafe EggFloat Recycle { get; set; }
 ```
 
 ### Special Type Properties
@@ -195,6 +196,7 @@ if (player?.PlayerStats != null)
     player.PlayerStats.Power.SetValue(100);
     player.PlayerStats.MaxHp.SetValue(200);
     player.PlayerStats.Revivals.SetValue(5);
+    player.PlayerStats.Recycle.SetValue(10);  // New in Unity 6000.0.36f1
 }
 ```
 

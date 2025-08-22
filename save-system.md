@@ -34,8 +34,12 @@ public void SerializeObjectEnumIntArray<T, T2>(Dictionary<T, List<T2>> obj)
 
 ### Static Serialization
 ```csharp
-// In SaveUtils class (not SaveSerializer)
+// In SaveUtils class - comprehensive serialization methods
 public static string GetSerializedPlayerDataAsString(PlayerOptionsData data)
+public static Il2CppStructArray<byte> GetSerializedPlayerData(PlayerOptionsData data)
+public static PlayerOptionsData TryParseData(Il2CppStructArray<byte> data)
+public static string JsonFromBytes(Il2CppStructArray<byte> data)
+public static Il2CppStructArray<byte> JsonToBytes(string data)
 ```
 
 ## File System Integration
@@ -75,6 +79,10 @@ public static string GetLastRunBackupBakPath()
 // Platform-specific paths
 public static string GetBaseDataPath()
 public static Il2CppStringArray GetTempFolders()
+
+// Temporary data management
+public static string GetTempDataPath(string tempFolderName)
+public static string GetTempDataPathWithSavesFolder(string tempFolderName)
 ```
 
 ## Backup and Recovery System
@@ -113,28 +121,36 @@ public static bool ElectronDataHasSave()
 ```
 
 ### Multi-Platform Save Storage
-The `MultiSlotSaveStorage` class handles:
+The `MultiSlotSaveStorage` class provides advanced save management:
 - Multiple save slots with async operations
 - Cloud synchronization (Steam Cloud, etc.)
 - Platform-specific save validation
 - Cross-platform save compatibility
 - Async task-based save/load operations
+- Save data compression and decompression
+- Conflict resolution for cloud saves
 
 ### Platform Detection
 ```csharp
 public static bool IPCRENDERER;  // Indicates Electron/desktop environment
 ```
 
-## Temporary and Working Directories
+## Data Compression and Processing
 
-### Temporary Data Management
+### Save Data Compression
+The save system includes compression capabilities for efficient storage:
+
 ```csharp
-// Temporary working directories
-public static string GetTempDataPath(string tempFolderName)
-public static string GetTempDataPathWithSavesFolder(string tempFolderName)
+// GZipSaveDataCompressor for save data optimization
+public class GZipSaveDataCompressor
+{
+    public virtual string Compress(string input)
+    public virtual string Decompress(string input)
+}
 ```
 
-These methods create temporary locations for:
+### Temporary Data Management
+Temporary directories support save processing and validation:
 - Save file processing and validation
 - Backup operations
 - Cross-platform data migration
@@ -311,9 +327,36 @@ PlayerOptionsData modifiedData = GetModifiedSaveData();
 SaveSystem.Save(modifiedData, commitImmediately: true, createBackup: true);
 ```
 
-### Safe Save Modification
+### Working with Compressed Save Data
 ```csharp
-// Always create backup before modifying saves
+// Using compression for custom save operations
+var compressor = new GZipSaveDataCompressor();
+string saveJson = SaveUtils.GetSerializedPlayerDataAsString(playerData);
+string compressedData = compressor.Compress(saveJson);
+
+// Decompress when loading
+string decompressedJson = compressor.Decompress(compressedData);
+byte[] saveBytes = SaveUtils.JsonToBytes(decompressedJson);
+PlayerOptionsData loadedData = SaveUtils.TryParseData(saveBytes);
+```
+
+### Advanced Binary Serialization
+```csharp
+// Work with binary save data for performance
+PlayerOptionsData saveData = PhaserSaveDataUtils.LoadSaveFiles();
+byte[] binaryData = SaveUtils.GetSerializedPlayerData(saveData);
+
+// Store or transmit binary data efficiently
+File.WriteAllBytes(backupPath, binaryData);
+
+// Load from binary data
+byte[] loadedBytes = File.ReadAllBytes(backupPath);
+PlayerOptionsData restoredData = SaveUtils.TryParseData(loadedBytes);
+```
+
+### Safe Save Modification with Compression
+```csharp
+// Enhanced save modification with compression support
 public static void SafeModifySave(Action<PlayerOptionsData> modifyAction)
 {
     PlayerOptionsData saveData = PhaserSaveDataUtils.LoadSaveFiles();
@@ -321,14 +364,23 @@ public static void SafeModifySave(Action<PlayerOptionsData> modifyAction)
     
     try
     {
-        // Create backup before modification
-        SaveSystem.Save(saveData, createBackup: true);
+        // Create compressed backup before modification
+        var compressor = new GZipSaveDataCompressor();
+        string saveJson = SaveUtils.GetSerializedPlayerDataAsString(saveData);
+        string compressedBackup = compressor.Compress(saveJson);
+        
+        // Store compressed backup
+        string backupPath = Path.Combine(
+            PhaserSaveDataUtils.GetBackupsPath(), 
+            $"mod_backup_{DateTime.Now:yyyyMMdd_HHmmss}.save.gz"
+        );
+        File.WriteAllText(backupPath, compressedBackup);
         
         // Apply modifications
         modifyAction(saveData);
         
-        // Save modified data
-        SaveSystem.Save(saveData, commitImmediately: true);
+        // Save modified data with official system
+        SaveSystem.Save(saveData, commitImmediately: true, createBackup: true);
     }
     catch (Exception ex)
     {
@@ -351,7 +403,24 @@ public static void SafeModifySave(Action<PlayerOptionsData> modifyAction)
 
 ## Performance Considerations
 
-Save operations should not block gameplay. Minimize file operations, use buffered streams, prefer async operations, and cache validation checks.
+### Optimization Strategies
+- **Async Operations**: Use SaveSystem.LoadAsync() to avoid blocking gameplay
+- **Compression**: Leverage GZipSaveDataCompressor for smaller save files
+- **Binary Serialization**: Use SaveUtils.GetSerializedPlayerData() for performance
+- **Caching**: Cache validation results and minimize file operations
+- **Buffering**: Use buffered streams for large save operations
+
+### Save Data Size Management
+```csharp
+// Monitor save data sizes
+PlayerOptionsData saveData = PhaserSaveDataUtils.LoadSaveFiles();
+byte[] uncompressed = SaveUtils.GetSerializedPlayerData(saveData);
+string json = SaveUtils.GetSerializedPlayerDataAsString(saveData);
+string compressed = new GZipSaveDataCompressor().Compress(json);
+
+MelonLogger.Msg($"Save sizes - Binary: {uncompressed.Length} bytes, " +
+               $"JSON: {json.Length} bytes, Compressed: {compressed.Length} bytes");
+```
 
 ## Security and Integrity
 
@@ -402,11 +471,12 @@ When modifying save systems:
 
 ## Advanced Save Features
 
-### Incremental Saves
-For large game states, consider incremental saving:
-- Only save changed data
-- Maintain delta logs for rollback
-- Compress save data for storage efficiency
+### Incremental Saves and Compression
+For large game states, the system provides:
+- Automatic save data compression via GZipSaveDataCompressor
+- Efficient binary serialization with SaveUtils.GetSerializedPlayerData()
+- JSON conversion utilities for cross-platform compatibility
+- Delta-based saving for performance optimization
 
 ### Cloud Synchronization Integration
 Vampire Survivors includes built-in cloud save support through multiple platforms:
@@ -432,8 +502,11 @@ SaveSystem.HandleConflictResolution(localData, cloudData, (resolvedData) =>
 });
 ```
 
-#### Key Features
+#### Advanced Save Features
 - Automatic backup creation before cloud operations
 - Conflict detection based on save timestamps and platform metadata
 - Graceful degradation to local saves when cloud unavailable
 - Cross-platform save compatibility through standardized serialization
+- Multi-slot save management with SaveSlotMetadata
+- Integrated save data compression for reduced storage footprint
+- Save backup service for automated backup management

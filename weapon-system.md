@@ -6,7 +6,7 @@ Handles weapon behavior, stats, evolution, and unions in Vampire Survivors.
 
 **Location**: `Il2CppVampireSurvivors.Data.WeaponType`
 
-Weapon identifiers with over 1500 entries (VOID = 0, highest value = 1599):
+Weapon identifiers with over 2500 entries (VOID = 0, highest value = 2501):
 
 ### Categories
 
@@ -16,8 +16,9 @@ Weapon identifiers with over 1500 entries (VOID = 0, highest value = 1599):
 - **DLC Prefixes**:
   - `C1_` - Among Us DLC (166-200)
   - `FB_` - Foscari DLC (300-350)
-  - `EME_` - Emergency Meeting DLC (361-450)
-  - `TP_` - Tides of Foscari/Castlevania DLC (1400-1500)
+  - `EME_` - Emergency Meeting DLC (361-450, 2361-2401)
+  - `TP_` - Tides of Foscari/Castlevania DLC (1400-1599)
+  - `LEM_` - Legacy of the Moonspell DLC (2501+)
 
 ## WeaponData Structure
 
@@ -51,6 +52,9 @@ public List<WeaponType> evolvesFrom;            // What evolves into this
 public List<WeaponType> requires;               // Base requirements
 public List<WeaponType> requiresMax;            // Items needed at max level
 public List<WeaponType> evolutionLine;          // Complete evolution chain
+public List<WeaponType> forcedSynergyWeapons;   // Forced synergy weapons
+public bool skipRemovingBaseWeapon;             // Don't remove base on evolution
+public bool hasUniqueRequirements;              // Has special evolution logic
 ```
 
 ### Basic Combat Stats
@@ -118,6 +122,15 @@ public string followerAI;                      // Follower AI behavior
 public bool dropRateAffectedByLuck;            // Luck affects drop rate
 public bool sealable;                          // Can be sealed in modes
 public bool unexcludeSelf;                     // Don't exclude self
+public bool isUnlocked;                        // Is weapon unlocked
+public bool seen;                              // Has player seen this weapon
+public float volume;                           // Audio volume
+public string bgm;                             // Background music
+public string desc;                            // Short description
+public string customDesc;                      // Custom description override
+public List<WeaponType> addEvolvedWeapon;      // Add evolved weapons
+public List<WeaponType> addNormalWeapon;       // Add normal weapons
+public List<WeaponType> excludeWeapon;         // Exclude weapons from pool
 ```
 
 ## Incremental Level System

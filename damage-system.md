@@ -8,8 +8,9 @@ Comprehensive damage calculation pipeline that flows from character base power t
 Foundation of damage calculation:
 
 ```csharp
-public virtual float PPower()      // Base character power
-public virtual float PPowerFinal() // Final power with modifiers and cap
+public virtual float PPower()                    // Base character power
+public float PPowerFinal()                       // Final power with modifiers and cap
+public float PPowerWithoutSilentMight()          // Power calculation excluding Silent Might modifiers
 ```
 
 Character power is capped at 10.0 in the final calculation.
@@ -61,6 +62,11 @@ public virtual void OnGetDamaged(HitVfxType hitVfxType, bool hasKb = true)
 // Custom color and timing effects
 public virtual void OnGetDamaged(string hexColor = "#ff0000", float vulnerabilityDelay = 120f, 
                                 bool playDamageFx = true, bool playWeaponDamageFx = false)
+
+// Extended damage effects with invulnerability control
+public void OnGetDamaged(string hexColor = "#ff0000", float vulnerabilityDelay = 120f, 
+                        bool playDamageFx = true, bool playWeaponDamageFx = false, 
+                        bool ignoreInvulnerabilityForRestoringTint = false)
 ```
 
 ### Hit VFX Types
@@ -163,9 +169,9 @@ if (weaponData != null)
 ```csharp
 [HarmonyPatch(typeof(Weapon), "DealDamage")]
 [HarmonyPrefix]
-public static void ModifyDamage(ref float damageOverride)
+public static void ModifyDamage(ref float damage)
 {
-    damageOverride *= 1.5f;
+    damage *= 1.5f;
 }
 ```
 
@@ -216,10 +222,12 @@ if (player?.PlayerStats != null)
 Invulnerability is managed through several methods in CharacterController:
 
 ```csharp
-public virtual float PInvulTime()          // Base invulnerability time calculation
-public virtual float PShieldTime()         // Shield-based invulnerability time
-public float ShieldInvulTime { get; set; } // Shield invulnerability duration
-public float CurrentInvincibilityTimer     // Current invincibility state
+public virtual float PInvulTime()                    // Base invulnerability time calculation
+public virtual float PShieldTime()                   // Shield-based invulnerability time
+public float ShieldInvulTime { get; set; }           // Shield invulnerability duration
+public float CurrentInvincibilityTimer               // Current invincibility state
+public void TriggerGetDamagedByOwnWeapon(float damage) // Self-damage from own weapons
+public virtual void GetDamagedByOwnWeapon(float damage) // Virtual method for self-damage handling
 ```
 
 ### Shield System

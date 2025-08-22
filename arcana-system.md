@@ -11,50 +11,74 @@ Arcanas are defined in the `ArcanaType` enum with tarot-inspired naming:
 public enum ArcanaType
 {
     VOID = -1,
-    T00_KILLER,
-    T01_AQUARIUS,
-    T02_TWILIGHT,
-    T03_TRAGIC,
-    T04_AWAKE,
-    T05_CRASH,
-    T06_SARABANDE,
-    T07_IRON_BLUE,
-    T08_MAD_FOREST,
-    T09_DIVINE,
-    T10_BEGINNING,
-    T11_PEARLS,
-    T12_OUT_OF_TIME,
-    T13_WICKED,
-    T14_JEWELS,
-    T15_GOLD,
-    T16_SLASH,
-    T17_PAINTING,
-    T18_ILLUSIONS,
-    T19_FIRE,
-    T20_SINKING,
-    T21_BLOODY,
-    D00_STAKE_TO_YOUR_HEART,
-    D01_SAPPHIRE_MIST,
-    D02_EMERALD_ELEGY,
-    D03_BREAD_ANATHEMA,
-    D04_TOWERING_DOLL,
-    D05_PALE_DIAMOND,
-    D06_BOLERO,
-    D07_tbd_bouncy,
-    D08_EDGE_OF_THE_EARTH,
-    D09_HEIR_OF_FATE,
-    D10_FROM_THE_FUTURE,
-    D11_HIDDEN_IN_SMOKE,
-    D12_CRYSTAL_CRIES,
-    D13_MAD_MOON,
-    D14_JAWS_SCORCHED_SKY,
-    D15_EVERYTHING_TO_LOSE,
-    D16_TINKER_PARTITA,
-    D17_SIGN_OF_BLOOD,
-    D18_VICTORIAN_HORROR,
-    D19_RIPPING_SILENCE,
-    D20_FANTASIA,
-    D21_JETBLACK
+    T00_KILLER = 0,
+    T01_AQUARIUS = 1,
+    T02_TWILIGHT = 2,
+    T03_TRAGIC = 3,
+    T04_AWAKE = 4,
+    T05_CRASH = 5,
+    T06_SARABANDE = 6,
+    T07_IRON_BLUE = 7,
+    T08_MAD_FOREST = 8,
+    T09_DIVINE = 9,
+    T10_BEGINNING = 10,
+    T11_PEARLS = 11,
+    T12_OUT_OF_TIME = 12,
+    T13_WICKED = 13,
+    T14_JEWELS = 14,
+    T15_GOLD = 15,
+    T16_SLASH = 16,
+    T17_PAINTING = 17,
+    T18_ILLUSIONS = 18,
+    T19_FIRE = 19,
+    T20_SINKING = 20,
+    T21_BLOODY = 21,
+    D00_STAKE_TO_YOUR_HEART = 22,
+    D01_SAPPHIRE_MIST = 23,
+    D02_EMERALD_ELEGY = 24,
+    D03_BREAD_ANATHEMA = 25,
+    D04_TOWERING_DOLL = 26,
+    D05_PALE_DIAMOND = 27,
+    D06_BOLERO = 28,
+    D07_tbd_bouncy = 29,
+    D08_EDGE_OF_THE_EARTH = 30,
+    D09_HEIR_OF_FATE = 31,
+    D10_FROM_THE_FUTURE = 32,
+    D11_HIDDEN_IN_SMOKE = 33,
+    D12_CRYSTAL_CRIES = 34,
+    D13_MAD_MOON = 35,
+    D14_JAWS_SCORCHED_SKY = 36,
+    D15_EVERYTHING_TO_LOSE = 37,
+    D16_TINKER_PARTITA = 38,
+    D17_SIGN_OF_BLOOD = 39,
+    D18_VICTORIAN_HORROR = 40,
+    D19_RIPPING_SILENCE = 41,
+    D20_FANTASIA = 42,
+    D21_JETBLACK = 43,
+    B001_ANTONIO = 101,
+    B002_IMELDA = 102,
+    B003_PASQUALINA = 103,
+    B004_GENNARO = 104,
+    B005_ARCA = 105,
+    B006_PORTA = 106,
+    B007_LAMA = 107,
+    B008_POE = 108,
+    B009_CLERICI = 109,
+    B010_DOMMARIO = 110,
+    B011_KROCHI = 111,
+    B012_CHRISTINE = 112,
+    B013_PUGNALA = 113,
+    B014_GIOVANNA = 114,
+    B015_POPPEA = 115,
+    B016_CONCETTA = 116,
+    B017_MORTACCIO = 117,
+    B018_CAVALLO = 118,
+    B019_RAMBA = 119,
+    B020_OSOLE = 120,
+    B021_AMBROJOE = 121,
+    B022_GALLO = 122,
+    B023_DIVANO = 123,
+    B024_ZIASSUNTA = 124
 }
 ```
 
@@ -69,6 +93,11 @@ public enum ArcanaType
 - Introduced with expansion content
 - May have DLC-specific requirements or interactions
 - Often tied to DLC characters or weapons
+
+**Character Arcanas (B001-B024)**:
+- Character-specific arcanas tied to individual characters
+- Named after specific characters (Antonio, Imelda, Pasqualina, etc.)
+- Provide character-specific bonuses or unlock requirements
 
 ## Arcana Manager System
 
@@ -92,14 +121,16 @@ public bool _hasMoonlightBolero;  // D06_BOLERO active
 public bool _hasHailFromTheFuture; // D10_FROM_THE_FUTURE active
 public bool _hasJetBlackWeapon;   // D21_JETBLACK active
 public bool _hasCrystalCries;     // D12_CRYSTAL_CRIES active
+public bool _hasMadMoon;          // D13_MAD_MOON active
+public bool _hasVictorianHorror;  // D18_VICTORIAN_HORROR active
 
 // Additional effect states
-public bool _HealOnCoins_k__BackingField;
-public bool _CoinFever_k__BackingField;
-public bool _MadGroove_k__BackingField;
-public bool _CanGather_k__BackingField;
-public bool _HasDivineBloodline_k__BackingField;
-public bool _PewPew_k__BackingField;
+public bool HealOnCoins;          // Heal when collecting coins
+public bool CoinFever;            // Coin fever effect active
+public bool MadGroove;            // Mad groove effect active
+public bool CanGather;            // Can gather items effect
+public bool HasDivineBloodline;   // Divine bloodline effect active
+public bool PewPew;               // Pew pew effect active
 ```
 
 ### Core Event Handling
@@ -164,8 +195,8 @@ public class ArcanaData
     public int arcanaType;                    // Enum value cast to int
     public string name;                       // Display name
     public string description;                // Effect description
-    public List<Object> weapons;             // Associated weapons
-    public List<Object> items;               // Associated items
+    public List<Il2CppSystem.Object> weapons; // Associated weapons
+    public List<Il2CppSystem.Object> items;   // Associated items
     public string texture;                   // UI texture name
     public string frameName;                 // UI frame name
     public bool enabled;                     // Whether arcana is enabled
@@ -236,6 +267,12 @@ public static void CustomArcanaEffects(Weapon __instance)
         // Custom effect for Gemini arcana
         // Modify weapon behavior based on kill count
     }
+    
+    // Check for character-specific arcanas
+    if (__instance.HasActiveArcanaOfType(ArcanaType.B001_ANTONIO))
+    {
+        // Custom effect for Antonio's character arcana
+    }
 }
 ```
 
@@ -263,6 +300,17 @@ public static void CustomWeaponArcanaEffects(Weapon weapon)
     {
         // Custom effect when Gemini is active and weapon fires
     }
+    
+    // Check for Mad Moon or Victorian Horror arcanas
+    if (weapon.HasActiveArcanaOfType(ArcanaType.D13_MAD_MOON))
+    {
+        // Custom effect for Mad Moon arcana
+    }
+    
+    if (weapon.HasActiveArcanaOfType(ArcanaType.D18_VICTORIAN_HORROR))
+    {
+        // Custom effect for Victorian Horror arcana
+    }
 }
 ```
 
@@ -279,6 +327,12 @@ public class ModdedWeapon : Weapon
         {
             // Custom interaction with Magical Arsenal arcana
             // Modify weapon stats or behavior
+        }
+        
+        // Handle character-specific arcana interactions
+        if (HasActiveArcanaOfType(ArcanaType.B005_ARCA))
+        {
+            // Custom interaction with Arca's character arcana
         }
     }
 }
@@ -326,11 +380,25 @@ if (arcanaManager._hasWickedSeason)
     MelonLogger.Msg("Wicked Season arcana is active");
 }
 
+if (arcanaManager._hasMadMoon)
+{
+    MelonLogger.Msg("Mad Moon arcana is active");
+}
+
+if (arcanaManager._hasVictorianHorror)
+{
+    MelonLogger.Msg("Victorian Horror arcana is active");
+}
+
 // Access arcana data
 var dataManager = GameManager.Instance.DataManager;
 var arcanaData = dataManager.AllArcanas[ArcanaType.T00_KILLER];
 MelonLogger.Msg($"Arcana Name: {arcanaData.name}");
 MelonLogger.Msg($"Arcana Description: {arcanaData.description}");
+
+// Access character arcana data
+var characterArcana = dataManager.AllArcanas[ArcanaType.B001_ANTONIO];
+MelonLogger.Msg($"Character Arcana: {characterArcana.name}");
 ```
 
 ### Effect Validation

@@ -3,7 +3,8 @@
 The pause-aware timer system that tracks game time accurately through weapon selections, merchant interactions, and other pause states.
 
 **Core Namespace**: `Il2CppVampireSurvivors.Framework.TimerSystem`  
-**Formatting Utility**: `Il2CppVampireSurvivors.Tools.VSUtils`
+**Formatting Utility**: `Il2CppVampireSurvivors.Tools.VSUtils`  
+**Timer Helper**: `Il2CppVampireSurvivors.Tools.TimerHelper`
 
 ## Overview
 
@@ -14,14 +15,16 @@ Vampire Survivors uses a sophisticated timer framework that properly handles pau
 ### Key Classes
 ```csharp
 // Core timer classes
-Il2CppVampireSurvivors.Framework.TimerSystem.Timer         // Individual timer instance
-Il2CppVampireSurvivors.Framework.TimerSystem.TimerManager  // Base manager class
-Il2CppVampireSurvivors.Framework.TimerSystem.TimerManagerGame  // Game timers (pause-aware)
-Il2CppVampireSurvivors.Framework.TimerSystem.TimerManagerUI    // UI timers (ignore pause)
-Il2CppVampireSurvivors.Framework.TimerSystem.Timers        // Global timer registry
+Il2CppVampireSurvivors.Framework.TimerSystem.Timer                 // Individual timer instance
+Il2CppVampireSurvivors.Framework.TimerSystem.TimerManager          // Base manager class
+Il2CppVampireSurvivors.Framework.TimerSystem.TimerManagerGame      // Game timers (pause-aware)
+Il2CppVampireSurvivors.Framework.TimerSystem.TimerManagerUI        // UI timers (ignore pause)
+Il2CppVampireSurvivors.Framework.TimerSystem.TimerManagerAutomation // Automation timers
+Il2CppVampireSurvivors.Framework.TimerSystem.Timers                // Global timer registry
 
 // Utility functions
-Il2CppVampireSurvivors.Tools.VSUtils.FormatTime           // Formats seconds to MM:SS
+Il2CppVampireSurvivors.Tools.VSUtils.FormatTime          // Formats seconds to MM:SS
+Il2CppVampireSurvivors.Tools.TimerHelper                 // Helper methods for timer creation
 ```
 
 ### Stage Timer Properties
@@ -145,11 +148,48 @@ The game pauses automatically during:
 public class Timer
 {
     float _startTime;                          // When timer started
+    float _lastUpdateTime;                     // Last update timestamp
     float _Duration_k__BackingField;          // Timer duration
+    bool _IsLooped_k__BackingField;           // Whether timer loops
+    bool _IsCompleted_k__BackingField;        // Whether timer completed
+    bool _UsesRealTime_k__BackingField;       // Real-time vs game-time flag
+    bool _canPause;                           // Whether timer can be paused
+    bool _isOnlineTimer;                      // Whether timer is for online play
+    bool _hasAutoDestroyOwner;                // Whether has auto-destroy owner
+    int _repeat;                              // Number of repeats
     Nullable<float> _timeElapsedBeforePause;  // Stores time when paused
     Nullable<float> _timeElapsedBeforeCancel; // Stores time when cancelled
-    bool _UsesRealTime_k__BackingField;       // Real-time vs game-time flag
+    MonoBehaviour _autoDestroyOwner;          // Owner for auto-destroy
+    Il2CppSystem.Action _onComplete;          // Completion callback
+    Il2CppSystem.Action<float> _onUpdate;     // Update callback
+    static TimerManager _manager;             // Global timer manager
 }
+```
+
+### Timer Properties and Methods
+
+```csharp
+// Timer state properties
+public float Duration { get; set; }           // Timer duration
+public bool IsLooped { get; set; }            // Whether timer loops
+public bool IsCompleted { get; protected set; } // Whether timer completed
+public bool UsesRealTime { get; protected set; } // Real-time vs game-time
+public bool IsPaused { get; }                 // Whether currently paused
+public bool IsCancelled { get; }              // Whether cancelled
+public bool IsDone { get; }                   // Whether done (completed or cancelled)
+public int RepeatCount { get; }               // Current repeat count
+public bool IsOwnerDestroyed { get; }         // Whether owner destroyed
+
+// Timer control methods
+public void Cancel()                          // Cancel the timer
+public void Complete(bool runAllRepeats = false) // Force completion
+public void Pause()                           // Pause the timer
+public void Resume()                          // Resume the timer
+public float GetTimeElapsed()                 // Get elapsed time
+public float GetTimeRemaining()               // Get remaining time
+public float GetRatioComplete()               // Get completion ratio (0-1)
+public float GetRatioRemaining()              // Get remaining ratio (1-0)
+public void Update()                          // Update timer (called by manager)
 ```
 
 ### State Machine Logic
@@ -169,6 +209,82 @@ public float GetTimeElapsed()
     
     return GetWorldTime() - _startTime;        // Normal running
 }
+```
+
+## Timer Helper Utility
+
+### Creating Timers with TimerHelper
+
+The new `TimerHelper` class provides convenient static methods for creating different types of timers:
+
+```csharp
+using Il2CppVampireSurvivors.Tools;
+using Il2CppVampireSurvivors.Framework.TimerSystem;
+
+// Game timers (pause-aware)
+Timer gameTimer = TimerHelper.RegisterSecs(
+    duration: 5.0f,                    // Duration in seconds
+    onComplete: () => { /* callback */ },
+    onUpdate: (elapsed) => { /* update */ },
+    isLooped: false,                   // Whether to loop
+    useRealTime: false,                // Use game time (pause-aware)
+    autoDestroyOwner: this,            // Auto-destroy when owner destroyed
+    repeat: 0,                         // Number of repeats (0 = no repeat)
+    isOnlineTimer: false,              // Whether for online play
+    canPause: true                     // Whether timer can be paused
+);
+
+// UI timers (ignore pause)
+Timer uiTimer = TimerHelper.RegisterSecsUI(
+    duration: 2.0f,
+    onComplete: () => { /* callback */ },
+    onUpdate: null,                    // Optional update callback
+    isLooped: false,
+    useRealTime: true,                 // UI timers often use real time
+    autoDestroyOwner: uiComponent,
+    repeat: 0
+);
+
+// Automation timers
+Timer automationTimer = TimerHelper.RegisterSecsAutomation(
+    duration: 10.0f,
+    onComplete: () => { /* callback */ },
+    onUpdate: null,
+    isLooped: true,                    // Often used for periodic tasks
+    useRealTime: false,
+    autoDestroyOwner: null,
+    repeat: 0
+);
+
+// Millisecond precision timers
+Timer preciseTiming = TimerHelper.RegisterMillis(
+    duration: 1500f,                   // 1.5 seconds in milliseconds
+    onComplete: () => { /* callback */ }
+);
+```
+
+### Timer Types
+
+- **RegisterSecs/RegisterMillis**: Game timers that respect pause states
+- **RegisterSecsUI/RegisterMillisUI**: UI timers that ignore pause states  
+- **RegisterSecsAutomation/RegisterMillisAutomation**: Automation timers for background tasks
+
+### Timer Constructor (Advanced Usage)
+
+For direct timer creation without TimerHelper:
+
+```csharp
+Timer timer = new Timer(
+    duration: 5.0f,                    // Duration in seconds
+    onComplete: completeAction,        // Completion callback
+    onUpdate: updateAction,            // Update callback
+    isLooped: false,                   // Whether to loop
+    usesRealTime: false,               // Use real time vs game time
+    autoDestroyOwner: ownerObject,     // Auto-destroy when owner destroyed
+    repeat: 0,                         // Number of repeats
+    isMultiplayer: false,              // Whether for multiplayer
+    canPause: true                     // Whether timer can be paused
+);
 ```
 
 ## Complete Implementation Example
@@ -211,6 +327,12 @@ public class AccurateTimerMod : MelonMod
             postfix: new HarmonyMethod(typeof(AccurateTimerMod).GetMethod(nameof(OnGameResume)))
         );
         
+        // Hook sync pause state (new in Unity 6000)
+        harmony.Patch(
+            typeof(TimerManagerGame).GetMethod("SyncPauseState"),
+            postfix: new HarmonyMethod(typeof(AccurateTimerMod).GetMethod(nameof(OnSyncPauseState)))
+        );
+        
         MelonLogger.Msg("Accurate Timer initialized");
     }
     
@@ -241,6 +363,12 @@ public class AccurateTimerMod : MelonMod
             isGamePaused = false;
             MelonLogger.Msg($"[Timer] Resumed at {FormatTime(currentGameTime)}");
         }
+    }
+    
+    public static void OnSyncPauseState(TimerManagerGame __instance)
+    {
+        // This method synchronizes pause state across timer systems
+        MelonLogger.Msg($"[Timer] Pause state synchronized");
     }
     
     public override void OnUpdate()
@@ -278,6 +406,28 @@ public class AccurateTimerMod : MelonMod
     public static float GetGameSeconds() => currentGameTime;
     public static bool IsPaused() => isGamePaused;
     public static string GetFormattedTime() => FormatTime(currentGameTime);
+    
+    // Example of using TimerHelper for custom timers
+    public static void CreateCustomTimer()
+    {
+        // Create a pause-aware game timer that runs for 30 seconds
+        Timer customTimer = TimerHelper.RegisterSecs(
+            duration: 30.0f,
+            onComplete: () => MelonLogger.Msg("Custom timer completed!"),
+            onUpdate: (elapsed) => {
+                if (elapsed % 5.0f < 0.1f) // Log every 5 seconds
+                {
+                    MelonLogger.Msg($"Custom timer: {elapsed:F1}s elapsed");
+                }
+            },
+            isLooped: false,
+            useRealTime: false,  // Respects game pause
+            autoDestroyOwner: null,
+            repeat: 0,
+            isOnlineTimer: false,
+            canPause: true
+        );
+    }
 }
 ```
 

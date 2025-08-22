@@ -26,9 +26,21 @@ public JObject _allAchievementsJson;   // Achievement definitions
 public JObject _allSecretsJson;        // Secret unlocks
 public JObject _allAdventuresJson;     // Adventure mode data
 public JObject _allStageSetJson;       // Stage set configurations
+public JObject _allAdventureStagesJson; // Adventure stage data (new)
 public JObject _allAdventureMerchantsJson; // Adventure merchant data
 public JObject _allCustomMerchantsJson;   // Custom merchant configurations
 public JObject _allAlbumData;             // Album/music collection data
+public JObject _allCPUJson;               // CPU/AI behavior data (new)
+```
+
+### Online Data Tracking Properties
+
+```csharp
+public bool _characterDataChangedForOnline;  // Character data modified for online play
+public bool _powerUpDataChangedForOnline;    // PowerUp data modified for online play
+public bool _stageDataChangedForOnline;      // Stage data modified for online play
+public bool _weaponDataChangedForOnline;     // Weapon data modified for online play
+public bool _enemyDataChangedForOnline;      // Enemy data modified for online play
 ```
 
 ## DLC Data Storage
@@ -90,22 +102,40 @@ var dlcCharacters = dataManager.GetConvertedDlcCharacterData(DlcType.Moonspell);
 
 ### Alternative Access via Properties
 
-Some data types are also accessible through properties that return single data instances:
+Data is also accessible through strongly-typed properties:
 
 ```csharp
-// Access complete data dictionaries via properties
+// JSON-based data (returns JArray for level-based data)
+var weaponData = dataManager.AllWeaponData;      // Dictionary<WeaponType, JArray>
+var characterData = dataManager.AllCharacters;   // Dictionary<CharacterType, JArray>
+var enemyData = dataManager.AllEnemies;          // Dictionary<EnemyType, JArray>
+var powerUpData = dataManager.AllPowerUps;       // Dictionary<PowerUpType, JArray>
+var stageData = dataManager.AllStages;           // Dictionary<StageType, JArray>
+var limitBreakData = dataManager.AllLimitBreakData; // Dictionary<WeaponType, JArray>
+
+// Converted data (returns single instance objects)
 var items = dataManager.AllItems;       // Dictionary<ItemType, ItemData>
 var arcanas = dataManager.AllArcanas;   // Dictionary<ArcanaType, ArcanaData>
 var props = dataManager.AllProps;       // Dictionary<PropType, PropData>
+var hitVfx = dataManager.AllHitVfxData; // Dictionary<HitVfxType, HitVfxData>
+var musicData = dataManager.AllMusicData; // Dictionary<BgmType, MusicData>
+var secrets = dataManager.AllSecrets;   // Dictionary<SecretType, SecretData>
+var achievements = dataManager.AllAchievements; // Dictionary<AchievementType, AchievementData>
 
 // Adventure-specific data access
 var adventures = dataManager.AllAdventures;              // Dictionary<AdventureType, AdventureData>
 var adventureMerchants = dataManager.AllAdventureMerchantsData; // Dictionary<CharacterType, CustomMerchantData>
+var customMerchants = dataManager.AllCustomMerchantsData; // Dictionary<CharacterType, CustomMerchantData>
 var adventureCharacters = dataManager.AdventureCharacterData;   // Dictionary<CharacterType, List<CharacterData>>
 var adventureStages = dataManager.AdventureStageData;           // Dictionary<StageType, List<StageData>>
 var adventureBestiary = dataManager.AdventureBestiaryData;      // Dictionary<EnemyType, List<EnemyData>>
 
-// Or get individual prop data
+// New data types
+var albumData = dataManager.AllAlbumData; // Dictionary<AlbumType, AlbumData>
+var cpuData = dataManager.AllCPU;         // Dictionary<AIType, AIData>
+var stageSetData = dataManager.AllStageSetData; // Dictionary<StageSetType, JObject>
+
+// Individual data access
 PropData specificProp = dataManager.GetPropData(PropType.CANDLE);
 ```
 
@@ -308,7 +338,11 @@ Centralized configuration container for all game data JSON assets:
 ### Adventure Mode Data Assets
 - `_AdventureDataJsonAsset` - Adventure mode configurations
 - `_AdventuresStageSetDataJsonAsset` - Adventure stage set definitions
+- `_AdventuresStagesJsonAsset` - Adventure stage data (new)
 - `_AdventuresMerchantsDataJsonAsset` - Adventure-specific merchant data
+
+### Additional Data Assets
+- `_AllCPUAsset` - CPU/AI behavior configurations (new)
 
 ### Asset Loading
 Each field provides access through IL2CPP runtime invocation:
@@ -339,6 +373,10 @@ public TextAsset GetWeaponDataJsonAsset()
 - `SfxType` - Sound effect identifiers (0-517 used, **safe: 10000+**)
 - `AdventureType` - Adventure mode identifiers
 - `SkinType` - Character skin identifiers (0-1076 used, **safe: 10000+**)
+- `AIType` - CPU/AI behavior identifiers
+- `AlbumType` - Music album identifiers
+- `StageSetType` - Stage set identifiers
+- `HitVfxType` - Hit visual effect identifiers
 
 ### Enum ID Assignment Patterns
 - **Base Game**: Generally uses lower ranges (0-200)
@@ -361,3 +399,8 @@ public TextAsset GetWeaponDataJsonAsset()
 - `MusicData` - Music/BGM configuration
 - `AdventureData` - Adventure mode configuration
 - `CustomMerchantData` - Merchant configuration data
+- `AIData` - CPU/AI behavior configuration
+- `AlbumData` - Music album information
+- `HitVfxData` - Hit visual effect configuration
+- `SecretData` - Secret unlock data
+- `AchievementData` - Achievement configuration data

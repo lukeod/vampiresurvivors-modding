@@ -21,16 +21,22 @@ Page-based UI architecture where screens extend `BaseUIPage`:
 
 **Menu Pages:**
 - Main menu (`MainMenuPage`)
+- Account page (`AccountPage`)
 - Options (`OptionsPage`)
 - Languages (`LanguagesPage`)
 - Warning dialogs (`WarningPage`)
 - Menu banner (`MenuBannerPage`)
 - Credits (`MenuCreditsPage`)
+- Connection error (`ConnectionErrorPage`)
+- Online error (`OnlineErrorPage`)
+- Online lobby (`OnlineLobbyPage`)
+- Room selection (`RoomSelectionPage`)
 
 **Game State Pages:**
 - Game over (`GameOverPage`)
 - Enhanced game over (`GameoverinoPage`)
 - Results recap (`RecapPage`)
+- Results display (`ResultPage`)
 - Final credits (`FinalCreditsPage`)
 - Final fireworks (`FinalFireworksPage`)
 
@@ -47,9 +53,13 @@ Page-based UI architecture where screens extend `BaseUIPage`:
 **Additional Specialized Pages:**
 - Stage selection (`StageSelectPage`)
 - Arcana main selection (`ArcanaMainSelectionPage`)
+- Arcana small selection (`ArcanaSmallSelectionPage`)
 - TP credits (`TPCreditsPage`)
+- TP weapon selection (`TPWeaponSelectionPage`)
 - Background selection (`BackgroundPage`)
 - Base weapon selection (`BaseWeaponSelectionPage`)
+- Weapon selection (`WeaponSelectionPage`)
+- Select adventures (`SelectAdventuresPage`)
 
 **GameWindowedUIPage Derivatives:**
 - Healer interface (`HealerPage`)
@@ -110,7 +120,6 @@ Update methods run every frame. Avoid hooking high-frequency methods, cache UI r
 - **Evolution Indicators**: Shows available weapon evolutions
 - **Equipment Panel Container**: Dynamic equipment UI (`_EquipmentPanelContainer`)
 - **Equipment Panel Prefabs**: Instantiated from `_PlayerEquipmentPanelPrefab`
-- **Equipment Panel List**: Managed through `_equipmentPanels` (List<GameEquipmentPanel>)
 
 ### Interactive Elements
 - **Level Up Panel**: Weapon/item selection on level up (`LevelUpPage`)
@@ -119,6 +128,10 @@ Update methods run every frame. Avoid hooking high-frequency methods, cache UI r
 - **Twitch Integration**: Real-time Twitch event display (`_TwitchStageEventsPanel`)
 - **Gold Fever UI**: Special game mode interface (`_GoldFever` - GoldFeverUIManager)
 - **Glimmer Technique Carousel**: Special technique display (`_GlimmerTechniqueCarousel`)
+- **Online Cheats Panel**: Online cheating interface (`_OnlineCheatsPanel`)
+- **Spectate Mode Container**: Spectator mode UI container (`_SpectateModeContainer`)
+- **Spectate Mode Icon**: Icon for spectate mode (`_SpectateModeIcon`)
+- **Spectate Mode Player Name**: Player name display in spectate mode (`_SpectateModePlayerName`)
 
 ## UI Event System
 
@@ -188,14 +201,18 @@ TextMeshPro optimization techniques:
 
 ## Debug and Development UI
 
-### DebugUIHider
-The `DebugUIHider` class provides minimal debug UI functionality:
-- Primarily used for hiding debug elements
-- Limited debug console features
-- Development-time UI management
+### CheatUIHider and DebugUIHider
+The game includes multiple debug/cheat UI management classes:
+- `CheatUIHider`: Manages cheat interface visibility and functionality
+- `DebugUIHider`: Provides minimal debug UI functionality for hiding debug elements
+- Limited debug console features for development-time UI management
 
 ### Debug Features
-Minimal debug UI with `DebugUIHider` class and `_CheatsPanel` in MainGamePage.
+Debug and cheat UI functionality includes:
+- Standard debug UI with `DebugUIHider` class
+- Cheat interfaces managed by `CheatUIHider`
+- Local cheats panel (`_CheatsPanel`) in MainGamePage
+- Online cheats panel (`_OnlineCheatsPanel`) for multiplayer features
 
 ## Common Modding Scenarios
 
@@ -313,7 +330,6 @@ The game uses I2 Localization system for internationalization:
 ### Dynamic UI Generation
 For complex mods, consider:
 - Runtime UI element creation using equipment panel prefabs (`_PlayerEquipmentPanelPrefab`)
-- Equipment panel management through `_equipmentPanels` list
 - Data-driven UI configuration
 - Modular UI component systems
 - Force layout rebuilds with `ForceEquipmentLayoutRebuild()`

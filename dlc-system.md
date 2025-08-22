@@ -18,6 +18,15 @@ Key methods:
 - `UpdateDlc(Action callback)` - Updates DLC content
 - `GetDlcTypesToLoad()` - Returns list of DLCs to load
 - `GetMissingDlc()` - Identifies missing DLC content
+- `IsFreeDlcActivated(DlcType dlcType)` - Checks if free DLC is activated
+- `SetFreeDlcActivated(DlcType dlcType, bool activated)` - Activates/deactivates free DLC
+- `ReleaseGameplayDlc()` - Releases gameplay DLC resources
+- `ShowDlcDownload(DlcType dlcType)` - Shows DLC download UI
+- `UpdateDlcDownloadProgressText(DlcType dlcType, string progressPercentage)` - Updates download progress
+- `HideDlcDownload()` - Hides DLC download UI
+- `ShowDlcDownloadError(DlcType dlcType, Action onRetry, Action onContinue, string info)` - Shows download error dialog
+- `PrepareBgmLoad(BgmType bgmType)` - Prepares background music loading
+- `OpenDLCLink()` - Opens DLC store page
 
 ### BundleManifestData
 **Location**: `Il2CppVampireSurvivors.Framework.DLC.BundleManifestData`
@@ -205,7 +214,9 @@ public class DataManagerSettings
     public TextAsset _CustomMerchantsDataJsonAsset;
     public TextAsset _AdventureDataJsonAsset;
     public TextAsset _AdventuresStageSetDataJsonAsset;
+    public TextAsset _AdventuresStagesJsonAsset;
     public TextAsset _AdventuresMerchantsDataJsonAsset;
+    public TextAsset _AllCPUAsset;
 }
 ```
 

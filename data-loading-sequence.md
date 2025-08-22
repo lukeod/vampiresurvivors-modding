@@ -12,7 +12,7 @@
 
 **DlcSystem**
 - Location: `Il2CppVampireSurvivors.Framework.DLC.DlcSystem`
-- Callback classes: `__c__DisplayClass30_0`, `__c__DisplayClass32_0`
+- Callback classes: `__c__DisplayClass25_0`, `__c__DisplayClass27_0`, `__c__DisplayClass38_0`
 
 **LoadingManager**
 - Location: `Il2CppVampireSurvivors.Framework.DLC.LoadingManager`
@@ -52,7 +52,7 @@
 - Methods: `SpawnAt()`, `Return()`, `Cleanup()`, `Destroy()`
 
 **Projectile**
-- Location: `Il2CppVampireSurvivors.Objects.Projectiles.Projectile`
+- Location: `Il2CppVampireSurvivors.Objects.projectiles.Projectile`
 - Inherits: `ArcadeSprite`
 - Fields: `_weapon`, `_indexInWeapon`, `_pool`, `_objectsHit`
 - Methods: `InitProjectile(BulletPool, Weapon, int)`, `OnUpdate()`
@@ -140,7 +140,7 @@ public static void OnDataReload(DataManager __instance)
 ### Hook Requirements
 
 - Install hooks after `GM.Core` available
-- Use `weapon.CurrentWeaponData.bulletType` not `weapon._weaponType`
+- Use `weapon._currentWeaponData.bulletType` not `weapon._weaponType`
 - Parameter names must match exactly
 - Specify parameter types for method overloads
 - `PInterval()` and `PDuration()` return milliseconds

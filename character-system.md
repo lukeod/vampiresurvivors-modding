@@ -32,7 +32,7 @@ public CharacterAccessoriesManager _accessoriesManager;   // Accessories/items
 ```csharp
 // Character initialization and setup
 public void InitCharacter(CharacterType characterType, int playerIndex, 
-                         bool dontGetCharacterDataForCurrentLevel = false)
+                         bool asRemote, bool dontGetCharacterDataForCurrentLevel = false)
 
 // Character spotlight initialization 
 public void InitCharacterSpotlight()
@@ -160,8 +160,9 @@ Manages the character's equipped weapons:
 var weaponsManager = player._weaponsManager;
 if (weaponsManager != null)
 {
-    // Access weapon inventory
-    var weapons = weaponsManager.GetWeapons();
+    // Manage weapons - inherits from EquipmentManager
+    weaponsManager.SetWeaponsActive(true);
+    weaponsManager.SetMaxWeaponCount(6, 0);
 }
 ```
 
@@ -177,6 +178,42 @@ if (accessoriesManager != null)
 {
     // Access equipped accessories
 }
+```
+
+## Character Skill Cards Manager
+
+**Location**: `Il2CppVampireSurvivors.Objects.Characters.CharacterSkillCardsManager`
+
+Manages character-specific skill cards and abilities:
+
+```csharp
+var skillCardsManager = player.CharacterSkillCardsManager;
+if (skillCardsManager != null)
+{
+    // Access character skill cards
+    var cards = skillCardsManager.CharacterCards;
+    foreach (var card in cards)
+    {
+        // Process each skill card
+    }
+}
+```
+
+### Skill Card System Properties
+
+```csharp
+public List<CharacterSkillCard_Base> CharacterCards;  // List of equipped skill cards
+public float SkillCards_Mult;                        // Skill card multiplier
+```
+
+### Skill Card Methods
+
+```csharp
+// Add a skill card to the character
+public void AddSkillCard(CharacterSkillCard_Base card)
+
+// Called when a skill card is added (virtual, can be overridden)
+public virtual void OnSkillCardAdded(CharacterSkillCard_Base card)
 ```
 
 ## Enemy Controllers
@@ -226,8 +263,8 @@ if (player != null)
 ### Healing/Damaging
 
 ```csharp
-// Damage
-player.GetDamaged(50.0f, HitVfxType.Default);
+// Damage - with optional parameters for knockback, damage type, etc.
+player.GetDamaged(50.0f, HitVfxType.Default, 1f, WeaponType.VOID, true);
 
 // Heal (add to current HP)
 player._currentHp += 20.0f;
@@ -275,6 +312,7 @@ player.PlayerStats.Shroud     // float
 player.PlayerStats.Defang     // float
 player.PlayerStats.InvulTimeBonus // float
 player.PlayerStats.Fever      // float
+player.PlayerStats.Recycle    // float
 player.PlayerStats.Charm      // int
 ```
 
@@ -290,6 +328,7 @@ player.PlayerStats.Revivals.SetValue(5.0);
 
 // Direct assignment for raw types
 player.PlayerStats.Shields = 3.0f;
+player.PlayerStats.Recycle = 0.1f;
 player.PlayerStats.Charm = 2;
 ```
 
@@ -315,6 +354,7 @@ player.PlayerStats.Revivals.SetValue(3);
 
 // Raw types
 player.PlayerStats.Shields = 2.0f;
+player.PlayerStats.Recycle = 0.1f;
 player.PlayerStats.Charm = 1;
 ```
 
@@ -338,7 +378,9 @@ else
 [HarmonyPatch(typeof(CharacterController), "InitCharacter")]
 [HarmonyPostfix]
 public static void OnCharacterInit(CharacterController __instance, 
-                                  CharacterType characterType)
+                                  CharacterType characterType, 
+                                  int playerIndex, 
+                                  bool asRemote)
 {
     // Character has been initialized
 }
@@ -366,5 +408,25 @@ public static void OnAddXp(CharacterController __instance,
 {
     // Can modify XP value before it's added
     value *= 2.0f; // Double XP gain
+}
+```
+
+### Skill Card System
+
+```csharp
+[HarmonyPatch(typeof(CharacterController), "AddSkillCard")]
+[HarmonyPostfix]
+public static void OnSkillCardAdded(CharacterController __instance, 
+                                   CharacterSkillCard_Base card)
+{
+    // Character skill card has been added
+}
+
+[HarmonyPatch(typeof(CharacterController), "OnSkillCardAdded")]
+[HarmonyPrefix]
+public static void OnSkillCardAddedEvent(CharacterController __instance, 
+                                        CharacterSkillCard_Base card)
+{
+    // Called when skill card is processed
 }
 ```

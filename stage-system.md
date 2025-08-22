@@ -37,19 +37,22 @@ The Stage class provides multiple spawning methods for different scenarios:
 
 ```csharp
 // Primary enemy spawning
-public GameObject SpawnEnemy(EnemyType enemyType, Vector2 spawnPos)
-public T SpawnEnemy<T>(EnemyType enemyType, Vector2 spawnPos) where T : EnemyController
+public GameObject SpawnEnemy(EnemyType enemyType, Vector2 spawnPos, bool asRemote = false, bool forceSpawn = false)
+public T SpawnEnemy<T>(EnemyType enemyType, Vector2 spawnPos, bool asRemote = false, bool forceSpawn = false) where T : EnemyController
+
+// Additional spawn location methods
+public GameObject SpawnEnemyInOuterRect(EnemyType enemyType, bool checkWalls = false, bool forceSpawn = false)
 
 // Special enemy spawning
 public void SpawnBoss()
 public void SpawnBatGoblin()
-private void SpawnEnemyBullet(Vector2 spawnPos, EnemyType bulletType = EnemyType.BULLET_1)
+public void SpawnEnemyBullet(Vector2 spawnPos, EnemyType bulletType = EnemyType.BULLET_1)
 
 // Additional spawn management methods
 public void SetSpawnType(SpawnType type)
 
 // Internal spawning logic
-private EnemyController SpawnEnemyUnit(ObjectPool pool, EnemyType enemyType, Vector2 spawnPos)
+public EnemyController SpawnEnemyUnit(ObjectPool pool, EnemyType enemyType, Vector2 spawnPos, bool asRemote)
 ```
 
 ### Spawn Pattern Methods
@@ -63,8 +66,8 @@ private void SpawnEnemiesInRandomLocationVertical()
 private void SpawnEnemiesTiled()
 private void SpawnEnemiesMapped()
 
-// Main spawning controller (internal)
-private void HandleSpawning(bool checkMaxEnemyCount = true)
+// Main spawning controller
+public void HandleSpawning(bool checkMaxEnemyCount = true)
 ```
 
 ### Spawn Types
@@ -87,11 +90,12 @@ public EnemyController FindClosestEnemy(Vector3 queryPos, bool excludeDead = fal
 public List<EnemyController> GetClosestEnemiesSorted(Vector3 queryPos, bool excludeDead = false, float maxRange = float.MaxValue)
 public List<EnemyController> GetEnemiesInCircle(float2 position, float radius)
 
-// Random enemy selection
-public Transform PickRandomEnemy()
-public Transform PickRandomEnemyInScreenBounds()
-public Transform PickRandomEnemyInRectBounds(Rectangle _rect)
-public Transform PickRandomEnemyInCircle(float2 position, float radius)
+// Random enemy selection (all methods now take optional Unity.Mathematics.Random for deterministic results)
+public Transform PickRandomEnemy(Il2CppSystem.Nullable<Unity.Mathematics.Random> rng)
+public Transform PickRandomEnemyInScreenBounds(Il2CppSystem.Nullable<Unity.Mathematics.Random> rng)
+public Transform PickRandomEnemyInRectBounds(Rectangle _rect, Il2CppSystem.Nullable<Unity.Mathematics.Random> rng)
+public Transform PickRandomEnemyInCircle(float2 position, float radius, Il2CppSystem.Nullable<Unity.Mathematics.Random> rng)
+public EnemyController PickRandomEnemyFromList(IList<EnemyController> enemiesList, Il2CppSystem.Nullable<Unity.Mathematics.Random> rng)
 
 // Screen-based queries
 public List<EnemyController> GetAllEnemiesInScreenBounds()
@@ -105,9 +109,9 @@ Includes Unity Profiler markers for performance analysis:
 public static ProfilerMarker MarkerSpawnEnemy;
 public static ProfilerMarker MarkerFindClosestEnemy;
 public static ProfilerMarker MarkerHandleSpawning;
-public static ProfilerMarker MarkerUpdateCulling;
 public static ProfilerMarker MarkerSpawnEnemyUnit;
 public static ProfilerMarker MarkerSpawnEnemyResolve;
+public static ProfilerMarker MarkerUpdateCulling;
 public static ProfilerMarker MarkerDespawnEnemyIfOutsideRect;
 ```
 
@@ -210,7 +214,7 @@ Stage systems involve performance-critical operations. Avoid hooking high-freque
 ```csharp
 [HarmonyPatch(typeof(Stage), "HandleSpawning")]
 [HarmonyPrefix]
-public static bool CustomSpawnPattern(Stage __instance, bool forceSpawn)
+public static bool CustomSpawnPattern(Stage __instance, bool checkMaxEnemyCount)
 {
     // Implement custom spawning logic
     // Return false to skip original method
@@ -223,7 +227,7 @@ public static bool CustomSpawnPattern(Stage __instance, bool forceSpawn)
 // Hook into spawn frequency changes by modifying the property directly
 [HarmonyPatch(typeof(Stage), "HandleSpawning")]
 [HarmonyPrefix]
-public static void ModifySpawnRate(Stage __instance)
+public static void ModifySpawnRate(Stage __instance, bool forceSpawn)
 {
     __instance._effectiveSpawnFrequency *= 2.0f;  // Double spawn rate
 }
@@ -245,7 +249,7 @@ public static void CustomBossSpawn(Stage __instance)
 // Modify available enemies for specific stages
 [HarmonyPatch(typeof(Stage), "SpawnEnemy")]
 [HarmonyPrefix]
-public static bool CustomEnemySelection(ref EnemyType enemyType, Vector2 spawnPos)
+public static bool CustomEnemySelection(ref EnemyType enemyType, Vector2 spawnPos, ref bool asRemote, ref bool forceSpawn)
 {
     // Replace enemy type based on custom logic
     if (ShouldSpawnCustomEnemy())
@@ -271,8 +275,8 @@ foreach (var enemy in activeEnemies)
 }
 
 // Additional enemy query methods
-public EnemyController ClosestAlive(Vector3 queryPos, float maxRange)
-public void GetEnemyBodiesInRect(Rectangle rect, ref List<BaseBody> list)
+public EnemyController ClosestAlive(Vector3 queryPos, float maxRange = float.MaxValue)
+public void GetEnemyBodiesInRect(Rectangle _rect, ref List<BaseBody> list)
 ```
 
 ## Testing and Debugging
@@ -322,3 +326,20 @@ Stages can interact with environmental systems:
 - Moving platforms or obstacles
 - Dynamic lighting and visual effects
 - Interactive stage elements
+
+## Key Changes for Modders
+
+### Method Signature Updates
+Several important method signatures have been updated:
+
+- `SpawnEnemy()` methods now include optional `asRemote` and `forceSpawn` parameters
+- `SpawnEnemyUnit()` now includes an `asRemote` parameter
+- All `PickRandomEnemy*()` methods now take an optional `Unity.Mathematics.Random` parameter for deterministic randomization
+- `HandleSpawning()` is now public instead of private
+
+### New Methods
+- `SpawnEnemyInOuterRect()` provides additional spawn location control
+- `PickRandomEnemyFromList()` for selecting from custom enemy lists
+
+### Updated Random System
+The stage system now uses Unity.Mathematics.Random for more predictable and controllable randomization. When hooking into random enemy selection methods, you can pass a specific Random instance to ensure deterministic behavior across different game sessions.

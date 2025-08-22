@@ -52,12 +52,11 @@ void Construct(SignalBus signalBus, DiContainer diContainer,
     AchievementManager achievementManager, MainGamePage mainGamePage, 
     MultiplayerManager multiplayer, AdventureManager adventureManager, 
     FontFactory fontFactory, AssetReferenceLibrary assetReferenceLibrary, 
-    ParticleManager particleManager)
+    ParticleManager particleManager, ShopFactory shopFactory)
 
 // Player and game state methods
-void StartEnterWeaponSelection(string weaponSelectionType, CharacterController interactingPlayer)
-void StartShopScene(CharacterController interactingPlayer, PickupCustomMerchant customMerchant, 
-    Il2CppSystem.Nullable<MerchantInventoryType> inventoryType)
+void QueueOpenWeaponSelection(CharacterController player, string weaponSelectionType)
+void OpenWeaponSelection(CharacterController player, Dictionary<string, Il2CppSystem.Object> args)
 CharacterController GetClosestPlayer(float2 position, PlayerInclusionMode inclusionMode, 
     float maxRangeSqrd, bool includeFollowers)
 CharacterController GeneratePlayerCharacter(CharacterType characterType, int playerIndex)
@@ -109,6 +108,7 @@ Manages factory pattern bindings for all content creation:
 - `CharacterFactory` - Character instantiation
 - `EnemyFactory` - Enemy spawning with pooling
 - `AccessoriesFactory` - Item/accessory creation
+- `ShopFactory` - Shop and merchant creation
 - Additional factories for destructibles, pickups, VFX, fonts, and assets
 
 #### DataManagerSettingsInstaller
@@ -133,7 +133,7 @@ public void Construct(SignalBus signalBus, DiContainer diContainer,
     AchievementManager achievementManager, MainGamePage mainGamePage, 
     MultiplayerManager multiplayer, AdventureManager adventureManager, 
     FontFactory fontFactory, AssetReferenceLibrary assetReferenceLibrary, 
-    ParticleManager particleManager)
+    ParticleManager particleManager, ShopFactory shopFactory)
 ```
 
 The `DiContainer` is stored as `_diContainer` for runtime object creation.
@@ -275,3 +275,4 @@ Game systems are not thread-safe. Modify only on main Unity thread.
 - `CharacterFactory` - Characters
 - `TreasureFactory` - Treasures
 - `ProjectileFactory` - Projectiles
+- `ShopFactory` - Shops and merchants

@@ -16,6 +16,7 @@ The central event bus that handles all signal subscriptions and firing. Accessib
 
 Declares all signal types during game initialization:
 - `DeclareUISignals()` - UI event signals
+- `DeclareOnlineSignals()` - Online/multiplayer signals
 - `DeclareOptionsSignals()` - Settings/options signals  
 - `DeclareCharacterSignals()` - Character event signals
 - `DeclareLevelUpFactorySignals()` - Level-up system signals
@@ -23,9 +24,9 @@ Declares all signal types during game initialization:
 
 ## Signal Types
 
-### Total Signal Count: ~60+
-- **Blittable (struct) signals**: ~37 - Can be subscribed to directly with delegates
-- **Non-blittable (class) signals**: ~23 - Contain IL2CPP object references, require special handling
+### Total Signal Count: 163
+- **Blittable (struct) signals**: 128 - Can be subscribed to directly with delegates
+- **Non-blittable (class) signals**: 35 - Contain IL2CPP object references, require special handling
 
 ### GameplaySignals
 
@@ -46,8 +47,10 @@ SetCharacterInvincibilityForMillisNonCumulativeSignal { float DurationMillis; }
 ReviveCharacterSignal
 
 // Combat events
-TimeStopSignal
-FireEnemyBulletSignal
+TimeStopSignal { bool IgnoreMovementFreezeFromTimeStop; bool SkipStandardVFX; }
+ChangeSpectateSignal { bool GoStraightToRecapPage; }
+SummonWhiteHandSignal
+FireEnemyBulletSignal { Vector2 SpawnPos; EnemyType BulletType; }
 
 // Weapons & items
 WeaponLevelledUpSignal
@@ -57,9 +60,9 @@ BanishWeaponSignal
 
 // Level up
 LevelUpSignal
+LevelUpWithoutScreenSignal
 AutoLevelUpSignal
 LevelUpCompletedSignal
-SkipLevelUpSignal
 
 // Treasure & rewards
 OpenTreasureCompletedSignal
@@ -94,35 +97,157 @@ AddSkillToCharacterSignal { CharacterController Character; }
 
 // Game state
 GamePausedSignal { CharacterController pausingPlayer; }
+ConnectionErrorSignal { ConnectionException ConnectionException; }
 
 // Pickups & enemies
 PlayerPickedUpNewItemSignal
 CharacterFoundSignal
 RemoveEnemyFromStageSignal
 EnemyKilledImmediateSignal
+DestructibleDestroyed
 
 // Treasure
 OpenTreasureSignal
 OpenSeasonFanSignal
+
+// Level up (non-blittable)
+SkipLevelUpSignal
 ```
 
 ### UISignals
 
 #### Blittable Signals
 ```csharp
+// Screen navigation
+OnEnteredUISignal
 LandingScreenCompletedSignal
 IntroAnimCompletedSignal
 ShowOptionsScreenSignal
 ShowAchievementsScreenSignal
 ShowCollectionsScreenSignal
 ShowCreditsScreenSignal
-OpenGameWeaponSelectionSignal
 ShowDLCStoreSignal
+ShowPowerUpsScreenSignal
+ShowSecretsScreenSignal
+ShowCharacterSelectScreenSignal
+ShowOnlineScreenSignal
+ShowOnlineLobbyScreenSignal
+GoBackOnlineSignal
+ShowAdventuresSelectionViewSignal
+ShowAdventuresAscensionSignal
+
+// Game setup
+OpenGameWeaponSelectionSignal
+LaunchGameplaySignal
+QuickStartGameSignal
+ConfirmCharacterSignal
+ConfirmStageSelectionSignal
+SelectOnlineStageSignal
+
+// Healer and Arcana
+OpenHealerSignal
+CloseHealerSignal
+OpenArcanaSignal
+CloseArcanaSignal
+ArcanaSelectedSignal
+ArcanaSkippedSignal
+
+// Piano and interactions
+OpenPianoSignal
+ClosePianoSignal
+PianoTuneCompleteSignal
+
+// UI toggles and settings
+ToggleGuidesSignal
+TogglePickupsSignal
+ToggleMovingBackgroundSignal
+SetFullscreenSignal
+ToggleStageProgressionSignal
+ToggleHideDebugUISignal
+ToggleHideGameUISignal
+ToggleXPBarSignal
+ToggleWeaponSlotsSignal
+SetVisibleJoysticksSignal
+SetDamageNumbersSignal
+SetGlimmerCarouselSignal
+SetFlashingVFXSignal
+SetStreamerSafeMusicSignal
+SetSFXVolumeSignal
+SetMusicVolumeSignal
+
+// Items and purchasing
+ReceivedNewItemSignal
+DiscardNewItemSignal
+ShowItemFoundScreenSignal
+BuyPowerUpSignal
+RefundPowerUpsSignal
+CharacterBoughtSignal
+SkinBoughtSignal
+
+// Game events
+RecapPageCompletedSignal
+SkipWeaponSelectionSignal
+BackButtonPressedSignal
+ShowBackButtonSignal
+HideBackButtonSignal
+QuitGameSignal
+
+// Unlocks and achievements
+CharacterUnlockedSignal
+StageUnlockedSignal
+WeaponUnlockedSignal
+CharacterCollectedSignal
+WarningShownSignal
+SyncSteamAchievementsSignal
+
+// Gold Fever
+GoldFeverStartedSignal
+GoldFeverEndedSignal
+EmitGoldFeverParticleSignal
+GoldFeverCoinCollectedSignal
+
+// VFX and UI effects
+CreateDamageNumberSignal
+CreateSpecialDamageNumberSignal
+CreateImpactVFXSignal
+SpawnMinorDoilieSignal
+StartTPUnlockSequenceSignal
+ShowFinalFireworksSignal
+CloseFinalFireworksSignal
+
+// Miscellaneous
+OpenLanguagePageSignal
+OpenBestiarySignal
+ShowEndCreditsSignal
+ShowGameOverinoSceneSignal
+ShowAccountPageSignal
+ShowLevelBonusSelectionSignal
+LevelUpBonusSelectedSignal
+SkipLevelUpBonusSignal
+CharacterFoundPageClosedSignal
+RefreshCursorsSignal
+BanishWeaponLevelUpSignal
+MerchantClosedSignal
+HideAllCursorsSignal
+UnhideCursorsSignal
+ForceSelectionOnCharacterSelectionPageSignal
 ```
 
 #### Non-Blittable Signals
 ```csharp
 OpenTPWeaponSelectionSignal { CharacterController Character; TPWeaponGroup WeaponGroup; }
+AddNewCharactersToSelectionPageSignal
+ShowOnlineErrorScreenSignal
+ForceBackButtonNavigation
+FadeScreenSignal
+FireNewGlimmerTechnique
+LanguageSelectedSignal
+TreasureChestSpawnedSignal
+TreasureChestCollectedSignal
+SpawnOffScreenCursorSignal
+ShowCursorSignal
+HideCursorSignal
+RemoveOffScreenCursorSignal
 ```
 
 ### AutomationSignals
@@ -135,7 +260,73 @@ CancelAutomationSignal
 AutomationGameSessionInitializedSignal
 AutomationSplashScreenInitializedSignal
 AutomationIntroWarningScreenInitializedSignal
-TestFinished
+```
+
+#### Non-Blittable Signals
+```csharp
+TestFinished { string TestName; }
+```
+
+### OnlineSignals
+
+The OnlineSignals category is new in Unity 6000.0.36f1, containing signals for multiplayer and online functionality.
+
+#### Blittable Signals (Structs)
+```csharp
+// Level up related
+OnlineLevelUpReRollRequested
+RequestOnlineLevelUpPass
+OnlineLevelUpPass { bool ShowStats; }
+OnlineLevelUpSkip
+
+// Item selection
+OnlineCloseItemFoundPage { bool Discard; }
+SelectCandyBoxWeapon { WeaponType Weapon; }
+SelectTPWeapon { WeaponType Weapon; }
+SkipTpWeapon
+SkipCandyBox
+SelectLevelUpBonus { PowerUpType LevelUpBonus; }
+SkipLevelBonus
+
+// Arcana system
+OnlineSelectedArcana { int Arcana; }
+OnlineReRolledArcanas
+ArcanaModeTransition
+
+// Stage interactions
+SuccessfulPianoSignal
+ExitPianoSignal
+TouchedPianoKeySignal { int Key; }
+RightCoffinOpened
+
+// Character collection
+RevealCharacter
+CollectCharacter
+
+// Director feedback
+DirecterTooEasy
+DirecterTooHard
+DirecterOkayButton
+OnDirecterStageSwitch { int Stage; }
+
+// Miscellaneous
+OnlineSkipTreasureAnim
+ForceCloseUi
+WestwoodsSpin { int _seed; }
+```
+
+#### Non-Blittable Signals (Classes with IL2CPP References)
+```csharp
+// Level up with items
+OnlineLevelUpReRoll { List<WeaponType> ChosenWeapons; }
+OnlineLevelUpWithItem { ItemType ItemType; CharacterController ReceivingCharacter; }
+OnlineLevelUpWithLimitBreak { int ChosenLimitBreakIndex; bool AlwaysRandomLimitBreak; CharacterController ReceivingCharacter; }
+
+// Purchase system
+OnlinePurchase { WeaponType Weapon; ItemType Item; int Price; CharacterController PurchasingPlayer; }
+
+// Connection events
+CharacterDisconnected { CharacterController DisconnectedPlayer; }
 ```
 
 ## IL2CPP Signal Limitations
@@ -162,6 +353,16 @@ public static void OnInternalFire(Il2CppSystem.Type signalType, Il2CppSystem.Obj
         var damageSignal = signal.Cast<GameplaySignals.CharacterReceivedDamageSignal>();
         // Access damageSignal.Character directly - no marshaling needed
     }
+    else if (signalTypeName == "OnlineLevelUpWithItem")
+    {
+        var itemSignal = signal.Cast<OnlineSignals.OnlineLevelUpWithItem>();
+        MelonLogger.Msg($"Online item level up: {itemSignal.ItemType} for {itemSignal.ReceivingCharacter?.name}");
+    }
+    else if (signalTypeName == "ConnectionErrorSignal")
+    {
+        var errorSignal = signal.Cast<GameplaySignals.ConnectionErrorSignal>();
+        MelonLogger.Msg($"Connection error: {errorSignal.ConnectionException}");
+    }
 }
 ```
 
@@ -180,6 +381,19 @@ signalBus.Subscribe<GameplaySignals.InitializeGameSessionSignal>(
 signalBus.Subscribe<GameplaySignals.CharacterXpChangedSignal>(
     (Action<GameplaySignals.CharacterXpChangedSignal>)((signal) => {
         MelonLogger.Msg($"XP: {signal.CurrentXp}/{signal.MaxXp}");
+    })
+);
+
+// Online signals (new in Unity 6000.0.36f1)
+signalBus.Subscribe<OnlineSignals.OnlineLevelUpPass>(
+    (Action<OnlineSignals.OnlineLevelUpPass>)((signal) => {
+        MelonLogger.Msg($"Online level up pass - show stats: {signal.ShowStats}");
+    })
+);
+
+signalBus.Subscribe<OnlineSignals.TouchedPianoKeySignal>(
+    (Action<OnlineSignals.TouchedPianoKeySignal>)((signal) => {
+        MelonLogger.Msg($"Piano key pressed: {signal.Key}");
     })
 );
 ```
@@ -312,8 +526,9 @@ foreach (var prop in properties)
 
 The Vampire Survivors event system:
 - Uses Zenject SignalBus for all game events
-- Has ~60+ different signal types
-- Splits between blittable (simple) and non-blittable (complex) signals
+- Has 163 different signal types (significantly expanded in Unity 6000.0.36f1)
+- Splits between blittable (128 signals) and non-blittable (35 signals)
+- Includes new OnlineSignals category for multiplayer functionality
 - Requires special handling for IL2CPP object references
 - All signals pass through InternalFire method
 - Identifiers are optional and rarely used (usually null)

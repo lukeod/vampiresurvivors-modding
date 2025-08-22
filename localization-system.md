@@ -1,229 +1,245 @@
 # Localization System
 
-Vampire Survivors uses the I2 Localization system for multi-language support and runtime text management.
+Vampire Survivors uses a custom localization system for multi-language support and runtime text management. The system provides direct access to localized content through data classes.
 
 ## Core Components
 
-### LocalizationManager
-**Location**: `Il2CppI2.Loc.LocalizationManager`
+### LanguageController
+**Location**: `Il2CppVampireSurvivors.LanguageController`
 
-Static manager providing global access to localization:
-
-```csharp
-// Get source containing a specific term
-public static LanguageSourceData GetSourceContaining(string term, bool fallbackToFirst = true);
-
-// Access all language sources
-public static List<LanguageSourceData> Sources;
-
-// Update all sources
-public static bool UpdateSources();
-```
-
-### LanguageSourceData
-**Location**: `Il2CppI2.Loc.LanguageSourceData`
-
-Core data container for localization terms:
+Manages language selection and UI updates:
 
 ```csharp
-public class LanguageSourceData
+public class LanguageController : MonoBehaviour
 {
-    // Term management
-    public TermData AddTerm(string term);
-    public TermData AddTerm(string NewTerm, eTermType termType, bool SaveSource = true);
-    public bool ContainsTerm(string term);
+    // Get current language name
+    public static string GetCurrentLanguageName();
     
-    // Language configuration
-    public List<LanguageData> mLanguages;
-    public string[] mLanguageNames;
+    // Apply a specific language
+    public void ApplyLanguage(string code);
     
-    // Update settings
-    public eGoogleUpdateFrequency GoogleUpdateFrequency;
-    public MissingTranslationAction OnMissingTranslation;
+    // Update language UI layout
+    public void Set();
 }
 ```
 
-### TermData Structure
-Individual localization term configuration:
+### Data-Specific Localization
+Each data type handles its own localization through specialized methods:
 
 ```csharp
-public class TermData
+// Weapon localization
+public class WeaponData
 {
-    public string Term;                    // Unique identifier
-    public eTermType TermType;            // Type (Text, Font, etc.)
-    public string Description;            // Optional description
-    public Il2CppStringArray Languages;  // Translations per language
-    public Il2CppStructArray<byte> Flags; // Term-specific flags
-    public Il2CppStringArray Languages_Touch; // Touch-specific translations
+    public string GetLocalizedNameTerm(WeaponType wType);
+    public string GetLocalizedDescriptionTerm(WeaponType wType);
+    public string GetLocalizedTipsTerm(WeaponType wType);
+    public string GetTranslation(string term);
+}
+
+// Character localization
+public class CharacterData
+{
+    public string GetFullName(CharacterType t, bool ignoreSkinPrefixSuffix = false, bool splitDualCharacterNames = true);
+    public string GetFullNameUntranslated();
+}
+
+// Item localization
+public class ItemData
+{
+    public string GetLocalizedName(ItemType type);
+}
+
+// Stage localization
+public class StageData
+{
+    public string GetLocalizedName(StageType sType);
+    public string GetLocalizedTips(StageType sType);
 }
 ```
 
-## Term Format Patterns
+## Localization Access Patterns
 
-### Standard Term Structure
-Terms follow hierarchical naming conventions:
-
-```
-category/{identifier}suffix
-```
-
-Common patterns:
-- `weaponLang/{WEAPONID}name` - Weapon display names
-- `weaponLang/{WEAPONID}description` - Weapon descriptions
-- `weaponLang/{WEAPONID}tips` - Weapon usage tips
-- `characterLang/{CHARACTERID}name` - Character names
-- `characterLang/{CHARACTERID}description` - Character descriptions
-- `stageLang/{STAGEID}name` - Stage names
-- `itemLang/{ITEMID}name` - Item names
-
-### LocalizedString
-**Location**: `Il2CppI2.Loc.LocalizedString`
-
-Runtime string localization wrapper:
+### Direct Data Access
+Localization is accessed directly through data classes without term-based lookups:
 
 ```csharp
-public sealed class LocalizedString
+// Get localized weapon name
+var weaponData = // ... get weapon data reference
+string weaponName = weaponData.GetLocalizedNameTerm(WeaponType.WHIP);
+
+// Get localized character name
+var characterData = // ... get character data reference
+string characterName = characterData.GetFullName(CharacterType.ANTONIO);
+
+// Get localized item name
+var itemData = // ... get item data reference
+string itemName = itemData.GetLocalizedName(ItemType.SPINACH);
+```
+
+### Language UI Components
+Language selection uses dedicated UI components:
+
+```csharp
+public class LanguageButtonUI : MonoBehaviour
 {
-    public string mTerm;                    // Term identifier
-    public bool mRTL_IgnoreArabicFix;      // RTL text handling
-    public int mRTL_MaxLineLength;         // RTL line length
-    public bool mRTL_ConvertNumbers;       // Number conversion for RTL
-    public bool m_DontLocalizeParameters;  // Parameter localization
+    public string Code;      // Language code
+    public string Name;      // Display name
+    
+    public void SetLanguage(LanguageController controller, string name, string code);
+    public void ApplyLanguage();
 }
 ```
 
-## Runtime Localization Injection
+## Custom Localization Integration
 
-### Adding Custom Terms
-
-```csharp
-// Get the appropriate language source
-var source = LocalizationManager.GetSourceContaining("weaponLang/{HELLFIRE}name");
-if (source == null)
-{
-    source = LocalizationManager.Sources[0]; // Fallback to first source
-}
-
-// Add new weapon localization
-string weaponId = "CUSTOM_WEAPON";
-string nameKey = $"weaponLang/{{{weaponId}}}name";
-string descKey = $"weaponLang/{{{weaponId}}}description";
-string tipsKey = $"weaponLang/{{{weaponId}}}tips";
-
-// Add terms if they don't exist
-if (!source.ContainsTerm(nameKey))
-{
-    var nameTerm = source.AddTerm(nameKey, eTermType.Text);
-    nameTerm.Languages[0] = "Custom Weapon";  // English
-    // Add other language translations as needed
-}
-
-if (!source.ContainsTerm(descKey))
-{
-    var descTerm = source.AddTerm(descKey, eTermType.Text);
-    descTerm.Languages[0] = "A powerful custom weapon";
-}
-
-if (!source.ContainsTerm(tipsKey))
-{
-    var tipsTerm = source.AddTerm(tipsKey, eTermType.Text);
-    tipsTerm.Languages[0] = "Use wisely for maximum effect";
-}
-```
-
-### Hooking Localization Updates
+### Hooking Language Changes
 
 ```csharp
-[HarmonyPatch(typeof(LocalizationManager), "UpdateSources")]
+// Hook language controller for custom localization
+[HarmonyPatch(typeof(LanguageController), "ApplyLanguage")]
 [HarmonyPostfix]
-public static void OnLocalizationUpdate()
+public static void OnLanguageChanged(string code)
 {
-    // Called when localization sources are updated
-    // Ideal time to inject custom terms
-    InjectCustomLocalization();
+    // Called when language is changed
+    // Update custom localization here
+    UpdateCustomLocalization(code);
+}
+
+// Monitor language selection
+[HarmonyPatch(typeof(LanguageController), "GetCurrentLanguageName")]
+[HarmonyPostfix]
+public static void OnGetCurrentLanguage(ref string __result)
+{
+    // Access current language name
+    string currentLang = __result;
 }
 ```
 
-## Enums and Configuration
-
-### eTermType
-Term categories:
+### Custom Translation Helper
 
 ```csharp
-public enum eTermType
+public static class CustomLocalization
 {
-    Text,          // General text
-    Font,          // Font assets
-    Texture,       // Texture references
-    AudioClip,     // Audio localization
-    GameObject,    // GameObject references
-    Sprite,        // Sprite assets
-    Material,      // Material assets
-    Child,         // Child objects
-    Mesh,          // 3D text meshes
-    TextMeshPFont, // TextMeshPro fonts
-    Object,        // Generic objects
-    Video          // Video assets
+    private static Dictionary<string, Dictionary<string, string>> customTerms = new();
+    
+    public static void AddCustomTerm(string key, string language, string value)
+    {
+        if (!customTerms.ContainsKey(key))
+            customTerms[key] = new Dictionary<string, string>();
+            
+        customTerms[key][language] = value;
+    }
+    
+    public static string GetCustomTranslation(string key, string fallback = "")
+    {
+        string currentLang = LanguageController.GetCurrentLanguageName();
+        
+        if (customTerms.ContainsKey(key) && customTerms[key].ContainsKey(currentLang))
+            return customTerms[key][currentLang];
+            
+        return fallback;
+    }
 }
 ```
 
-### MissingTranslationAction
-Behavior for missing translations:
+## Language System Types
+
+### Language Support
+The system supports multiple languages through language codes:
 
 ```csharp
-public enum MissingTranslationAction
+// Language button configuration
+public class LanguageButtonUI
 {
-    Empty,        // Show empty string
-    Fallback,     // Use fallback language
-    ShowWarning,  // Display warning message
-    ShowTerm      // Show the term key itself
+    public string Code;  // Language code (e.g., "en", "it", "es")
+    public string Name;  // Display name (e.g., "English", "Italiano")
 }
 ```
 
-### eGoogleUpdateFrequency
-Google Translate sync frequency:
+### Platform Integration
+**Location**: `Il2CppVampireSurvivors.App.Scripts.Framework.Initialisation.PlatformIntegration`
 
 ```csharp
-public enum eGoogleUpdateFrequency
+public static class PlatformIntegration
 {
-    Always,
-    Never,
-    Daily,
-    Weekly,
-    Monthly,
-    OnlyOnce,
-    EveryOtherDay
+    // Set current language code based on platform
+    public static void SetCurrentLanguageCode();
 }
 ```
 
 ## Integration with Game Systems
 
 ### WeaponData Localization
-Weapons use localized strings for display:
+Weapons provide direct localization methods:
 
 ```csharp
 public class WeaponData
 {
-    // Gets localized weapon name
-    public string GetTranslation()
-    {
-        string term = $"weaponLang/{{{weaponType}}}name";
-        return LocalizationManager.GetTranslation(term);
-    }
+    // Get localized weapon name
+    public string GetLocalizedNameTerm(WeaponType wType);
+    
+    // Get localized description
+    public string GetLocalizedDescriptionTerm(WeaponType wType);
+    
+    // Get localized tips
+    public string GetLocalizedTipsTerm(WeaponType wType);
+    
+    // Direct translation access
+    public string GetTranslation(string term);
+    
+    // Get formatted description with parameters
+    public string GetDescription(string term, float value);
+    public string GetDescriptionPercent(string term, float value);
 }
 ```
 
 ### Character Localization
-Similar pattern for characters:
+Characters use name-based localization:
 
 ```csharp
 public class CharacterData
 {
-    public string GetLocalizedName()
-    {
-        string term = $"characterLang/{{{characterType}}}name";
-        return LocalizationManager.GetTranslation(term);
-    }
+    // Get full localized character name
+    public string GetFullName(CharacterType t, bool ignoreSkinPrefixSuffix = false, bool splitDualCharacterNames = true);
+    
+    // Get untranslated name
+    public string GetFullNameUntranslated();
+}
+```
+
+### Other Game Systems
+Other data types follow similar patterns:
+
+```csharp
+// Achievements
+public class AchievementData
+{
+    public virtual string GetLocalizedName();
+}
+
+// Arcana
+public class ArcanaData
+{
+    public string GetLocalizedDescriptionTerm(ArcanaType t);
+}
+
+// Enemies
+public class EnemyData
+{
+    public string GetLocalizedDescriptionTerm(EnemyType type);
+    public string GetLocalizedTipsTerm(EnemyType type);
+}
+
+// Power-ups
+public class PowerUpData
+{
+    public string GetLocalizedName(PowerUpType type);
+}
+
+// Secrets
+public class SecretData
+{
+    public string GetLocalizedDescriptionTerm(SecretType t);
 }
 ```
 
@@ -232,140 +248,197 @@ public class CharacterData
 ### Accessing Current Language
 
 ```csharp
-// Get current language
-string currentLanguage = LocalizationManager.CurrentLanguage;
+// Get current language name
+string currentLanguage = LanguageController.GetCurrentLanguageName();
 
-// Get all available languages
-var languages = LocalizationManager.GetAllLanguages();
+// Change language through controller
+var languageController = // ... get controller reference
+languageController.ApplyLanguage("it");  // Switch to Italian
 
-// Change language
-LocalizationManager.CurrentLanguage = "Italian";
+// Access through platform integration
+PlatformIntegration.SetCurrentLanguageCode();
 ```
 
-### Multi-Language Term Addition
+### Multi-Language Custom Implementation
 
 ```csharp
-public static void AddMultiLanguageTerm(string termKey, Dictionary<string, string> translations)
+public static class MultiLanguageSupport
 {
-    var source = LocalizationManager.Sources[0];
-    var term = source.AddTerm(termKey, eTermType.Text);
-    
-    // Map language names to indices
-    for (int i = 0; i < source.mLanguageNames.Length; i++)
+    // Language code mapping
+    private static readonly Dictionary<string, string> languageCodes = new()
     {
-        string langName = source.mLanguageNames[i];
-        if (translations.ContainsKey(langName))
-        {
-            term.Languages[i] = translations[langName];
-        }
+        ["English"] = "en",
+        ["Italiano"] = "it",
+        ["Español"] = "es",
+        ["Français"] = "fr",
+        ["Deutsch"] = "de",
+        ["Português"] = "pt",
+        ["Русский"] = "ru",
+        ["日本語"] = "ja",
+        ["한국어"] = "ko",
+        ["简体中文"] = "zh-cn",
+        ["繁體中文"] = "zh-tw"
+    };
+    
+    public static string GetLanguageCode(string languageName)
+    {
+        return languageCodes.TryGetValue(languageName, out string code) ? code : "en";
+    }
+    
+    public static string GetLanguageName(string code)
+    {
+        return languageCodes.FirstOrDefault(kvp => kvp.Value == code).Key ?? "English";
     }
 }
-
-// Usage
-var translations = new Dictionary<string, string>
-{
-    ["English"] = "Fire Sword",
-    ["Italian"] = "Spada di Fuoco",
-    ["Spanish"] = "Espada de Fuego",
-    ["French"] = "Épée de Feu"
-};
-AddMultiLanguageTerm("weaponLang/{FIRESWORD}name", translations);
 ```
 
-## RTL Language Support
+## UI Localization Components
 
-The system includes built-in support for right-to-left languages:
+The system uses Unity components for UI localization:
 
 ```csharp
-var localizedString = new LocalizedString
+// Force parse escape characters in localized text
+public class ForceParseEscapeCharacters : MonoBehaviour
 {
-    mTerm = "arabicTerm",
-    mRTL_IgnoreArabicFix = false,  // Apply Arabic text fixes
-    mRTL_MaxLineLength = 50,       // Maximum line length for RTL
-    mRTL_ConvertNumbers = true     // Convert numbers to Arabic numerals
-};
+    public TextMeshProUGUI _tmp;      // Text component
+    public Localize _localize;        // Localization component
+    
+    public void Parse();  // Parse escape sequences
+}
 ```
 
 ## Dynamic Parameter Replacement
 
-Localized strings support parameter injection:
+The system supports parameter injection through description methods:
 
 ```csharp
-// Term definition with parameter
-"itemLang/{GOLD}description" = "Collect {0} gold coins"
+// WeaponData parameter replacement
+public class WeaponData
+{
+    // Get description with numeric value
+    public string GetDescription(string term, float value);
+    
+    // Get description with percentage value
+    public string GetDescriptionPercent(string term, float value);
+    
+    // Get custom description with value
+    public string GetCustomDescription(WeaponType t, float value);
+}
 
-// Runtime replacement
-string description = LocalizationManager.GetTranslation("itemLang/{GOLD}description", 100);
-// Result: "Collect 100 gold coins"
+// Usage example
+var weaponData = // ... get weapon data
+string description = weaponData.GetDescription("damage_description", 25.5f);
+string percentDesc = weaponData.GetDescriptionPercent("crit_chance", 0.15f);
 ```
 
 ## Best Practices
 
-### Term Naming
-- Use consistent category prefixes (weaponLang, characterLang, etc.)
-- Include content type in suffix (name, description, tips)
-- Use curly braces for IDs in term keys
+### Data-Driven Localization
+- Use data class methods for consistent access patterns
+- Leverage type-specific localization methods
+- Access localization through proper data references
 
 ### Performance
-- Cache frequently accessed translations
-- Batch term additions during loading
-- Avoid runtime term lookups in update loops
+- Cache data class references
+- Use direct localization methods instead of string lookups
+- Avoid repeated calls to static methods in update loops
 
-### Organization
-- Group related terms by category
-- Maintain consistent translation quality
-- Document custom term patterns
+### Custom Localization
+- Hook language change events for custom content
+- Implement fallback strategies for missing translations
+- Use language codes for consistent identification
 
 ### Fallback Strategy
 ```csharp
-public static string GetLocalizedTextSafe(string termKey, string fallback = "")
+public static string GetLocalizedTextSafe<T>(Func<T, string> localizationMethod, T data, string fallback = "")
 {
-    var source = LocalizationManager.GetSourceContaining(termKey);
-    if (source != null && source.ContainsTerm(termKey))
+    try
     {
-        return LocalizationManager.GetTranslation(termKey);
+        return localizationMethod(data) ?? fallback;
     }
-    return fallback;
+    catch
+    {
+        return fallback;
+    }
 }
+
+// Usage
+string weaponName = GetLocalizedTextSafe(
+    data => data.GetLocalizedNameTerm(WeaponType.WHIP), 
+    weaponData, 
+    "Unknown Weapon"
+);
 ```
 
 ## Common Modding Scenarios
 
-### Adding Weapon Localization
+### Intercepting Weapon Localization
 ```csharp
-public static void AddWeaponLocalization(WeaponType weaponType, string name, string description)
+[HarmonyPatch(typeof(WeaponData), "GetLocalizedNameTerm")]
+[HarmonyPostfix]
+public static void CustomWeaponNames(WeaponType wType, ref string __result)
 {
-    var source = LocalizationManager.Sources[0];
-    
-    // Add name
-    string nameKey = $"weaponLang/{{{weaponType}}}name";
-    if (!source.ContainsTerm(nameKey))
+    // Override weapon names for custom weapons
+    if (wType == WeaponType.CUSTOM_WEAPON)
     {
-        var term = source.AddTerm(nameKey, eTermType.Text);
-        term.Languages[0] = name;
+        __result = CustomLocalization.GetCustomTranslation("custom_weapon_name", "Custom Weapon");
     }
-    
-    // Add description
-    string descKey = $"weaponLang/{{{weaponType}}}description";
-    if (!source.ContainsTerm(descKey))
+}
+
+[HarmonyPatch(typeof(WeaponData), "GetLocalizedDescriptionTerm")]
+[HarmonyPostfix]
+public static void CustomWeaponDescriptions(WeaponType wType, ref string __result)
+{
+    if (wType == WeaponType.CUSTOM_WEAPON)
     {
-        var term = source.AddTerm(descKey, eTermType.Text);
-        term.Languages[0] = description;
+        __result = CustomLocalization.GetCustomTranslation("custom_weapon_desc", "A powerful custom weapon");
     }
 }
 ```
 
-### Localizing Custom UI
+### Custom Character Localization
 ```csharp
-public static void LocalizeCustomUI(string uiElementId, string text)
+[HarmonyPatch(typeof(CharacterData), "GetFullName")]
+[HarmonyPostfix]
+public static void CustomCharacterNames(CharacterType t, ref string __result)
 {
-    string termKey = $"ui/custom/{uiElementId}";
-    var source = LocalizationManager.Sources[0];
-    
-    var term = source.AddTerm(termKey, eTermType.UI);
-    term.Languages[0] = text;
-    
-    // Apply to UI element
-    uiElement.GetComponent<Localize>().SetTerm(termKey);
+    if (t == CharacterType.CUSTOM_CHARACTER)
+    {
+        __result = CustomLocalization.GetCustomTranslation("custom_character_name", "Custom Hero");
+    }
+}
+```
+
+### Account Page Translation Hook
+```csharp
+[HarmonyPatch(typeof(AccountPage), "GetTranslation")]
+[HarmonyPostfix]
+public static void CustomAccountTranslations(string key, ref string __result)
+{
+    // Override specific account page translations
+    string customTranslation = CustomLocalization.GetCustomTranslation(key, null);
+    if (!string.IsNullOrEmpty(customTranslation))
+    {
+        __result = customTranslation;
+    }
+}
+```
+
+### Language Change Detection
+```csharp
+[HarmonyPatch(typeof(LanguageController), "ApplyLanguage")]
+[HarmonyPrefix]
+public static void OnLanguageChanging(string code)
+{
+    // Prepare for language change
+    Debug.Log($"Language changing to: {code}");
+}
+
+[HarmonyPatch(typeof(LanguageController), "ApplyLanguage")]
+[HarmonyPostfix]
+public static void OnLanguageChanged(string code)
+{
+    // React to language change
+    CustomLocalization.RefreshTranslations(code);
 }
 ```

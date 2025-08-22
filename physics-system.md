@@ -2,6 +2,8 @@
 
 Vampire Survivors uses a custom physics engine (ArcadePhysics) for collision detection and movement, integrated with Unity's component system.
 
+**Note**: This documentation reflects the current Unity 6000.0.36f1 implementation. Collision callback signatures and some method parameters have been updated from previous versions.
+
 ## Core Components
 
 ### PhysicsManager (Singleton)
@@ -32,10 +34,13 @@ Manages different collision groups for game objects:
 - `InitPhysicsColliders()` - Sets up collision detection between groups
 
 #### Collision Callbacks
-- `OnPlayerOverlapsEnemy` - Player-enemy collision
-- `OnPlayerOverlapsPickup` - Player-pickup collection
-- `OnMagnetOverlapsPickup` - Magnet attraction
-- `OnBulletOverlapsDoor` - Projectile-door interaction
+- `OnPlayerOverlapsEnemy(CallbackContext context, ArcadeColliderType first, ArcadeColliderType second) : bool` - Player-enemy collision
+- `OnPlayerOverlapsPickup(CallbackContext context, ArcadeColliderType player, ArcadeColliderType pickup) : bool` - Player-pickup collection
+- `OnMagnetOverlapsPickup(CallbackContext context, ArcadeColliderType magnet, ArcadeColliderType pickup) : bool` - Magnet attraction
+- `OnBulletOverlapsDoor(CallbackContext context, ArcadeColliderType bullet, ArcadeColliderType door) : bool` - Projectile-door interaction
+
+#### Additional Properties
+- `PickupImmaterial : bool` - Controls whether pickup collision is enabled
 
 ### ArcadePhysics System
 **Location**: `Il2Cpp.ArcadePhysics`
@@ -44,18 +49,18 @@ Custom physics engine implementation:
 
 ```csharp
 // Static access points
-ArcadePhysics.s_instance    // Singleton instance
-ArcadePhysics.s_scene       // PhaserScene reference
-ArcadePhysics.s_world       // Physics world
-ArcadePhysics.s_currentConfig // Physics configuration
+ArcadePhysics.Instance       // Singleton instance property
+ArcadePhysics.scene          // PhaserScene reference property
+ArcadePhysics.s_world        // Physics world static field
+ArcadePhysics.Config         // Physics configuration property
 ```
 
 #### Collision Detection Methods
-- `OverlapRect()` - Rectangle collision detection
-- `OverlapCirc()` - Circle collision detection
-- `OverlapLine()` - Line collision detection
-- `CircleToCircle()` - Circle-to-circle collision test
-- `CircleToRectangle()` - Circle-to-rectangle collision test
+- `OverlapRect(float x, float y, float width, float height, bool includeDynamic = true, bool includeStatic = false, Group specificGroup = null) : List<BaseBody>` - Rectangle collision detection
+- `OverlapCirc(float x, float y, float radius, bool includeDynamic = true, bool includeStatic = false, Group specificGroup = null) : List<BaseBody>` - Circle collision detection
+- `OverlapLine(float2 lineStart, float2 lineEnd, float lineWidth, bool includeDynamic = true, bool includeStatic = false, Group specificGroup = null) : List<BaseBody>` - Line collision detection
+- `CircleToCircle(ArcadeCircle a, ArcadeCircle b) : bool` - Circle-to-circle collision test
+- `CircleToRectangle(ArcadeCircle circle, ArcadeRect rect) : bool` - Circle-to-rectangle collision test
 
 ## Physics Body Hierarchy
 
@@ -65,7 +70,7 @@ ArcadePhysics.s_currentConfig // Physics configuration
 Base physics body with core properties:
 
 ```csharp
-public class BaseBody
+public class BaseBody : RBush.IRectangular
 {
     // Physics type
     public PhysicsType _physicsType;  // DYNAMIC_BODY, STATIC_BODY, UNDEFINED
@@ -73,9 +78,11 @@ public class BaseBody
     // Movement
     public float2 _velocity;
     public float2 _position;
+    public float2 _offset;
     
     // Collision shape
     public float2 _size;
+    public float2 _halfSize;
     public float2 _center;
     public bool _isCircle;
     public float _radius;
@@ -85,24 +92,44 @@ public class BaseBody
     public bool _immovable;
     public bool _pushable;
     public bool _collideWorldBounds;
+    public bool _embedded;
+    public bool _enable;
+    
+    // Gravity and bounce
+    public bool _allowGravity;
+    public float2 _gravity;
+    public float2 _bounce;
+    
+    // Collision state
+    public ArcadeBodyCollision _checkCollision;
+    public ArcadeBodyCollision _blocked;
+    
+    // Callbacks
+    public bool _onWorldBounds;
+    public bool _onCollide;
+    public bool _onOverlap;
+    
+    // Movement deltas
+    public float _dx;
+    public float _dy;
 }
 ```
 
 ### ArcadeSprite
 **Location**: `Il2Cpp.ArcadeSprite`
 
-Extends BaseBody with sprite rendering:
+Extends PhaserGameObject with physics integration:
 
 ```csharp
-public class ArcadeSprite : BaseBody
+public class ArcadeSprite : PhaserGameObject
 {
-    public float2 position;
+    public float2 position;  // Position property with getter/setter
     
     // Movement methods
     public void setVelocity(float xVel, Il2CppSystem.Nullable<float> yVel = null);
     public void setVelocity(Vector2 velocity);
     public void setBounce(float2 bounce);
-    public void setCollideWorldBounds(bool value, float bounceX = 1, float bounceY = 1, bool onWorldBounds = false);
+    public void setCollideWorldBounds(bool value, Il2CppSystem.Nullable<float> bounceX = null, Il2CppSystem.Nullable<float> bounceY = null);
 }
 ```
 
@@ -113,6 +140,35 @@ public enum PhysicsType
     DYNAMIC_BODY,    // Affected by physics
     STATIC_BODY,     // Static collision
     UNDEFINED        // Uninitialized
+}
+```
+
+### Collision System Types
+
+#### ArcadeColliderType
+**Location**: `Il2Cpp.ArcadeColliderType`
+
+Abstract base class for collision objects in callbacks:
+
+```csharp
+public abstract class ArcadeColliderType
+{
+    public virtual bool isParent { get; }
+    public virtual BaseBody body { get; }
+    public virtual bool isTilemap { get; }
+    public virtual GameObject gameObject { get; }
+}
+```
+
+#### CallbackContext
+**Location**: `Il2Cpp.CallbackContext`
+
+Context object passed to collision callbacks:
+
+```csharp
+public class CallbackContext
+{
+    // Empty context class for collision callbacks
 }
 ```
 
@@ -174,15 +230,17 @@ public class Projectile : ArcadeSprite
     public int _penetrating;
     public int _bounces;
     
-    // Initialization
-    public void InitProjectile(BulletPool pool, Weapon weapon, int index);
+    // Properties
+    public int IndexInWeapon { get; }
+    public Weapon Weapon { get; }
+    public float ProjectileSpeed { get; }
     
-    // Physics callbacks
-    public void OnHasHitWallPhaser(PhaserTile tile);
+    // Initialization
+    public virtual void InitProjectile(BulletPool pool, Weapon weapon, int index);
     
     // Lifecycle
-    public void Explode();
-    public void Despawn();
+    public virtual void InternalUpdate();
+    // Note: Collision handling methods have been updated in Unity 6
 }
 ```
 
@@ -208,17 +266,20 @@ public class CustomPhysicsObject : ArcadeSprite
 {
     public void Initialize()
     {
+        // Access physics body through the body property
+        var physicsBody = this.body;
+        
         // Set physics type
-        body._physicsType = PhysicsType.DYNAMIC_BODY;
+        physicsBody._physicsType = PhysicsType.DYNAMIC_BODY;
         
         // Configure collision shape
-        body._isCircle = false;
-        body._size = new float2(32, 32);
+        physicsBody._isCircle = false;
+        physicsBody._size = new float2(32, 32);
         
         // Set physics properties
-        body._mass = 1.0f;
-        body._immovable = false;
-        body._collideWorldBounds = true;
+        physicsBody._mass = 1.0f;
+        physicsBody._immovable = false;
+        physicsBody._collideWorldBounds = true;
     }
 }
 
@@ -230,11 +291,8 @@ PhysicsManager.Instance._bulletGroup.add(customObject);
 // 3. Set movement
 customObject.setVelocity(100, 0);  // Move right at 100 units/sec
 
-// 4. Handle collisions
-public override void OnHasHitWallPhaser(PhaserTile tile)
-{
-    // Custom wall collision logic
-}
+// 4. Handle collisions - Note: collision callback signatures have changed
+// Override appropriate collision methods as needed
 ```
 
 ### Custom Projectile Pool
@@ -266,27 +324,31 @@ public class CustomProjectilePool : BulletPool
 
 ```csharp
 // Rectangle overlap
-var hits = ArcadePhysics.OverlapRect(x, y, width, height);
+var hits = ArcadePhysics.Instance.OverlapRect(x, y, width, height, includeDynamic: true, includeStatic: false);
 
 // Circle overlap
-var hits = ArcadePhysics.OverlapCirc(centerX, centerY, radius);
+var hits = ArcadePhysics.Instance.OverlapCirc(centerX, centerY, radius, includeDynamic: true, includeStatic: false);
 
-// Line overlap
-var hits = ArcadePhysics.OverlapLine(x1, y1, x2, y2);
+// Line overlap using float2
+var hits = ArcadePhysics.Instance.OverlapLine(new float2(x1, y1), new float2(x2, y2), lineWidth: 1.0f);
 ```
 
 ### Collision Callbacks
 
 ```csharp
-// Register collision callback
-PhysicsManager.Instance.OnPlayerOverlapsEnemy += (player, enemy) =>
+// Register collision callback - Note: callbacks now use different signatures
+// These are typically registered internally by the game
+bool OnPlayerOverlapsEnemy(CallbackContext context, ArcadeColliderType player, ArcadeColliderType enemy)
 {
     // Handle player-enemy collision
-};
+    var playerBody = player.body;
+    var enemyBody = enemy.body;
+    // Return true to continue processing, false to stop
+    return true;
+}
 
-// Custom group collision
+// Initialize collision detection between groups
 PhysicsManager.Instance.InitPhysicsColliders();
-// Sets up collision detection between registered groups
 ```
 
 ## Performance Considerations
@@ -329,3 +391,10 @@ PhysicsManager.Instance.InitPhysicsColliders();
 2. Use static bodies for non-moving colliders
 3. Batch physics operations when possible
 4. Profile collision detection hotspots
+
+### Unity 6 Migration Notes
+1. Collision callbacks now use `CallbackContext` and `ArcadeColliderType` parameters
+2. All collision callbacks return boolean values
+3. Access physics bodies through `.body` property on collider types
+4. Use property accessors for ArcadePhysics static access (`Instance`, `scene`, `Config`)
+5. Check for `PickupImmaterial` flag in PhysicsManager for pickup collision state
