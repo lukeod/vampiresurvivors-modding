@@ -35,7 +35,7 @@ Based on the decompiled code, this appears to be a page-based UI architecture wh
 **Game State Pages:**
 - Game over (`GameOverPage`)
 - Enhanced game over (`GameoverinoPage`)
-- Results recap (`RecapPage`)
+- Results recap (`RecapPage`) - See [RecapPage Details](#recappage)
 - Results display (`ResultPage`)
 - Final credits (`FinalCreditsPage`)
 - Final fireworks (`FinalFireworksPage`)
@@ -346,6 +346,68 @@ void UpdateUIElement()
     }
 }
 ```
+
+## RecapPage
+
+**Location**: `Il2CppVampireSurvivors.UI.RecapPage`
+
+The RecapPage displays end-of-game statistics including weapon performance, collected items, and run summary data.
+
+### StatsDisplay Structure
+
+The page uses a `StatsDisplay` value type to represent weapon statistics:
+
+```csharp
+public sealed class StatsDisplay : Il2CppSystem.ValueType
+{
+    public string Name;               // Weapon name
+    public int Level;                 // Weapon level achieved
+    public string WeaponFrameName;    // UI frame reference
+    public string WeaponTextureName;  // Texture reference
+    public float InflictedDamage;     // Total damage dealt
+    public float Lifetime;            // Time weapon was active
+    public float Dps;                 // Calculated DPS
+    public bool IsBestDps;           // Highest DPS weapon
+    public bool IsBestRaw;           // Highest total damage
+    public CharacterType Owner;       // Character who used weapon
+    public string NameColor;          // UI color for weapon name
+}
+```
+
+### Data Collection
+
+The `AddWeapons()` method collects statistics from all equipped weapons:
+
+1. Iterates through `WeaponsManager.Weapons`, `PassiveWeapons`, and `Evolutions`
+2. Reads `StatsInflictedDamage` and `StatsLifetime` from each weapon instance
+3. Calculates DPS as `InflictedDamage / Lifetime`
+4. Determines best performers for highlighting
+5. Generates UI elements for display
+
+### Accessing Recap Data
+
+```csharp
+// Hook into recap display
+[HarmonyPatch(typeof(RecapPage), "OnShowStart")]
+[HarmonyPostfix]
+public static void OnRecapShow(RecapPage __instance)
+{
+    // Recap page is now active with collected stats
+}
+
+// Access weapon statistics during gameplay
+var weapon = player.weaponsManager.Weapons[0] as Weapon;
+float totalDamage = weapon.StatsInflictedDamage;
+float activeTime = weapon.StatsLifetime;
+```
+
+### Integration with PlayerOptionsData
+
+The recap page also displays run statistics from `PlayerOptionsData`:
+- `RunCoins` - Gold earned
+- `RunEnemies` - Enemies killed
+- `RunPickups` - Items collected
+- `RunBossesCount` - Bosses defeated
 
 ## Accessibility and Localization
 

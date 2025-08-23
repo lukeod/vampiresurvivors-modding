@@ -202,6 +202,17 @@ public virtual void DealDamage(IDamageable other, float damageOverride)
 public void DamageAllEnemies(float value)
 ```
 
+### Statistics Tracking
+
+Each weapon instance tracks its own performance statistics during gameplay:
+
+```csharp
+public float StatsInflictedDamage { get; set; }  // Total damage dealt by this weapon
+public float StatsLifetime { get; set; }         // Total time weapon has been active
+```
+
+These properties accumulate damage and active time throughout the run. The game uses these values to calculate DPS and display weapon performance in the end-game recap screen (`RecapPage`).
+
 ## Evolution & Union System
 
 **Location**: `Il2CppVampireSurvivors.Framework.LevelUpFactory`
