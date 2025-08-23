@@ -1,13 +1,13 @@
 # DLC System
 
-Vampire Survivors uses a sophisticated DLC system for loading additional content through Unity AssetBundles and manifest data.
+Vampire Survivors loads additional content through Unity AssetBundles and manifest data. This documentation is based on analysis of decompiled IL2CPP code and describes the apparent structure and behavior of the DLC management framework.
 
 ## Core Components
 
 ### DlcSystem Class
 **Location**: `Il2CppVampireSurvivors.Framework.DLC.DlcSystem`
 
-Central DLC management with static properties:
+The class contains these static properties based on code analysis:
 - `MountedPaths` - `Dictionary<DlcType, string>` tracking file system mount points
 - `LoadedDlc` - `Dictionary<DlcType, BundleManifestData>` containing loaded DLC data
 
@@ -31,7 +31,7 @@ Key methods:
 ### BundleManifestData
 **Location**: `Il2CppVampireSurvivors.Framework.DLC.BundleManifestData`
 
-ScriptableObject containing all DLC configuration:
+ScriptableObject that appears to contain all DLC configuration based on decompiled code:
 
 ```csharp
 public class BundleManifestData : ScriptableObject
@@ -107,7 +107,7 @@ public enum DlcType
 
 ## Loading Sequence
 
-### Standard DLC Loading Flow
+### Loading flow pattern
 
 ```
 1. LicenseCheckDlc() → Validate ownership
@@ -119,7 +119,7 @@ public enum DlcType
 7. DoRuntimeReload() → Refresh game systems
 ```
 
-### Detailed Call Chain
+### Call chain observed in decompiled code
 
 ```
 LicenseManager.AddIncludedDlc
@@ -133,14 +133,14 @@ LicenseManager.AddIncludedDlc
                               └─> ManifestLoader.DoRuntimeReload
 ```
 
-## Custom DLC Injection
+## Custom DLC injection
 
-### Creating Custom DLC Content
+### Creating custom DLC content
 
-To inject custom content as a DLC:
+To inject custom content as a DLC (based on inferred system behavior):
 
 ```csharp
-// Define custom DLC type (use high values to avoid conflicts)
+// Define custom DLC type (use high values to avoid conflicts with existing IDs)
 DlcType customDlcType = (DlcType)10000;
 
 // Create manifest data
@@ -176,17 +176,17 @@ ManifestLoader.ApplyBundleCore(customDlcType, customManifest, (manifest) =>
 ManifestLoader.DoRuntimeReload();
 ```
 
-### Optimal Injection Point
+### Injection point
 
-The `LoadingManager.ValidateVersion` method is the ideal hook point for DLC injection:
+The `LoadingManager.ValidateVersion` method appears to be a suitable hook point for DLC injection:
 
 ```csharp
 [HarmonyPatch(typeof(LoadingManager), "ValidateVersion")]
 [HarmonyPostfix]
 public static void InjectCustomDLC()
 {
-    // All base game and official DLCs are loaded
-    // Safe to inject custom content here
+    // All base game and official DLCs appear to be loaded at this point
+    // Custom content injection may be possible here
 }
 ```
 
@@ -220,14 +220,14 @@ public class DataManagerSettings
 }
 ```
 
-Each TextAsset contains JSON data that gets merged into the main game data through `DataManager.MergeInJsonData()`.
+Each TextAsset appears to contain JSON data that gets merged into the main game data through `DataManager.MergeInJsonData()` based on code analysis.
 
 ## Factory System Integration
 
-DLC content creation uses the factory pattern:
+Based on code analysis, DLC content creation appears to use the factory pattern:
 
-### Factory Classes
-All factories extend `SerializedScriptableObject` and use `UnitySerializedDictionary` for type-safe mappings:
+### Factory classes
+Based on code analysis, factories extend `SerializedScriptableObject` and use `UnitySerializedDictionary` for type-safe mappings:
 
 - **WeaponFactory** - Maps `WeaponType` to `Weapon` prefabs
 - **CharacterFactory** - Maps `CharacterType` to `CharacterController` prefabs
@@ -235,12 +235,12 @@ All factories extend `SerializedScriptableObject` and use `UnitySerializedDictio
 - **ProjectileFactory** - Maps weapon types to projectile prefabs
 - **AccessoriesFactory** - Maps item types to accessory prefabs
 
-### Linked Factories
-Factories support chaining through `_LinkedFactories` lists, allowing DLC factories to extend base game factories.
+### Linked factories
+Factories appear to support chaining through `_LinkedFactories` lists, which may allow DLC factories to extend base game factories.
 
 ## Audio Content
 
-DLC audio is managed through `DynamicSoundGroupCreator`:
+Based on code analysis, DLC audio appears to be managed through `DynamicSoundGroupCreator`:
 
 ```csharp
 var soundGroup = customManifest._DynamicSoundGroup;
@@ -261,10 +261,10 @@ soundGroup.musicPlaylists.Add(playlist);
 
 ## Platform-Specific Content
 
-Platform-specific manifest data allows conditional content loading:
+Platform-specific manifest data appears to allow conditional content loading:
 
 ```csharp
-// Check platform and load appropriate data
+// Check platform and load appropriate data based on manifest structure
 if (Application.platform == RuntimePlatform.PS5)
 {
     var ps5Data = customManifest._PS5;
@@ -272,25 +272,25 @@ if (Application.platform == RuntimePlatform.PS5)
 }
 ```
 
-## Best Practices
+## Implementation considerations
 
-### ID Range Management
-Use high ID values for custom content to avoid conflicts:
+### ID range management
+Use high ID values for custom content to avoid conflicts with existing game content:
 - Custom DlcType: 100+
 - Custom WeaponType: 5000+
 - Custom CharacterType: 5000+
 - Custom EnemyType: 5000+
 - Custom StageType: 5000+
 
-### Content Validation
-Always validate custom content before injection:
+### Content validation
+Validate custom content before injection:
 - Check for ID conflicts
 - Verify JSON structure matches expected format
 - Ensure prefabs are properly configured
 - Test factory creation and retrieval
 
-### Performance Considerations
+### Performance considerations
 - Use object pooling for frequently spawned content
-- Lazy load assets when possible
+- Load assets when needed
 - Batch DLC operations to minimize loading overhead
 - Cache factory lookups for frequently accessed content

@@ -1,8 +1,10 @@
-# Performance Guide
+# Performance Reference
 
 ## Architecture Overview
 
-Vampire Survivors processes hundreds of entities using hybrid tick/update systems and Unity Jobs for computational workloads.
+_Source: Analysis of decompiled IL2CPP code_
+
+Based on code analysis, Vampire Survivors appears to process hundreds of entities using hybrid tick/update systems and Unity Jobs for computational workloads.
 
 ### Core Systems
 
@@ -14,10 +16,10 @@ public class GameTickable : Il2CppSystem.Object
     public virtual void OnTick();   // Override point for tick logic
 }
 
-GameManager.OnTickerCallback()  // Orchestrates system ticks
+GameManager.OnTickerCallback()  // Appears to orchestrate system ticks
 ```
 
-Core systems: EnemiesManager, ArcanaManager, PixelFontManager, GoldFeverController
+Core systems inferred from decompiled code: EnemiesManager, ArcanaManager, PixelFontManager, GoldFeverController
 
 **Unity Job System**
 ```csharp
@@ -34,47 +36,49 @@ EnemyVelocityCalcJob : Il2CppSystem.ValueType
 ```
 
 **Object Pooling**
-All game objects use `Il2CppObjectPool.Get<T>()` for IL2CPP interop safety.
+Based on code analysis, all game objects appear to use `Il2CppObjectPool.Get<T>()` for IL2CPP interop.
 
 ## Method Performance Classification
 
-**Avoid Hooking - High Impact**
+_Based on code analysis and method complexity_
+
+**Avoid Hooking - High Impact (inferred)**
 ```csharp
-EnemiesManager.OnTick()           // Master enemy processing
-EnemiesManager.RunMovementJob()   // Unity Job System movement
-GameManager.OnTickerCallback()   // Master game tick
-Weapon.InternalUpdate()           // Per-weapon processing
-Projectile.OnUpdate()             // Per-projectile movement
-CharacterController.OnUpdate()   // Per-character processing
+EnemiesManager.OnTick()           // Appears to handle enemy processing
+EnemiesManager.RunMovementJob()   // Unity Job System movement (inferred)
+GameManager.OnTickerCallback()   // Appears to orchestrate game tick
+Weapon.InternalUpdate()           // Per-weapon processing (inferred)
+Projectile.OnUpdate()             // Per-projectile movement (inferred)
+CharacterController.OnUpdate()   // Per-character processing (inferred)
 ```
 
-**Caution - Moderate Impact**
+**Caution - Moderate Impact (inferred)**
 ```csharp
-Stage.HandleSpawning()            // Enemy spawn calculations
-Stage.FindClosestEnemy()          // Distance calculations
-Weapon.DealDamage()              // Damage pipeline
+Stage.HandleSpawning()            // Enemy spawn calculations (inferred)
+Stage.FindClosestEnemy()          // Distance calculations (inferred)
+Weapon.DealDamage()              // Damage pipeline (inferred)
 ```
 
-**Safe - Low Impact**
+**Safe - Low Impact (inferred)**
 ```csharp
-DataManager.LoadBaseJObjects()    // One-time data loading
-GameManager.AddStartingWeapon()   // Game initialization
-Character selection methods       // Menu interactions
-Save/load operations             // File I/O operations
-Achievement unlock methods       // Infrequent events
+DataManager.LoadBaseJObjects()    // Appears to be one-time data loading
+GameManager.AddStartingWeapon()   // Game initialization (inferred)
+Character selection methods       // Menu interactions (inferred)
+Save/load operations             // File I/O operations (inferred)
+Achievement unlock methods       // Infrequent events (inferred)
 ```
 
 ## Performance Monitoring
 
-**Built-in Profiler Markers**
+**Built-in Profiler Markers (found in decompiled code)**
 ```csharp
-// Stage operations
+// Stage operations (found in decompiled code)
 ProfilerMarker MarkerSpawnEnemy
 ProfilerMarker MarkerFindClosestEnemy
 ProfilerMarker MarkerHandleSpawning
 ProfilerMarker MarkerUpdateCulling
 
-// System operations
+// System operations (found in decompiled code)
 EnemiesManager.s_onTickMarker
 PixelFontManager.MarkerOnTextChanged
 DataManager.MarkerReloadAllData
@@ -85,12 +89,14 @@ AdventureManager.MarkerInitAdventure
 
 ## Memory Management
 
-**IL2CPP Characteristics**
-- Reduced GC pressure compared to Mono
-- Sensitive to excessive allocations
-- String operations are expensive
+_Patterns inferred from decompiled code analysis_
 
-**Memory-Efficient Patterns**
+**IL2CPP Characteristics (inferred)**
+- Appears to have reduced GC pressure compared to Mono
+- Likely sensitive to excessive allocations
+- String operations appear expensive based on code patterns
+
+**Memory-Efficient Patterns (inferred from code structure)**
 ```csharp
 // Cache references
 private static readonly Dictionary<WeaponType, WeaponData> _weaponCache = new();
@@ -107,6 +113,8 @@ public void ProcessWeapons()
 ```
 
 ## Caching Strategies
+
+_Optimization patterns based on code analysis_
 
 **Expensive Calculations**
 ```csharp
@@ -157,6 +165,8 @@ public static class DamageCalculator
 
 ## Batch Operations
 
+_Performance patterns inferred from code analysis_
+
 **Group Modifications**
 ```csharp
 var modifications = new List<WeaponModification>();
@@ -167,7 +177,7 @@ foreach (var weapon in weapons)
 ApplyBatchedModifications(modifications);
 ```
 
-**Minimize IL2CPP Boundary Crossings**
+**Minimize IL2CPP Boundary Crossings (recommended pattern)**
 ```csharp
 // Extract data in bulk
 var healthData = ExtractHealthData(il2cppEnemyList);
@@ -178,6 +188,8 @@ foreach (var data in healthData)
 ```
 
 ## Unity Jobs Integration
+
+_Based on decompiled IL2CPP job implementations_
 
 **Job Structure**
 ```csharp
@@ -193,13 +205,15 @@ public struct CustomEnemyJob : IJobParallelFor
 }
 ```
 
-**Best Practices**
-- Keep jobs simple - complex logic in managed code
-- Use `[BurstCompile]` when possible
-- Minimize job dependencies
-- Always dispose NativeArrays
+**Patterns observed in decompiled code**
+- Jobs appear to be kept simple with complex logic in managed code
+- `[BurstCompile]` usage inferred where performance-critical
+- Job dependencies appear minimized
+- NativeArrays disposal patterns observed
 
 ## Performance Testing
+
+_Example implementations based on MelonLoader patterns_
 
 **Operation Measurement**
 ```csharp
@@ -249,6 +263,8 @@ public class FrameTimeMonitor : MelonMod
 
 ## Optimized Patterns
 
+_Code patterns observed in decompiled implementation_
+
 **String Operations**
 ```csharp
 private readonly StringBuilder _stringBuilder = new();
@@ -293,6 +309,8 @@ public static DataManager GetDataManager() =>
 ```
 
 ## Advanced Techniques
+
+_Optimization techniques inferred from code patterns_
 
 **Lazy Initialization**
 ```csharp
@@ -351,6 +369,8 @@ public class SpatialGrid<T>
 
 ## Custom Profiling
 
+_Example implementation for MelonLoader mods_
+
 ```csharp
 public static class CustomProfiler
 {
@@ -386,6 +406,8 @@ using (CustomProfiler.Profile("Weapon Processing"))
 
 ## IL2CPP Architecture
 
+_Decompiled IL2CPP code reveals these patterns_
+
 **Object Reference Pattern**
 ```csharp
 public unsafe GameManager _gameManager
@@ -400,26 +422,28 @@ public unsafe GameManager _gameManager
 }
 ```
 
-Property access involves IL2CPP native calls and pointer arithmetic. Cache frequently accessed references.
+Property access appears to involve IL2CPP native calls and pointer arithmetic based on decompiled code. Caching frequently accessed references appears beneficial based on observed patterns.
 
-**Update Pattern Hierarchy**
+**Update Pattern Hierarchy (inferred from code structure)**
 ```csharp
-// GameTickable (performance-critical)
+// GameTickable (appears performance-critical)
 EnemiesManager : GameTickable -> OnTick()
 ArcanaManager : GameTickable -> OnTick() 
 PixelFontManager : GameTickable -> OnTick()
 
-// GameMonoBehaviour (standard Unity)
+// GameMonoBehaviour (standard Unity pattern)
 Weapon : GameMonoBehaviour -> InternalUpdate()
 Projectile : GameMonoBehaviour -> OnUpdate()
 CharacterController : GameMonoBehaviour -> OnUpdate()
 
-// MonoBehaviour (UI and non-critical)
+// MonoBehaviour (UI and non-critical components)
 UI components -> Update()
 ```
 
-GameTickable is reserved for core systems requiring coordinated updates.
+Based on code analysis, GameTickable appears to be used for core systems requiring coordinated updates.
 
 ## Measurement Guidelines
 
-Performance optimization requires data-driven decisions. Always profile before and after changes to validate improvements. Decompiled IL2CPP code has visibility limitations - actual performance may differ from apparent complexity.
+_Note: All performance characteristics are inferred from static analysis of decompiled IL2CPP code_
+
+Performance optimization requires data-driven decisions. Profile before and after changes to validate improvements. Decompiled IL2CPP code has visibility limitations - actual runtime performance may differ from apparent complexity in static analysis.

@@ -1,11 +1,11 @@
 # Arcana System
 
-Provides powerful passive effects that alter gameplay mechanics. Arcanas are unlockable tarot-themed modifiers that trigger on specific game events.
+Based on analysis of decompiled IL2CPP code, the arcana system provides passive effects that appear to alter gameplay mechanics. Arcanas are unlockable tarot-themed modifiers that trigger on specific game events.
 
 ## Arcana Types
 
 ### Core Arcana Enumeration
-Arcanas are defined in the `ArcanaType` enum with tarot-inspired naming:
+Based on code analysis, arcanas are defined in the `ArcanaType` enum with tarot-inspired naming:
 
 ```csharp
 public enum ArcanaType
@@ -101,16 +101,16 @@ public enum ArcanaType
 
 ## Arcana Manager System
 
-Handles arcana functionality, tracking active arcanas and responding to game events.
+Based on decompiled code analysis, the system appears to handle arcana functionality, tracking active arcanas and responding to game events.
 
 ### Active Arcana Tracking
-The ArcanaManager maintains a list of currently active arcanas:
+Based on code analysis, the ArcanaManager appears to maintain a list of currently active arcanas:
 
 ```csharp
 public List<ArcanaType> ActiveArcanas { get; set; }  // Property for currently active arcanas
 ```
 
-The manager also tracks specific arcana states through boolean properties:
+The manager also appears to track specific arcana states through boolean properties:
 ```csharp
 public bool _hasWickedSeason;     // T13_WICKED active
 public bool _hasSilentSanctuary;  // D19_RIPPING_SILENCE active  
@@ -134,7 +134,7 @@ public bool PewPew { get; set; }          // Pew pew effect active
 ```
 
 ### Core Event Handling
-The `ArcanaManager` responds to various game events and triggers appropriate arcana effects:
+Based on code analysis, the `ArcanaManager` appears to respond to various game events and triggers appropriate arcana effects:
 
 ```csharp
 // Weapon-related events
@@ -151,12 +151,12 @@ public void OnPlayerLevelUp(CharacterController character)
 ```
 
 ### Event-Driven Architecture
-Game events trigger arcana checks, active arcanas respond to relevant events, and effects are applied based on arcana-specific logic.
+Inferred from code structure, game events appear to trigger arcana checks, active arcanas respond to relevant events, and effects are applied based on arcana-specific logic.
 
 ## Weapon Integration
 
 ### Arcana Detection in Weapons
-Weapons check for and respond to active arcanas:
+Based on code analysis, weapons appear to check for and respond to active arcanas:
 
 ```csharp
 // Check if a specific arcana is currently active
@@ -170,9 +170,11 @@ public void CheckBeginningArcana()  // For T10_BEGINNING (Waltz of Pearls)
 ```
 
 ### Weapon Behavior Modification
-Arcanas modify damage calculations, alter firing patterns, change visual effects, and add special interactions.
+Based on code analysis, arcanas appear to modify damage calculations, alter firing patterns, change visual effects, and add special interactions.
 
 ## Arcana Effects
+
+Based on code analysis, arcana effects appear to include:
 
 - **Stat Modification**: Direct stat bonuses or penalties
 - **Behavior Modification**: Changes to game mechanics
@@ -181,7 +183,7 @@ Arcanas modify damage calculations, alter firing patterns, change visual effects
 ## Data Storage and Configuration
 
 ### Arcana Data Structure
-Arcana configurations are stored in the DataManager:
+Based on code analysis, arcana configurations appear to be stored in the DataManager:
 
 ```csharp
 public JObject _allArcanasJson { get; set; }  // Raw JSON data for all arcanas
@@ -225,21 +227,21 @@ var specificArcana = dataManager.AllArcanas[ArcanaType.T00_KILLER];
 ## Arcana Selection and Unlocking
 
 ### Unlock Requirements
-Arcanas have unlock requirements including specific achievements, character level thresholds, game progression milestones, and DLC ownership for DLC arcanas.
+Based on code analysis, arcanas appear to have unlock requirements that may include specific achievements, character level thresholds, game progression milestones, and DLC ownership for DLC arcanas.
 
 ### Selection Process
-Players choose arcanas during character selection or through special in-game events.
+Based on inferred behavior from code structure, players appear to choose arcanas during character selection or through special in-game events.
 
 ## Integration with Other Systems
 
 ### Character System
-Arcanas affect character abilities and stats by modifying base character statistics, changing character-specific abilities, and altering character evolution paths.
+Based on code analysis, arcanas appear to affect character abilities and stats by modifying base character statistics, changing character-specific abilities, and altering character evolution paths.
 
 ### Evolution System
-Arcanas modify weapon evolution requirements by changing required synergy items, altering evolution conditions, and enabling special evolution paths.
+Based on code analysis, arcanas appear to modify weapon evolution requirements by changing required synergy items, altering evolution conditions, and enabling special evolution paths.
 
 ### Stage and Enemy Interactions
-Arcanas affect stage mechanics including enemy spawn patterns, environmental effects, and stage-specific bonuses or penalties.
+Based on code analysis, arcanas appear to affect stage mechanics including enemy spawn patterns, environmental effects, and stage-specific bonuses or penalties.
 
 ## Common Modding Scenarios
 
@@ -328,21 +330,15 @@ public class ModdedWeapon : Weapon
 
 ## Performance Considerations
 
-Arcana checks occur frequently. Optimize by caching states, using efficient condition checking, batching effects, and avoiding complex calculations.
+Based on code analysis, arcana checks appear to occur frequently. When modding, consider optimizing by caching states, using efficient condition checking, batching effects, and avoiding complex calculations.
 
 ## Advanced Arcana Patterns
 
 ### Conditional Arcana Stacking
-Arcanas interact with each other through multiplicative effects when multiple arcanas are active, exclusive effects that override each other, and synergistic combinations that create new behaviors.
+Based on code analysis, arcanas appear to interact with each other through multiplicative effects when multiple arcanas are active, exclusive effects that override each other, and synergistic combinations that create new behaviors.
 
 ### Dynamic Arcana Effects
-Advanced arcanas have effects that change over time through scaling effects based on game progression, time-limited powerful effects, and effects that trigger under specific combinations of conditions.
-
-## Common Issues
-- **Effect stacking**: Multiple instances of same effect
-- **Save compatibility**: Modified effects affecting save games
-- **Performance**: Too many active checks causing lag
-- **Balance**: Overpowered combinations
+Based on code analysis, advanced arcanas appear to have effects that change over time through scaling effects based on game progression, time-limited effects, and effects that trigger under specific combinations of conditions.
 
 ## Debugging Arcana Systems
 

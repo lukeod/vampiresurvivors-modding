@@ -1,6 +1,6 @@
 # Timers
 
-The pause-aware timer system that tracks game time accurately through weapon selections, merchant interactions, and other pause states.
+Based on analysis of decompiled IL2CPP code, this appears to be a pause-aware timer system that tracks game time through weapon selections, merchant interactions, and other pause states. Information derived from decompiled IL2CPP source code.
 
 **Core Namespace**: `Il2CppVampireSurvivors.Framework.TimerSystem`  
 **Formatting Utility**: `Il2CppVampireSurvivors.Tools.VSUtils`  
@@ -8,11 +8,11 @@ The pause-aware timer system that tracks game time accurately through weapon sel
 
 ## Overview
 
-Vampire Survivors uses a sophisticated timer framework that properly handles pause states rather than simple time accumulation. The system ensures timer accuracy when players open weapon selection, interact with merchants, access healers, or trigger other pause events. Game time is tracked through `Timer` objects managed by specialized `TimerManager` classes.
+Based on analysis of decompiled IL2CPP code, Vampire Survivors appears to use a timer framework that handles pause states. The system tracks time through `Timer` objects managed by `TimerManager` classes. Pause events are inferred from the decompiled code to include weapon selection, merchant interactions, healers, and other events.
 
 ## Quick Reference
 
-### Key Classes
+### Key classes
 ```csharp
 // Core timer classes
 Il2CppVampireSurvivors.Framework.TimerSystem.Timer                 // Individual timer instance
@@ -27,7 +27,7 @@ Il2CppVampireSurvivors.Tools.VSUtils.FormatTime          // Formats seconds to M
 Il2CppVampireSurvivors.Tools.TimerHelper                 // Helper methods for timer creation
 ```
 
-### Stage Timer Properties
+### Stage timer properties
 ```csharp
 public class Stage
 {
@@ -65,7 +65,7 @@ public static bool CaptureGameTime(float seconds, ref string __result)
 - No pause state management required
 - Matches UI display precisely
 
-### Method 2: Read UI Timer Text
+### Method 2: Read UI timer text
 
 Access the displayed timer text directly from the UI component.
 
@@ -91,7 +91,7 @@ public static float GetTimeFromUI()
 }
 ```
 
-### Method 3: Access Stage Timers
+### Method 3: Access stage timers
 
 Query timer objects directly from the Stage instance.
 
@@ -131,7 +131,7 @@ public static void OnGameResume(TimerManagerGame __instance)
 }
 ```
 
-### Pause Triggers
+### Pause triggers
 
 The game pauses automatically during:
 - Weapon/item selection (level up)
@@ -142,7 +142,7 @@ The game pauses automatically during:
 
 ## Timer Internal Structure
 
-### Timer State Fields
+### Timer state fields
 
 ```csharp
 public class Timer
@@ -166,7 +166,7 @@ public class Timer
 }
 ```
 
-### Timer Properties and Methods
+### Timer properties and methods
 
 ```csharp
 // Timer state properties
@@ -192,10 +192,10 @@ public float GetRatioRemaining()              // Get remaining ratio (1-0)
 public void Update()                          // Update timer (called by manager)
 ```
 
-### State Machine Logic
+### State machine logic
 
 ```csharp
-// Timer.GetTimeElapsed implementation pattern
+// Timer.GetTimeElapsed implementation pattern (inferred from decompiled code)
 public float GetTimeElapsed()
 {
     if (IsCompleted())
@@ -205,9 +205,9 @@ public float GetTimeElapsed()
         return _timeElapsedBeforeCancel.Value;
     
     if (_timeElapsedBeforePause.HasValue)
-        return _timeElapsedBeforePause.Value;  // Frozen during pause
+        return _timeElapsedBeforePause.Value;  // Appears frozen during pause
     
-    return GetWorldTime() - _startTime;        // Normal running
+    return GetWorldTime() - _startTime;        // Normal running state
 }
 ```
 
@@ -269,7 +269,7 @@ Timer preciseTiming = TimerHelper.RegisterMillis(
 - **RegisterSecsUI/RegisterMillisUI**: UI timers that ignore pause states  
 - **RegisterSecsAutomation/RegisterMillisAutomation**: Automation timers for background tasks
 
-### Timer Constructor (Advanced Usage)
+### Timer constructor (advanced usage)
 
 For direct timer creation without TimerHelper:
 
@@ -385,13 +385,13 @@ public class AccurateTimerMod : MelonMod
         MelonLogger.Msg($"Paused: {isGamePaused}");
         MelonLogger.Msg($"Total Pauses: {pauseCount}");
         
-        // Verify accuracy against UI
+        // Verify against UI
         var gm = GM.Core;
         if (gm?.MainUI?._TimeText != null)
         {
             string uiTime = gm.MainUI._TimeText.text;
             MelonLogger.Msg($"UI Display: {uiTime}");
-            MelonLogger.Msg($"Match: {(uiTime == FormatTime(currentGameTime) ? "✓" : "✗")}");
+            MelonLogger.Msg($"Match: {(uiTime == FormatTime(currentGameTime) ? "Yes" : "No")}");
         }
     }
     
@@ -441,7 +441,7 @@ public class AccurateTimerMod : MelonMod
 4. **Check UI Match** - Hook value equals displayed time
 5. **Test Merchant/Healer** - Verify pause during interactions
 
-### Debug Output Example
+### Debug output example
 
 ```
 [Timer] Game started - timers active

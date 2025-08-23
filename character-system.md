@@ -1,12 +1,12 @@
 # Character System
 
-Manages player characters and enemies through the CharacterController class and associated data structures.
+Based on analysis of decompiled IL2CPP code, the character system appears to manage player characters and enemies through the CharacterController class and associated data structures.
 
 ## CharacterController
 
 **Location**: `Il2CppVampireSurvivors.Objects.Characters.CharacterController`
 
-The main class that manages character behavior, stats, and interactions.
+Based on code analysis, this class appears to manage character behavior, stats, and interactions.
 
 ### Core Properties
 
@@ -61,7 +61,7 @@ public void PlayerStatsUpgrade(ModifierStats other, bool multiplicativeMaxHp)
 
 **Location**: `Il2CppVampireSurvivors.Data.Characters.CharacterData`
 
-Defines the base configuration for a character.
+Inferred from decompiled code, this class appears to define the base configuration for a character.
 
 ### Identity Properties
 
@@ -89,7 +89,7 @@ public string portraitName;      // Portrait image reference
 
 ## Character Types
 
-Characters are identified by the `CharacterType` enum:
+Based on code analysis, characters appear to be identified by the `CharacterType` enum:
 
 ```csharp
 public enum CharacterType
@@ -101,7 +101,7 @@ public enum CharacterType
     CRISTINA,
     POPPEA,
     CONCETTA,
-    // ... many more including DLC characters
+    // Additional character types exist based on code analysis
 }
 ```
 
@@ -118,7 +118,7 @@ if (dataManager != null)
     {
         CharacterType type = kvp.Key;
         List<CharacterData> levels = kvp.Value;
-        // Usually only one level per character
+        // Based on code analysis, typically one level per character
         CharacterData data = levels[0];
     }
 }
@@ -154,13 +154,13 @@ if (allPlayers != null)
 
 **Location**: `Il2CppVampireSurvivors.Objects.CharacterWeaponsManager`
 
-Manages the character's equipped weapons:
+Based on code analysis, this class appears to manage the character's equipped weapons:
 
 ```csharp
 var weaponsManager = player._weaponsManager;
 if (weaponsManager != null)
 {
-    // Manage weapons - inherits from EquipmentManager
+    // Inferred from code: inherits from EquipmentManager
     weaponsManager.SetWeaponsActive(true);
     weaponsManager.SetMaxWeaponCount(6, 0);
 }
@@ -170,7 +170,7 @@ if (weaponsManager != null)
 
 **Location**: `Il2CppVampireSurvivors.Objects.CharacterAccessoriesManager`
 
-Manages passive items and accessories:
+Based on code analysis, this class appears to manage passive items and accessories:
 
 ```csharp
 var accessoriesManager = player._accessoriesManager;
@@ -184,13 +184,13 @@ if (accessoriesManager != null)
 
 **Location**: `Il2CppVampireSurvivors.Objects.Characters.CharacterSkillCardsManager`
 
-Manages character-specific skill cards and abilities:
+Based on code analysis, this class appears to manage character-specific skill cards and abilities:
 
 ```csharp
 var skillCardsManager = player.CharacterSkillCardsManager;
 if (skillCardsManager != null)
 {
-    // Access character skill cards
+    // Based on code analysis: access character skill cards
     var cards = skillCardsManager.CharacterCards;
     foreach (var card in cards)
     {
@@ -218,12 +218,12 @@ public virtual void OnSkillCardAdded(CharacterSkillCard_Base card)
 
 ## Enemy Controllers
 
-Enemies use the same CharacterController base but with specific enemy implementations:
+Based on code analysis, enemies appear to use the same CharacterController base but with specific enemy implementations:
 
 ```csharp
 public class EnemyController : CharacterController
 {
-    // Enemy-specific behavior
+    // Inferred from code: enemy-specific behavior
 }
 ```
 
@@ -232,7 +232,7 @@ public class EnemyController : CharacterController
 ### Modifying Character Stats
 
 ```csharp
-// Proper stat modification using wrapper types
+// Based on code analysis: stat modification using wrapper types
 var player = GM.Core?.Player;
 if (player != null && player.PlayerStats != null)
 {
@@ -255,7 +255,7 @@ if (player != null && player.PlayerStats != null)
 var player = GM.Core?.Player;
 if (player != null)
 {
-    // Add 100 XP with normal growth multiplier
+    // Example: add 100 XP with normal growth multiplier
     player.AddXp(100, XPMultiplierMode.Normal);
 }
 ```
@@ -266,9 +266,9 @@ if (player != null)
 // Damage with optional parameters
 player.GetDamaged(50.0f, HitVfxType.Default, 1f, WeaponType.VOID, true);
 
-// Heal (add to current HP)
+// Based on code analysis: heal by adding to current HP
 player._currentHp += 20.0f;
-// Ensure not exceeding max (MaxHp is EggFloat)
+// Inferred from code: ensure not exceeding max (MaxHp is EggFloat)
 var maxHp = player.PlayerStats.MaxHp.Value;
 if (player._currentHp > maxHp)
     player._currentHp = maxHp;
@@ -276,11 +276,11 @@ if (player._currentHp > maxHp)
 
 ## EggFloat and EggDouble Wrappers
 
-PlayerModifierStats uses specialized wrapper types for most stats:
+Based on code analysis, PlayerModifierStats appears to use specialized wrapper types for most stats:
 
 ### EggFloat Properties
 ```csharp
-// These return EggFloat objects, not raw floats:
+// Based on code analysis, these return EggFloat objects, not raw floats:
 player.PlayerStats.Power      // EggFloat
 player.PlayerStats.MoveSpeed  // EggFloat
 player.PlayerStats.Area       // EggFloat
@@ -339,7 +339,7 @@ player.PlayerStats.Charm = 2;
 var player = GM.Core?.Player;
 if (player != null && player.PlayerStats != null)
 {
-    // Safe to use
+    // Based on code analysis: appears safe to use
 }
 ```
 
@@ -361,11 +361,11 @@ player.PlayerStats.Charm = 1;
 ```csharp
 if (character is EnemyController enemy)
 {
-    // Enemy-specific logic
+    // Inferred from code: enemy-specific logic
 }
 else
 {
-    // Player logic
+    // Inferred from code: player logic
 }
 ```
 
@@ -381,7 +381,7 @@ public static void OnCharacterInit(CharacterController __instance,
                                   int playerIndex, 
                                   bool asRemote)
 {
-    // Character has been initialized
+    // Based on code analysis: character has been initialized
 }
 ```
 
@@ -392,7 +392,7 @@ public static void OnCharacterInit(CharacterController __instance,
 [HarmonyPrefix]
 public static void OnLevelUp(CharacterController __instance)
 {
-    // Character is about to level up
+    // Based on code analysis: character is about to level up
 }
 ```
 
@@ -405,7 +405,7 @@ public static void OnAddXp(CharacterController __instance,
                           ref float value, 
                           XPMultiplierMode multiplierMode)
 {
-    // Modify XP value before addition
+    // Example: modify XP value before addition
     value *= 2.0f;
 }
 ```
@@ -418,7 +418,7 @@ public static void OnAddXp(CharacterController __instance,
 public static void OnSkillCardAdded(CharacterController __instance, 
                                    CharacterSkillCard_Base card)
 {
-    // Character skill card has been added
+    // Based on code analysis: character skill card has been added
 }
 
 [HarmonyPatch(typeof(CharacterController), "OnSkillCardAdded")]
@@ -426,6 +426,6 @@ public static void OnSkillCardAdded(CharacterController __instance,
 public static void OnSkillCardAddedEvent(CharacterController __instance, 
                                         CharacterSkillCard_Base card)
 {
-    // Called when skill card is processed
+    // Based on code analysis: called when skill card is processed
 }
 ```

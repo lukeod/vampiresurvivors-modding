@@ -1,11 +1,11 @@
 # UI System
 
-Comprehensive UI system built on Unity's UI framework with TextMeshPro integration. Handles in-game HUD elements, menus, character selection, and gameplay interfaces.
+Based on code analysis, this UI system appears to use Unity's UI framework with TextMeshPro integration. The decompiled IL2CPP code indicates handling of in-game HUD elements, menus, character selection, and gameplay interfaces.
 
 ## Core UI Architecture
 
 ### BaseUIPage System
-Page-based UI architecture where screens extend `BaseUIPage`:
+Based on the decompiled code, this appears to be a page-based UI architecture where screens extend `BaseUIPage`:
 
 **Core Game Pages:**
 - Character selection (`CharacterSelectionPage`)
@@ -50,7 +50,7 @@ Page-based UI architecture where screens extend `BaseUIPage`:
 - Achievements (`AchievementsPage`)
 - Secrets (`SecretsPage`)
 
-**Additional Specialized Pages:**
+**Additional UI Pages:**
 - Stage selection (`StageSelectPage`)
 - Arcana main selection (`ArcanaMainSelectionPage`)
 - Arcana small selection (`ArcanaSmallSelectionPage`)
@@ -72,13 +72,13 @@ Main in-game UI controller:
 var mainUI = GM.Core?.MainUI;
 ```
 
-Manages experience bar, kill counters, coin display, time, level, equipment panels, and game controls.
+Based on code analysis, appears to manage experience bar, kill counters, coin display, time, level, equipment panels, and game controls.
 
 ## Font and Text Systems
 
 ### FontFactory
 
-Centralized font asset management system using Unity's Addressable system.
+Based on decompiled code analysis, this appears to be a centralized font asset management system using Unity's Addressable system.
 
 ```csharp
 public class FontFactory : SerializedScriptableObject
@@ -123,7 +123,7 @@ Multiple UI classes extensively use TextMeshPro for text rendering:
 - `CoinsUI`, `CharacterSelectionPage`, `CollectionsPage`
 - `MainGamePage`, `LevelUpItemUI`, `CustomDropDown`
 
-TextMeshPro provides high-quality text rendering, rich formatting, and efficient font management.
+Based on the code structure, TextMeshPro appears to provide text rendering, formatting, and font management functionality.
 
 ## HUD Update System
 
@@ -139,7 +139,7 @@ public void UpdateCoins()              // Coin display updates
 ```
 
 ### Performance Considerations
-Update methods run every frame. Avoid hooking high-frequency methods, cache UI references, and minimize string allocations.
+Based on code analysis, update methods appear to run every frame. You should avoid hooking high-frequency methods, cache UI references, and minimize string allocations.
 
 ## UI Component Categories
 
@@ -176,7 +176,7 @@ Update methods run every frame. Avoid hooking high-frequency methods, cache UI r
 ## UI Event System
 
 ### Signal-Based Architecture
-The UI system uses a signal-based event architecture with `SignalBus`:
+Based on decompiled code, the UI system appears to use a signal-based event architecture with `SignalBus`:
 - XP changes trigger `GameplaySignals.CharacterXpChangedSignal`
 - UI toggles use `UISignals.ToggleXPBarSignal` and `UISignals.ToggleWeaponSlotsSignal`
 - Glimmer techniques fire `UISignals.FireNewGlimmerTechnique`
@@ -198,7 +198,7 @@ The UI system manages various states:
 ## Custom UI Components
 
 ### CustomDropDown
-Specialized dropdown component for game-specific needs:
+Based on code analysis, this appears to be a dropdown component for game-specific needs:
 - Custom styling and theming
 - Game data integration
 - Performance optimization for large lists
@@ -212,14 +212,14 @@ Specialized dropdown component for game-specific needs:
 ## UI Styling and Theming
 
 ### Visual Consistency
-The UI system maintains consistent styling across:
+Based on code analysis, the UI system appears to maintain styling across:
 - Color schemes and palettes
 - Font choices and sizing
 - Icon styles and formats
 - Animation patterns
 
 ### Dynamic Theming
-UI elements support:
+Based on the code structure, UI elements appear to support:
 - Day/night themes
 - Character-specific styling
 - Unlockable UI customizations
@@ -227,18 +227,18 @@ UI elements support:
 ## Performance Optimization
 
 ### UI Update Efficiency
-Optimization strategies: conditional updates (only update UI when values change), object pooling (reuse UI elements for dynamic content), batched operations (group multiple UI updates together), and cached references (store frequently accessed UI components).
+Potential optimization strategies based on code patterns: conditional updates (only update UI when values change), object pooling (reuse UI elements for dynamic content), batched operations (group multiple UI updates together), and cached references (store frequently accessed UI components).
 
 ### Text Rendering Optimization
-TextMeshPro optimization techniques: font atlas management (efficient character set loading), string pooling (reuse formatted strings), and dynamic text culling (hide off-screen text elements).
+Potential TextMeshPro optimization techniques based on code structure: font atlas management (character set loading), string pooling (formatted string reuse), and text culling (off-screen text elements).
 
 ## Debug and Development UI
 
 ### CheatUIHider and DebugUIHider
-The game includes multiple debug/cheat UI management classes: `CheatUIHider` (manages cheat interface visibility and functionality), `DebugUIHider` (provides minimal debug UI functionality for hiding debug elements), and limited debug console features for development-time UI management.
+Based on decompiled code analysis, the game includes multiple debug/cheat UI management classes: `CheatUIHider` (appears to manage cheat interface visibility and functionality), `DebugUIHider` (appears to provide minimal debug UI functionality for hiding debug elements), and limited debug console features for development-time UI management.
 
 ### Debug Features
-Debug and cheat UI functionality includes standard debug UI with `DebugUIHider` class, cheat interfaces managed by `CheatUIHider`, local cheats panel (`_CheatsPanel`) in MainGamePage, and online cheats panel (`_OnlineCheatsPanel`) for multiplayer features.
+Based on code analysis, debug and cheat UI functionality appears to include standard debug UI with `DebugUIHider` class, cheat interfaces managed by `CheatUIHider`, local cheats panel (`_CheatsPanel`) in MainGamePage, and online cheats panel (`_OnlineCheatsPanel`) for multiplayer features.
 
 ## Common Modding Scenarios
 
@@ -249,7 +249,7 @@ Debug and cheat UI functionality includes standard debug UI with `DebugUIHider` 
 public static void AddCustomHUD(MainGamePage __instance)
 {
     // Add custom UI elements to the main game HUD
-    // Be careful about performance impact
+    // Consider performance impact based on update frequency
 }
 ```
 
@@ -273,7 +273,7 @@ public static void CustomCoinDisplay()
 public static void CustomLevelUpOptions(ref List<Equipment> __result)
 {
     // Add custom weapons/items to level up choices
-    // Note: Method name is GetAvailableEquipmentForEvolution, not GetAvailableEquipment
+    // Note: Method name is GetAvailableEquipmentForEvolution based on decompiled code
     // Modify the UI to display additional options
 }
 ```
@@ -314,14 +314,14 @@ public static void CustomFontOverride(string fontName, ref TMP_FontAsset __resul
 ## UI Data Binding
 
 ### Dependency Injection Architecture
-The UI system uses Zenject for dependency injection. Key dependencies include:
+Based on decompiled code analysis, the UI system appears to use Zenject for dependency injection. Key dependencies include:
 - `SignalBus` - For event-driven UI updates
 - `GameSessionData` - Current game session information
 - `PlayerOptions` - Player configuration and settings
 - Various game managers (LootManager, WeaponsFacade, etc.)
 
 ### Game State Integration
-UI elements are bound to game state through:
+Based on code analysis, UI elements appear to be bound to game state through:
 - Direct property access to game managers via dependency injection
 - Signal-driven updates from game systems (primary pattern)
 - Session data access through `_session` (GameSessionData)
@@ -350,10 +350,10 @@ void UpdateUIElement()
 ## Accessibility and Localization
 
 ### Text Scaling and Formatting
-UI components support dynamic text scaling for accessibility, various screen resolutions and aspect ratios, and different font sizes and styles.
+Based on code analysis, UI components appear to support dynamic text scaling for accessibility, various screen resolutions and aspect ratios, and different font sizes and styles.
 
 ### Localization Considerations
-The game uses I2 Localization system for internationalization with LocalizedString structures for text content (`_levelString` in MainGamePage) and BaseUIPage text parsing for localized content. UI text modifications require considering text length variations in different languages, maintaining UI layout flexibility, using proper text encoding for international characters, and respecting the existing localization framework.
+Based on decompiled code analysis, the game appears to use I2 Localization system for internationalization with LocalizedString structures for text content (`_levelString` in MainGamePage) and BaseUIPage text parsing for localized content. UI text modifications require considering text length variations in different languages, maintaining UI layout flexibility, using proper text encoding for international characters, and respecting the existing localization framework.
 
 ## Common Issues
 - **Performance**: Too many UI updates per frame
@@ -362,21 +362,21 @@ The game uses I2 Localization system for internationalization with LocalizedStri
 - **Input conflicts**: Custom UI interfering with controls
 - **Memory leaks**: Elements not cleaned up
 
-## Advanced UI Features
+## Additional UI Features
 
 ### Dynamic UI Generation
-Complex mods can use runtime UI element creation using equipment panel prefabs (`_PlayerEquipmentPanelPrefab`), data-driven UI configuration, modular UI component systems, and force layout rebuilds with `ForceEquipmentLayoutRebuild()`.
+Based on code analysis, mods appear able to use runtime UI element creation using equipment panel prefabs (`_PlayerEquipmentPanelPrefab`), data-driven UI configuration, modular UI component systems, and force layout rebuilds with `ForceEquipmentLayoutRebuild()`.
 
 ### Animation and Effects
-UI animations enhance user experience through smooth transitions between states, visual feedback for user actions, and particle effects integrated with UI elements.
+Based on code analysis, UI animations appear to support transitions between states, visual feedback for user actions, and particle effects integrated with UI elements.
 
 ### Custom Input Handling
-Advanced UI modifications require custom input event processing, integration with game input systems, and support for various input devices.
+Based on code analysis, UI modifications appear to require custom input event processing, integration with game input systems, and support for various input devices.
 
 ## UI Asset Management
 
 ### Sprite and Icon Management
-UI elements use character portraits and icons, weapon and item sprites, UI decoration and background elements, and status effect indicators.
+Based on code analysis, UI elements appear to use character portraits and icons, weapon and item sprites, UI decoration and background elements, and status effect indicators.
 
 ### Asset Loading and Caching
-Efficient asset management includes lazy loading of UI assets, proper asset disposal and cleanup, and shared asset pools for common elements.
+Based on code structure, asset management appears to include lazy loading of UI assets, asset disposal and cleanup, and shared asset pools for common elements.

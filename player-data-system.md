@@ -1,19 +1,19 @@
 # Player Data System
 
-Comprehensive documentation of player data structures, save data, and runtime player state management in Vampire Survivors (Unity 6000.0.36f1).
+Player data structures, save data, and runtime player state management in Vampire Survivors (Unity 6000.0.36f1), based on analysis of decompiled IL2CPP code.
 
 ## Overview
 
 The player data system consists of three main components:
 - **PlayerOptionsData** - Serializable save data structure containing persistent player progress
 - **PlayerOptions** - Runtime manager class that handles player data operations
-- **Save System** - Comprehensive save/load infrastructure with backup and cloud support
+- **Save System** - Save/load infrastructure with backup and cloud support
 
 ## PlayerOptionsData
 
 **Location**: `Il2CppVampireSurvivors.Data.PlayerOptionsData`
 
-The primary save data structure containing all persistent player information.
+The primary save data structure that appears to contain all persistent player information based on code analysis.
 
 ### Currency and Economy Fields
 
@@ -174,7 +174,7 @@ public float TotalEggCount                                              // Total
 public Dictionary<CharacterType, float> CharacterEggCount               // Eggs per character
 public Dictionary<CharacterType, Dictionary<string, float>> CharacterEggInfo  // Detailed egg stats per character
 
-// Egg stat categories (stored as string keys in CharacterEggInfo):
+// Egg stat categories (appear to be stored as string keys in CharacterEggInfo based on code analysis):
 // "MaxHp" - Maximum Health
 // "Armor" - Armor
 // "Regen" - Health Regeneration
@@ -223,7 +223,7 @@ public bool HideUnavailableAdventures                                 // UI pref
 public bool HasSeenMerchantTutorial                                   // Seen merchant tutorial
 public List<AdventureType> SeenAscensionPopups                        // Seen ascension popups
 
-// Adventure Types:
+// Adventure types:
 // ADV_LMS_001 - Legacy of Moonspell
 // ADV_POES_001 - Tides of Foscari
 // ADV_LIB_001 - Legacy of the Library
@@ -238,7 +238,7 @@ public List<AdventureType> SeenAscensionPopups                        // Seen as
 
 ```csharp
 public Dictionary<PowerUpType, int> AscensionPointsAllocation          // Ascension points spent
-// Note: Ascension focuses on four main stats:
+// Note: Ascension appears to focus on four main stats based on code analysis:
 // - Luck (critical chance/item drops)
 // - Growth (experience gain)
 // - Greed (gold gain)
@@ -296,7 +296,7 @@ public int TP_PortraitsCount         // Third-party portraits count
 
 **Location**: `Il2CppVampireSurvivors.Objects.PlayerOptions`
 
-Runtime manager class that handles player data operations and provides access to PlayerOptionsData.
+Runtime manager class that appears to handle player data operations and provides access to PlayerOptionsData based on decompiled code analysis.
 
 ### Key Properties
 
@@ -318,22 +318,22 @@ public bool JustGotJubilee { get; set; }                // Jubilee acquisition f
 ### Coin Management Methods
 
 ```csharp
-// Add coins with Greed multiplier applied (affects both persistent and run coins)
+// Add coins with Greed multiplier applied (appears to affect both persistent and run coins)
 public float AddCoins(float value, CharacterController player = null)
 
 // Add coins without any multipliers
 public void AddCoinsFlat(float value)
 public static void AddCoinsFlat(float value, PlayerOptionsData config)
 
-// Add coins to persistent total only (not to run coins)
+// Add coins to persistent total only (inferred to not affect run coins)
 public void AddCoinsNoRun(float value, CharacterController player = null)
 
-// Remove coins (for purchases)
+// Remove coins (inferred to be used for purchases)
 public void RemoveCoins(int value, bool removeFromLifetime = false)
-public float RemoveCoinsFlat(float value)  // Returns actual amount removed
+public float RemoveCoinsFlat(float value)  // Returns actual amount removed based on implementation
 
 // Utility
-public void FixCoinOverflow()  // Corrects coin overflow issues
+public void FixCoinOverflow()  // Appears to correct coin overflow issues
 ```
 
 ### Save Operations
@@ -351,9 +351,9 @@ public void ApplyConfig(PlayerOptionsData config, bool adventureMode = false,
                        bool hostConfig = false, bool onlineClientWithRunData = false)
 
 // Utility
-public void FixPlayerOptionsData()  // Repairs/validates player options data
-public void ApplyUnlocksToData()    // Applies pending unlocks to data
-public void ClearRunData()          // Clears current run data
+public void FixPlayerOptionsData()  // Appears to repair/validate player options data
+public void ApplyUnlocksToData()    // Appears to apply pending unlocks to data
+public void ClearRunData()          // Appears to clear current run data
 ```
 
 ### Unlock and Purchase Methods
@@ -476,18 +476,18 @@ if (saveData != null)
 ### Modifying Coins
 
 ```csharp
-// Add coins during gameplay (applies Greed multiplier)
+// Add coins during gameplay (appears to apply Greed multiplier)
 var playerOptions = GM.Core?._playerOptions;
 if (playerOptions != null)
 {
     float actualAdded = playerOptions.AddCoins(100.0f, GM.Core.Player);
-    MelonLogger.Msg($"Added {actualAdded} coins (after Greed multiplier)");
+    MelonLogger.Msg($"Added {actualAdded} coins (appears to include Greed multiplier)");
 }
 
 // Add coins without multiplier
 playerOptions.AddCoinsFlat(100.0f);
 
-// Add to persistent only (not run coins)
+// Add to persistent only (appears to not affect run coins)
 playerOptions.AddCoinsNoRun(100.0f);
 
 // Remove coins for purchase
@@ -693,7 +693,7 @@ if (saveData != null)
 
 ## Gold/Coin System Flow
 
-### Two-Tier System
+### Two-tier system
 
 1. **Persistent Gold** (`PlayerOptionsData.Coins`)
    - Saved between sessions
@@ -706,8 +706,9 @@ if (saveData != null)
    - Added to persistent gold on run completion
    - Reset at start of each run
 
-### Coin Addition Flow
+### Coin addition flow
 
+Based on code analysis, the coin addition flow appears to be:
 1. Coin pickup collected in game
 2. `PlayerOptions.AddCoins()` called
 3. Greed multiplier applied (if player has Greed stat)
@@ -721,10 +722,10 @@ if (saveData != null)
 - **Gameplay**: `MainGamePage` displays `PlayerOptionsData.RunCoins`
 - **Gold Fever**: Special UI mode via `GoldFeverUIManager`
 
-## Important Notes
+## Notes
 
 ### Null Safety
-Always check for null when accessing PlayerOptions during gameplay:
+Check for null when accessing PlayerOptions during gameplay:
 ```csharp
 var playerOptions = GM.Core?._playerOptions;
 if (playerOptions != null && playerOptions.Config != null)
@@ -741,9 +742,9 @@ if (playerOptions != null && playerOptions.Config != null)
 - Cloud save integration available through platform-specific implementations
 
 ### Greed Stat Integration
-The Greed stat (`PlayerModifierStats.Greed`) acts as a multiplier:
+Based on code analysis, the Greed stat (`PlayerModifierStats.Greed`) appears to act as a multiplier:
 - Base pickup value × (1 + Greed/100) = actual coins gained
-- Only applies when using `AddCoins()`, not `AddCoinsFlat()`
+- Only applies when using `AddCoins()`, not `AddCoinsFlat()` based on method implementations
 
 ### Thread Safety
-All modifications must occur on the main Unity thread.
+Modifications must occur on the main Unity thread based on Unity threading requirements.

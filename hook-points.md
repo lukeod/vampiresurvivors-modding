@@ -1,45 +1,45 @@
 # Hook Points Reference
 
+Based on analysis of decompiled IL2CPP source code. All method signatures and behavior patterns are inferred from static code analysis without runtime validation.
+
 ## Data Hooks
 
 ### Data Loading
 ```csharp
-// Raw JSON modification
+// Raw JSON modification - based on decompiled code analysis
 [HarmonyPatch(typeof(DataManager), "LoadBaseJObjects")]
 [HarmonyPostfix]
 public static void OnDataLoad(DataManager __instance)
 {
-    // Modify raw JSON before conversion
+    // Access to raw JSON data before conversion to game objects
 }
 
-// Post-conversion processing
+// Post-conversion processing - appears to be called multiple times
 [HarmonyPatch(typeof(DataManager), "ReloadAllData")]
 [HarmonyPostfix]
 public static void OnDataReload(DataManager __instance)
 {
-    // Called 7 times during startup (base + DLCs)
+    // Analysis suggests this is called approximately 7 times during startup
 }
 ```
 
 ### DLC Content Injection
 ```csharp
-// Custom DLC injection point
+// DLC validation hook - based on code analysis
 [HarmonyPatch(typeof(LoadingManager), "ValidateVersion")]
 [HarmonyPostfix]
 public static void OnValidateVersion(LoadingManager __instance, int index, Il2CppStructArray<DlcType> dlcs, Il2CppSystem.Action callback)
 {
-    // All base game and official DLCs loaded
-    // Data complete, gameplay not started
-    // Safe for custom DLC content injection
+    // Appears to be called after all base game and official DLCs are loaded
+    // Based on code structure, data appears complete but gameplay not yet active
 }
 
-// Alternative hook for manifest loading
+// Bundle manifest processing hook
 [HarmonyPatch(typeof(ManifestLoader), "ApplyBundleCore")]
 [HarmonyPostfix]
 public static void OnBundleApplied(DlcType dlcType, BundleManifestData manifest, Il2CppSystem.Action<BundleManifestData> onComplete)
 {
-    // Called when each DLC bundle is applied
-    // Modify or extend DLC content
+    // Inferred to be called when each DLC bundle is processed
 }
 ```
 
@@ -51,14 +51,14 @@ public static void OnBundleApplied(DlcType dlcType, BundleManifestData manifest,
 [HarmonyPostfix]
 public static void OnGameManagerAwake(GameManager __instance)
 {
-    // GM.Core available, systems initialized
+    // Based on Unity lifecycle, GM.Core should be available after Awake
 }
 
 [HarmonyPatch(typeof(GameManager), "AddStartingWeapon")]
 [HarmonyPostfix]
 public static void OnGameplayStart(GameManager __instance, CharacterController character)
 {
-    // Game started, player ready
+    // Appears to mark the beginning of active gameplay
 }
 ```
 
@@ -70,7 +70,7 @@ public static void OnGameplayStart(GameManager __instance, CharacterController c
 [HarmonyPostfix]
 public static void OnPlayerStatsUpgrade(CharacterController __instance, ModifierStats other, bool multiplicativeMaxHp)
 {
-    // Stat progression modification
+    // Hook point for stat modification events
 }
 ```
 
@@ -80,7 +80,7 @@ public static void OnPlayerStatsUpgrade(CharacterController __instance, Modifier
 [HarmonyPostfix]
 public static void OnWeaponAdded(GameManager __instance, GameplaySignals.AddWeaponToCharacterSignal signal)
 {
-    // Weapon addition event
+    // Called when weapons are added to the player character
 }
 ```
 
@@ -92,49 +92,58 @@ public static void OnWeaponAdded(GameManager __instance, GameplaySignals.AddWeap
 [HarmonyPostfix]
 public static void OnMainMenu(AppMainMenuState __instance)
 {
-    // Main menu initialized
+    // Called when entering the main menu state
 }
 ```
 
 ## Timing
 
 ### Startup Sequence
+Based on code analysis, the initialization sequence appears to follow this pattern:
 1. MelonLoader initialization
 2. LoadBaseJObjects (raw JSON loading)
-3. ReloadAllData (7+ calls: base + DLCs)
-4. Main menu active
+3. ReloadAllData (multiple calls for base game and DLC content)
+4. Main menu state activation
 
 ### Game Session
-1. GameManager.Awake (session start)
-2. AddStartingWeapon (gameplay begins)
+Inferred session flow:
+1. GameManager.Awake (session initialization)
+2. AddStartingWeapon (gameplay activation)
 
-## Performance Guidelines
+## Performance Considerations
 
-### High-Frequency Methods (Avoid)
+### High-Frequency Methods
+Based on method names and Unity patterns, these methods likely execute frequently:
 ```csharp
-// Do not hook - called every frame
 EnemiesManager.OnTick()
 GameManager.OnTickerCallback()
 Projectile.OnUpdate()
 CharacterController.OnUpdate()
 ```
 
-### Expensive Operations (Use Caution)
+### Performance-Sensitive Operations
+Methods that may impact performance based on code analysis:
 ```csharp
 Stage.HandleSpawning()
 Weapon.DealDamage()
 MainGamePage.Update()
 ```
 
-## Best Practices
+## Implementation Patterns
 
-### Exception Safety
+### Exception Handling
 ```csharp
 [HarmonyPostfix]
 public static void SafeHook()
 {
-    try { /* logic */ }
-    catch (Exception ex) { MelonLogger.Error(ex.Message); }
+    try 
+    { 
+        // Your hook logic here
+    }
+    catch (Exception ex) 
+    { 
+        MelonLogger.Error($"Hook error: {ex.Message}"); 
+    }
 }
 ```
 
@@ -144,42 +153,45 @@ public static void SafeHook()
 public static void ConditionalHook()
 {
     if (!ModEnabled) return;
-    // Hook logic
+    // Execute hook logic only when mod is enabled
 }
 ```
 
-### Method Replacement
+### Method Override
 ```csharp
 [HarmonyPrefix]
 public static bool ReplaceMethod()
 {
-    // Custom implementation
-    return false; // Skip original
+    // Implement replacement behavior
+    return false; // Prevents original method execution
 }
 ```
 
 ## Data Access
 
-### Converted Data (Post-ReloadAllData)
+### Converted Data Access
+After ReloadAllData completion, data appears available through:
 ```csharp
 var weaponData = dataManager.AllWeaponData;
 var characterData = dataManager.AllCharacters;
 ```
 
-### Raw JSON (Post-LoadBaseJObjects)
+### Raw JSON Access
+After LoadBaseJObjects, raw JSON appears accessible via:
 ```csharp
 var weaponJson = dataManager._allWeaponDataJson;
 var characterJson = dataManager._allCharactersJson;
 ```
 
-### Player Stats
+### Player Statistics
+Based on decompiled code structure, player stats appear accessible through:
 ```csharp
-// Access stats via dictionary lookup
+// Dictionary-based stat access
 var powerStat = character.PlayerStats.GetAllPowerUps()[PowerUpType.POWER];
 powerStat._value = 150.0;
 double power = powerStat._value;
 
-// Alternative direct field access to stats dictionary
+// Direct stats dictionary access
 var stats = character.PlayerStats._stats;
 if (stats.ContainsKey(PowerUpType.POWER))
 {

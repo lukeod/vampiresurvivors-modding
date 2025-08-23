@@ -1,11 +1,11 @@
 # Damage System
 
-Comprehensive damage calculation pipeline that flows from character base power through weapon-specific calculations to final damage application.
+Damage calculation pipeline that flows from character base power through weapon-specific calculations to final damage application, based on analysis of decompiled IL2CPP code.
 
 ## Core Damage Flow
 
 ### Character Power Calculation
-Foundation of damage calculation:
+Based on code analysis, the foundation of damage calculation appears to be:
 
 ```csharp
 public virtual float PPower()                    // Base character power
@@ -13,10 +13,10 @@ public float PPowerFinal()                       // Final power with modifiers a
 public float PPowerWithoutSilentMight()          // Power calculation excluding Silent Might modifiers
 ```
 
-Character power is capped at 10.0 in the final calculation.
+Character power appears to be capped at 10.0 in the final calculation, based on code analysis.
 
 ### Weapon Power Calculation
-Weapons calculate effective power using virtual methods:
+Weapons appear to calculate effective power using virtual methods, based on code analysis:
 
 ```csharp
 public virtual float PPower()               // Primary power
@@ -35,6 +35,7 @@ public void DamageAllEnemies(float value)
 ```
 
 ### Damage Formula
+Based on code analysis, the formula appears to be:
 `Final Damage = Weapon.PPower × CritMultiplier`
 
 ## Critical Hit System
@@ -53,7 +54,7 @@ public float critMul;     // Critical hit damage multiplier
 ## Visual and Audio Effects
 
 ### Damage Visual Effects
-Damage application triggers visual feedback:
+Based on code analysis, damage application appears to trigger visual feedback:
 
 ```csharp
 // Visual effect handling
@@ -70,7 +71,7 @@ public void OnGetDamaged(string hexColor = "#ff0000", float vulnerabilityDelay =
 ```
 
 ### Hit VFX Types
-Damage types trigger different visual effects through the `HitVfxType` enum.
+Damage types appear to trigger different visual effects through the `HitVfxType` enum, based on code analysis.
 
 ## Damage Modifiers and Special Effects
 
@@ -101,7 +102,7 @@ public HitVfxType hitVFX;                        // Visual effect type for hits
 ## Weapon-Specific Damage Patterns
 
 ### Custom Damage Implementations
-Over 70 weapons override the base damage calculation methods. Common patterns include:
+Based on code analysis, over 70 weapons appear to override the base damage calculation methods. Common patterns inferred from the code include:
 
 1. **Scaling weapons**: Damage increases with character level or time
 2. **Conditional weapons**: Damage varies based on enemy type or player state
@@ -109,12 +110,12 @@ Over 70 weapons override the base damage calculation methods. Common patterns in
 4. **Area weapons**: Calculate damage based on area and enemy count
 
 ### Evolution and Union Effects
-Evolved weapons often have completely different damage calculations from their base forms, implemented through method overrides.
+Evolved weapons appear to have different damage calculations from their base forms, implemented through method overrides, based on code analysis.
 
 ## Damage Types and Resistances
 
 ### Weapon Type Classification
-Each weapon has a `WeaponType` that affects damage calculations:
+Based on code analysis, each weapon appears to have a `WeaponType` that affects damage calculations:
 
 ```csharp
 WeaponType damageType = WeaponType.VOID  // Default damage type
@@ -126,19 +127,19 @@ The WeaponType enum includes specific weapon types:
 - Additional specialized weapon types
 
 ### Element-Based Damage
-Weapons with elemental properties affect damage against specific enemy types through custom PPower() calculations in individual weapon classes.
+Weapons with elemental properties appear to affect damage against specific enemy types through custom PPower() calculations in individual weapon classes, inferred from code structure.
 
 ## Performance Considerations
 
-Damage calculations occur multiple times per frame for rapid-fire weapons and hundreds of times per second in crowded scenarios.
+Based on code analysis, damage calculations appear to occur multiple times per frame for rapid-fire weapons and potentially hundreds of times per second in crowded scenarios.
 
-**Optimization Guidelines:**
+**Optimization considerations:**
 - Avoid hooking damage methods due to high call frequency
 - Cache damage calculations and pre-calculate values when possible
 - Minimize complex mathematical operations
 - Group similar damage applications together
 
-## Common Modding Scenarios
+## Modding Reference
 
 ### Accessing Game Data
 ```csharp
@@ -215,7 +216,7 @@ if (player?.PlayerStats != null)
 ## Damage Immunity and Invulnerability
 
 ### Invulnerability Timing
-Invulnerability is managed through several methods in CharacterController:
+Based on code analysis, invulnerability appears to be managed through several methods in CharacterController:
 
 ```csharp
 public virtual float PInvulTime()                    // Base invulnerability time calculation
@@ -227,12 +228,12 @@ public virtual void GetDamagedByOwnWeapon(float damage) // Virtual method for se
 ```
 
 ### Shield System
-Shields provide damage absorption and are accessed through PowerUpType.SHIELD in the player stats system.
+Shields appear to provide damage absorption and are accessed through PowerUpType.SHIELD in the player stats system, based on code analysis.
 
 ## Advanced Damage Interactions
 
 ### Arcana System Integration
-Arcanas modify damage calculations. Weapons check for active Arcanas:
+Based on code analysis, Arcanas appear to modify damage calculations. Weapons appear to check for active Arcanas:
 
 ```csharp
 public bool HasActiveArcanaOfType(ArcanaType type)
@@ -240,7 +241,7 @@ public virtual void CheckArcanas()
 ```
 
 ### Curse Effects
-Curse affects damage in complex ways and is accessed through PowerUpType.CURSE:
+Curse appears to affect damage in complex ways and is accessed through PowerUpType.CURSE, based on code analysis:
 
 ```csharp
 // Access curse level through player stats
@@ -260,8 +261,8 @@ PowerUpType exists as a separate enum, but WeaponType also includes these values
 - `WeaponType.DURATION = 54` - Effect duration
 - `WeaponType.AMOUNT = 55` - Projectile/effect count
 
-## Common Issues
-- **Performance**: Excessive damage modifications impact frame rate
-- **Balance**: High damage values affect gameplay difficulty
-- **Overflow**: Very high damage values wrap around
-- **Compatibility**: Modifications affect save game balance
+## Common considerations
+- **Performance**: Excessive damage modifications may impact frame rate
+- **Balance**: High damage values may affect gameplay difficulty
+- **Overflow**: Very high damage values may wrap around
+- **Compatibility**: Modifications may affect save game balance

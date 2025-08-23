@@ -1,6 +1,10 @@
 # Data Loading Sequence
 
+Based on analysis of decompiled IL2CPP code, this document describes the data loading process that appears to occur during game initialization. The sequence inferred from static code analysis loads base game data and DLC content.
+
 ## Loading Classes
+
+Based on code analysis, the following classes appear to handle data loading:
 
 **PlatformIntegration**
 - Location: `Il2CppVampireSurvivors.App.Scripts.Framework.Initialisation.PlatformIntegration`
@@ -25,9 +29,11 @@
 
 **DataManager**
 - `LoadBaseJObjects()` - Loads raw JSON data (private method)
-- `ReloadAllData()` - Called 7+ times during startup (1 base + 6 DLCs)
+- `ReloadAllData()` - Called multiple times during startup (appears to be 1 base + 6 DLCs based on code analysis)
 
 ## Loading Sequence
+
+Based on code analysis, the loading sequence appears to follow this pattern:
 
 1. `PlatformIntegration.Init()` - Initialization entry point
 2. `PlatformIntegration.LoadDlc()` - DLC loading initiation
@@ -38,6 +44,8 @@
 7. `LoadingManager.ValidateVersion()` - Final validation
 
 ## Projectile System
+
+Based on decompiled code analysis, the projectile system appears to use these core classes:
 
 ### Core Classes
 
@@ -63,6 +71,8 @@
 - Methods: `GetProjectilePrefab(WeaponType)`
 
 ### Creation Flow
+
+Based on code analysis, the projectile creation flow appears to follow this sequence:
 
 1. `Weapon.Fire()` - Creates delegate callbacks
 2. `BulletPool.SpawnAt()` - Retrieves/creates projectile
@@ -105,6 +115,8 @@ public static void ModifyPower(Weapon __instance, ref float __result)
 
 ### IL2CPP Constraints
 
+Based on IL2CPP transpilation analysis:
+
 - C# compiled to C++ native code
 - No runtime method replacement
 - Limited reflection capabilities
@@ -130,7 +142,7 @@ private static int reloadCallCount = 0;
 public static void OnDataReload(DataManager __instance)
 {
     reloadCallCount++;
-    if (reloadCallCount >= 7) // 1 base + 6 DLCs
+    if (reloadCallCount >= 7) // 1 base + 6 DLCs based on code analysis
     {
         // Final call - all data loaded
     }
@@ -138,6 +150,8 @@ public static void OnDataReload(DataManager __instance)
 ```
 
 ### Hook Requirements
+
+Based on code analysis, these requirements appear necessary for hooks:
 
 - Install hooks after `GM.Core` available
 - Use `weapon._currentWeaponData.bulletType` not `weapon._weaponType`

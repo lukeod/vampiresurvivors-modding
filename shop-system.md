@@ -1,10 +1,10 @@
 # Shop System
 
-The shop system manages merchant inventories and item availability through the ShopFactory.
+The shop system manages merchant inventories and item availability through the ShopFactory, based on analysis of decompiled IL2CPP code.
 
 ## ShopFactory
 
-Intelligent inventory generation with multiplayer synchronization support.
+Inventory generation with multiplayer synchronization support.
 
 ### Properties
 
@@ -46,25 +46,25 @@ public class ShopFactory : Il2CppSystem.Object
 ## Shop Types
 
 ### Standard Shop
-Generated through `MakeStandardInventory()`, considers:
+Generated through `MakeStandardInventory()`, appears to consider:
 - Player level and progress
 - Unlocked weapons and items
 - Current character capabilities
 
 ### Custom Shop
-Generated through `MakeCustomInventory()`, uses:
+Generated through `MakeCustomInventory()`, appears to use:
 - Predefined merchant inventories
 - Special event items
 - Limited-time offerings
 
 ### Arcana Shop
-Generated through `MakeArcanaInventory()`, includes:
+Generated through `MakeArcanaInventory()`, appears to include:
 - Arcana cards
 - Special power-ups
 - End-game content
 
 ### Egg Shop
-Generated through `MakeEggsInventory()`, offers:
+Generated through `MakeEggsInventory()`, appears to offer:
 - Character eggs
 - Secret unlocks
 - Easter egg content
@@ -83,7 +83,7 @@ shopFactory.GenerateShopInventory(hostPlayer);
 shopFactory.InjectRemoteShop(hostWeapons, hostItems);
 ```
 
-This ensures:
+This appears to ensure:
 - All players see the same shop inventory
 - Prevents desynchronization issues
 - Maintains game balance in multiplayer
@@ -131,7 +131,7 @@ var validWeapons = ShopFactory.GetValidAdventureWeaponsForMerchant(
 );
 ```
 
-Adventure mode features:
+Adventure mode appears to feature:
 - Restricted item pools
 - Progressive unlocks
 - Quest-specific items
@@ -205,7 +205,7 @@ public void Construct(..., ShopFactory shopFactory)
 
 ## Best Practices
 
-- Always check multiplayer state before modifying shop inventory
+- Check multiplayer state before modifying shop inventory
 - Use `DoesPlayerAlreadyHaveWeapon()` to prevent duplicates
 - Respect host authority in online multiplayer
 - Test shop modifications in all game modes

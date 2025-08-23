@@ -1,13 +1,13 @@
 # Stat System
 
-Comprehensive stat modification system built around wrapper types and incremental calculation methods.
+This document describes the stat modification system in Vampire Survivors, based on analysis of decompiled IL2CPP code. The system appears to use wrapper types and incremental calculation methods.
 
 ## PlayerModifierStats Structure
 
-Core stat container that stores character stat modifiers using specialized wrapper types.
+Based on code analysis, this stat container appears to store character stat modifiers using wrapper types.
 
-### EggFloat Properties (Most Common)
-The majority of stats use the `EggFloat` wrapper type:
+### EggFloat Properties
+Based on the decompiled code, most stats appear to use the `EggFloat` wrapper type:
 
 ```csharp
 public unsafe EggFloat Power { get; set; }
@@ -54,7 +54,7 @@ public unsafe int Charm { get; set; }
 
 ### Implementation Notes
 
-Most stats use `EggFloat`, `Revivals` uses `EggDouble`, several use raw types. Properties use specific casing: `ReRolls`, `MaxHp`, `InvulTimeBonus`. Assignments must use correct wrapper type.
+Based on code analysis, most stats use `EggFloat`, while `Revivals` uses `EggDouble`, and several use raw types. Properties appear to use specific casing: `ReRolls`, `MaxHp`, `InvulTimeBonus`. Assignments need to use the appropriate wrapper type.
 
 ## EggFloat/EggDouble Wrappers
 
@@ -85,7 +85,7 @@ playerStats.Charm = 3;
 ## Weapon Stat Calculation
 
 ### Virtual Calculation Methods
-Weapons have virtual methods that calculate final stats by combining base values with modifiers:
+Based on the decompiled code, weapons appear to have virtual methods that calculate final stats by combining base values with modifiers:
 
 ```csharp
 public virtual float PPower()          // Final power calculation
@@ -98,11 +98,11 @@ public virtual float SecondaryPAmount()// Secondary amount calculation
 ```
 
 ### Custom Weapon Overrides
-Weapons override these methods for calculations with unique formulas, patterns, and bonuses.
+Based on code analysis, weapons appear to override these methods to implement calculations with specific formulas and bonuses.
 
 ## Character Base Stats
 
-Character base stats are defined in `CharacterData` with exact property names:
+Based on the decompiled code, character base stats appear to be defined in `CharacterData` with the following property names:
 
 ```csharp
 public unsafe float maxHp { get; set; }
@@ -127,17 +127,17 @@ public unsafe float reRolls { get; set; }
 ## Stat Upgrade Methods
 
 ### Upgrade Method
-The primary method for applying stat modifications:
+Based on code analysis, the method for applying stat modifications appears to be:
 
 ```csharp
 public unsafe void Upgrade(ModifierStats other, bool multiplicativeMaxHp = false)
 ```
 
-This method combines stat modifiers, with special handling for MaxHp applied multiplicatively.
+This method appears to combine stat modifiers, with MaxHp handling that may be multiplicative.
 
 ## Incremental Level System
 
-Weapon data uses an incremental delta system:
+Based on the decompiled code, weapon data appears to use an incremental delta system:
 
 - **Level 1**: Absolute base values
 - **Levels 2-8**: Incremental changes from previous level
@@ -168,7 +168,7 @@ public static float CalculatePowerAtLevel(JArray levels, int targetLevel)
 
 ## Data Access
 
-DataManager converted methods provide absolute values:
+Based on code analysis, DataManager converted methods appear to provide absolute values:
 
 ```csharp
 var weapons = dataManager.GetConvertedWeaponData();
@@ -176,7 +176,9 @@ var characters = dataManager.GetConvertedCharacterData();
 var powerups = dataManager.GetConvertedPowerUpData();
 ```
 
-## Common Modding Patterns
+## Modding Examples
+
+Based on the decompiled code structure, the following patterns appear to be valid for modifying stats:
 
 ### Modifying Character Base Stats
 ```csharp
@@ -198,7 +200,8 @@ if (player?.PlayerStats != null)
 }
 ```
 
-### Apply Changes
+### Applying Changes
+Based on code analysis, changes appear to require reloading data:
 ```csharp
 dataManager.ReloadAllData();
 ```

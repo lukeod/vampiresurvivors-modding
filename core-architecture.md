@@ -2,7 +2,7 @@
 
 ## Overview
 
-Vampire Survivors uses dependency injection (Zenject) with centralized static accessors. The v1.0+ architecture includes multiplayer support, Unity 6000, and additional visual systems.
+Based on decompiled IL2CPP code analysis, Vampire Survivors appears to use dependency injection (Zenject) with centralized static accessors. The v1.0+ architecture includes multiplayer support, Unity 6000, and additional visual systems.
 
 **v1.0+ Components:**
 - GameManager injects 28 dependencies
@@ -24,13 +24,15 @@ var gameManager = GM.Core;
 var dataManager = gameManager?.DataManager;
 ```
 
-GM.Core is null in menu states. Use null-conditional operators.
+Based on code analysis, GM.Core appears to be null in menu states. Use null-conditional operators.
 
 ## GameManager
 
 **Location**: `Il2CppVampireSurvivors.Framework.GameManager`
 
 ### Key Properties
+
+Inferred from decompiled IL2CPP code:
 
 ```csharp
 public DataManager DataManager { get; }           // Data access
@@ -50,6 +52,8 @@ public bool IsLocalMultiplayer { get; }           // Local coop multiplayer
 
 ### Key Methods
 
+Based on code analysis:
+
 ```csharp
 // Constructor injection method - 28 dependencies (v1.0+)
 void Construct(SignalBus signalBus, DiContainer diContainer, 
@@ -67,13 +71,15 @@ void Construct(SignalBus signalBus, DiContainer diContainer,
 
 // Player and game state methods
 void QueueOpenWeaponSelection(CharacterController player, string weaponSelectionType)
-// OpenWeaponSelection is private, use QueueOpenWeaponSelection
+// OpenWeaponSelection appears to be private, use QueueOpenWeaponSelection
 CharacterController GetClosestPlayer(float2 position, PlayerInclusionMode inclusionMode, 
     float maxRangeSqrd, bool includeFollowers)
 CharacterController GeneratePlayerCharacter(CharacterType characterType, int playerIndex)
 ```
 
 ### Access Pattern
+
+Based on code analysis:
 
 ```csharp
 var gameManager = GM.Core;
@@ -104,12 +110,12 @@ if (gameManager != null)
 
 ### Installer Architecture
 
-The game uses multiple installer classes following Zenject patterns:
+Based on decompiled code, the game appears to use multiple installer classes following Zenject patterns:
 
 #### GameInstaller
 **Location**: `Il2CppVampireSurvivors.Installers.GameInstaller`
 
-Main game-level dependency installer with methods:
+Main game-level dependency installer with methods (inferred from code):
 - `InstallBindings()` - Main binding configuration
 - `Install()` - Core installation logic
 - `InstallData()` - Data system bindings
@@ -119,7 +125,7 @@ Main game-level dependency installer with methods:
 #### CoreInstaller
 **Location**: `Il2CppVampireSurvivors.Installers.CoreInstaller`
 
-Handles core system bindings including:
+Based on code analysis, handles core system bindings including:
 - Debug console and profiling tools
 - DLC catalog management
 - Base game data configuration
@@ -128,7 +134,7 @@ Handles core system bindings including:
 #### FactoriesInstaller
 **Location**: `Il2CppVampireSurvivors.Installers.FactoriesInstaller`
 
-Manages factory pattern bindings for all content creation:
+Based on code analysis, manages factory pattern bindings for content creation:
 - `WeaponFactory` - Weapon prefab management
 - `ProjectileFactory` - Projectile creation
 - `CharacterFactory` - Character instantiation
@@ -144,7 +150,7 @@ Extends `ScriptableObjectInstaller<DataManagerSettingsInstaller>` for configurat
 
 ### GameManager Constructor
 
-Services are injected through the constructor (28 total dependencies in v1.0+):
+Based on decompiled code, services appear to be injected through the constructor (28 total dependencies in v1.0+):
 
 ```csharp
 // Full constructor signature with all injected dependencies
@@ -191,12 +197,12 @@ The `DiContainer` is stored as `_diContainer` for runtime object creation.
 
 ### Signal System
 
-The game uses Zenject's signal system extensively:
+Based on code analysis, the game appears to use Zenject's signal system:
 
 #### SignalsInstaller
 **Location**: `Il2CppVampireSurvivors.Signals.SignalsInstaller`
 
-Declares signal types for decoupled communication:
+Based on decompiled code, declares signal types for decoupled communication:
 - `DeclareUISignals()` - UI event signals
 - `DeclareOptionsSignals()` - Settings/options signals
 - `DeclareCharacterSignals()` - Character event signals
@@ -205,16 +211,18 @@ Declares signal types for decoupled communication:
 
 ### Runtime Object Creation
 
-Runtime object creation patterns include:
+Based on code analysis, runtime object creation patterns appear to include:
 - Factory classes that manage prefab instantiation
 - `ProjectContext.Instance.Container` for runtime access
 - Asset reference system with lazy loading
 
-Access through GM.Core or injected references.
+Access appears to be through GM.Core or injected references.
 
 ## Initialization Flow
 
 ### Application Startup Sequence
+
+Based on code analysis, the startup sequence appears to be:
 
 1. **Application Start**
    - MelonLoader initializes
@@ -228,7 +236,7 @@ Access through GM.Core or injected references.
      - First call: Base game data conversion
      - Subsequent calls: Each DLC's data loading and merging
      - Final call: Data validation and cross-referencing
-   - All data ready within 3-5 seconds of launch
+   - Based on code timing, data appears ready within 3-5 seconds of launch
 
 3. **Main Menu**
    - Game waits in main menu for user interaction
@@ -237,27 +245,31 @@ Access through GM.Core or injected references.
 
 ### Game Session Sequence
 
+Based on decompiled code analysis:
+
 1. **Player Initiates Game**
    - Character selection
    - Stage selection
    - Game mode configuration
 
 2. **GameManager Initialization**
-   - GameManager instantiated through dependency injection
+   - GameManager appears to be instantiated through dependency injection
    - `GameManager.Awake()` called
    - `GM.Core` static accessor set
    - `Construct()` method called with injected dependencies
-   - All core systems initialize
+   - Core systems initialize
 
 3. **Session Start**
-   - Player character creation via CharacterFactory
+   - Player character creation appears to use CharacterFactory
    - Starting weapon initialization through WeaponsFacade
    - Stage and enemy spawning begins
-   - Gameplay loop active
+   - Gameplay loop becomes active
 
 ## System Architecture
 
 ### Core Components
+
+Based on decompiled IL2CPP code analysis:
 
 1. **GameManager** - Central game controller with multiplayer awareness
 2. **DataManager** - Data repository and loading with online sync tracking
@@ -274,7 +286,7 @@ Access through GM.Core or injected references.
 13. **AdventureManager** - Adventure mode management
 14. **ParticleManager** - Particle system lifecycle and rendering
 15. **GizmoManager** - Visual effects and UI overlays
-16. **FontFactory** - Centralized font asset management
+16. **FontFactory** - Font asset management
 17. **ShopFactory** - Shop generation with multiplayer support
 
 ### Communication Patterns
@@ -306,6 +318,8 @@ if (GM.Core.IsOnlineMultiplayer)
 ## Multiplayer Considerations (v1.0+)
 
 ### Multiplayer Detection
+
+Based on code analysis:
 
 ```csharp
 // Check if any multiplayer mode is active
@@ -339,13 +353,16 @@ else
 
 ### Multiplayer Modding Requirements
 
+Based on code analysis:
 - Check multiplayer mode before modifying game state
-- Online multiplayer requires network synchronization awareness
-- Local multiplayer has different camera and UI considerations
-- Host authority: Only the host should modify certain game states in online play
+- Online multiplayer appears to require network synchronization awareness
+- Local multiplayer appears to have different camera and UI considerations
+- Host authority: Based on code, only the host should modify certain game states in online play
 - Test in all modes: Single player, local coop, and online multiplayer
 
 ### Multiplayer Manager Access
+
+Based on decompiled code:
 
 ```csharp
 var multiplayerManager = GM.Core._multiplayer;
@@ -360,53 +377,58 @@ if (multiplayerManager != null)
 
 ## Timing Considerations
 
-- **Startup**: GM.Core is null
+Based on code analysis:
+- **Startup**: GM.Core appears to be null
 - **Menu**: GM.Core remains null, data loaded
 - **Game Session**: GM.Core available after `GameManager.Awake()`
-- **In-Game**: Full system access through GM.Core
+- **In-Game**: System access through GM.Core
 
 ## Integration Points
 
+Based on code analysis:
 - **Data**: Hook `DataManager` or access through `GM.Core.DataManager`
 - **Gameplay**: Hook `GameManager.Construct()` or `AddStartingWeapon()`
 - **UI**: Access `GameManager.MainUI`
 - **Saves**: Hook `SaveSerializer` methods
 - **Players**: Use `GM.Core.AllPlayers` or `GM.Core.GetClosestPlayer()`
 - **Multiplayer**: Check `IsOnlineMultiplayer`/`IsLocalMultiplayer` before modifications
-- **New Systems**: Access via dependency injection or through GameManager references
+- **New Systems**: Access appears to be via dependency injection or through GameManager references
 
 ## Architecture Stability
 
-Core patterns in v1.0+:
+Based on code analysis, core patterns in v1.0+ appear to be:
 
 - **GM.Core** static accessor pattern - Primary access method
-- **Zenject** dependency injection - All systems use constructor injection
+- **Zenject** dependency injection - Systems appear to use constructor injection
 - **SignalBus** event system - Decoupled communication
-- **Basic manager relationships** - Core manager hierarchy
+- **Manager relationships** - Core manager hierarchy
 - **Data loading sequences** - DataManager patterns
 - **Single player core mechanics** - Base gameplay systems
 
-Existing mod compatibility requires:
+Based on code structure, existing mod compatibility appears to require:
 1. Adding multiplayer mode checks
 2. Handling new dependencies if needed
 3. Testing in all game modes (single, local coop, online)
 
 ## Thread Safety
 
-Game systems are not thread-safe. Modify only on main Unity thread.
+Based on code analysis, game systems appear to not be thread-safe. Modify only on main Unity thread.
 
 ## Architecture Patterns
 
 ### Base Classes
+Based on decompiled code:
 - `GameMonoBehaviour` - Base for GameManager, Stage
 - `GameTickable` - Base for tick-based systems (ArcanaManager)
 
 ### Facades
+Based on code analysis:
 - `WeaponsFacade` - Weapon system
 - `AccessoriesFacade` - Accessories
 - `BackendFacade` - Platform backend
 
 ### Factories
+Based on decompiled code:
 - `LevelUpFactory` - Level-up components
 - `CharacterFactory` - Characters
 - `TreasureFactory` - Treasures

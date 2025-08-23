@@ -1,12 +1,12 @@
 # Weapon System
 
-Handles weapon behavior, stats, evolution, and unions in Vampire Survivors.
+Based on analysis of decompiled IL2CPP code, the weapon system handles weapon behavior, stats, evolution, and unions in Vampire Survivors.
 
 ## WeaponType Enum
 
 **Location**: `Il2CppVampireSurvivors.Data.WeaponType`
 
-Weapon identifiers with over 2500 entries (VOID = 0, highest value = 2501):
+Based on code analysis, weapon identifiers appear to contain over 2500 entries (VOID = 0, highest observed value = 2501):
 
 ### Categories
 
@@ -24,7 +24,7 @@ Weapon identifiers with over 2500 entries (VOID = 0, highest value = 2501):
 
 **Location**: `Il2CppVampireSurvivors.Data.Weapons.WeaponData`
 
-Comprehensive weapon configuration:
+Weapon configuration structure inferred from decompiled code:
 
 ### Identity & Metadata
 
@@ -170,7 +170,7 @@ public static float CalculatePowerAtLevel(JArray levels, int targetLevel)
 
 **Location**: `Il2CppVampireSurvivors.Objects.Weapons.Weapon`
 
-The runtime weapon instance that handles behavior.
+The runtime weapon instance that appears to handle behavior based on code analysis.
 
 ### Stat Calculation Methods
 
@@ -191,7 +191,7 @@ public virtual float PSpeedRepeatInterval()      // Repeat interval speed
 public virtual float PHitBoxDelayOverSpeed()     // Hitbox delay over speed
 ```
 
-Many weapons override these methods for custom calculations.
+Based on code analysis, many weapons appear to override these methods for custom calculations.
 
 ### Damage Methods
 
@@ -208,12 +208,12 @@ public void DamageAllEnemies(float value)
 
 ### Evolution Requirements
 
-Evolutions require base weapon at max level (level 8), specific synergy item(s), and opening a treasure chest.
+Based on code analysis, evolutions appear to require base weapon at max level (level 8), specific synergy item(s), and opening a treasure chest.
 
 ### Evolution Data Structure
 
 ```csharp
-// Example: Whip → Bloody Tear
+// Example: Whip -> Bloody Tear (inferred from code structure)
 WeaponData whip = new WeaponData
 {
     evoInto = "BLOODY_TEAR",
@@ -232,7 +232,7 @@ public bool HasEvolutionRequirements(WeaponData data, List<Equipment> held)
 
 ### Special Evolution Cases
 
-Weapons with unique requirements:
+Weapons that appear to have unique requirements based on code analysis:
 
 ```csharp
 // Special handlers
@@ -244,7 +244,7 @@ private static bool CalamityRingUniqueRequirements(List<Equipment> held)
 
 **Location**: `Il2CppVampireSurvivors.Data.LimitBreakData`
 
-Allows weapons to exceed normal stat caps:
+Based on code analysis, appears to allow weapons to exceed normal stat caps:
 
 ```csharp
 public class LimitBreakData
@@ -269,7 +269,7 @@ public class LimitBreakData
 
 ## Accessing Weapon Data
 
-### Get All Weapons
+### Get all weapons
 
 ```csharp
 var dataManager = GM.Core?.DataManager;
@@ -291,7 +291,7 @@ if (dataManager != null)
 }
 ```
 
-### Modify Weapon Stats
+### Modify weapon stats
 
 ```csharp
 // Direct JSON modification (remember deltas!)
@@ -308,7 +308,7 @@ whipLevels[1]["power"] = 20;  // Adds to level 1
 dataManager.ReloadAllData();
 ```
 
-### Add Weapon to Character
+### Add weapon to character
 
 ```csharp
 var gameManager = GM.Core;
@@ -322,7 +322,7 @@ if (gameManager != null && player != null)
 
 ## Common Weapon Operations
 
-### Check for Evolution
+### Check for evolution
 
 ```csharp
 public static bool CanEvolve(WeaponData weapon, CharacterController character)
@@ -331,21 +331,21 @@ public static bool CanEvolve(WeaponData weapon, CharacterController character)
         return false;
     
     // Check if weapon is max level
-    if (weapon.level < 8)  // Assuming 8 is max
+    if (weapon.level < 8)  // Based on code analysis, 8 appears to be max
         return false;
     
     // Check for synergy items
     if (weapon.evoSynergy != null)
     {
         var accessories = character._accessoriesManager;
-        // Check if character has required items
+        // Check if character has required items (implementation inferred from code)
     }
     
     return true;
 }
 ```
 
-### Calculate Final Damage
+### Calculate final damage
 
 ```csharp
 public static float CalculateFinalDamage(Weapon weapon, CharacterController owner)
@@ -359,16 +359,16 @@ public static float CalculateFinalDamage(Weapon weapon, CharacterController owne
 
 ## Usage Guidelines
 
-### GetConverted Methods
+### GetConverted methods
 ```csharp
 var weapons = dataManager.GetConvertedWeaponData();  // Returns absolute values
 var json = dataManager._allWeaponDataJson;        // Raw JSON contains deltas
 ```
 
-### Level Delta System
-Level 1 contains absolute values. Levels 2-8 contain incremental deltas.
+### Level delta system
+Based on code analysis, level 1 appears to contain absolute values. Levels 2-8 appear to contain incremental deltas.
 
-### Nullable Values
+### Nullable values
 ```csharp
 if (weaponData.duration.HasValue)
 {
@@ -381,7 +381,7 @@ if (weaponData.duration.HasValue)
 ### Factory Class Structure
 **Location**: `Il2CppVampireSurvivors.Framework.WeaponFactory`
 
-ScriptableObject-based factory pattern:
+ScriptableObject-based factory pattern inferred from code:
 
 ```csharp
 public class WeaponFactory : SerializedScriptableObject
@@ -400,17 +400,17 @@ public class WeaponFactory : SerializedScriptableObject
 }
 ```
 
-### Linked Factory System
-Factories are chained to support DLC and modular content:
-- Base game factory contains core weapons
-- DLC factories added to `_LinkedFactories`
-- Lookup traverses linked factories if weapon not found
-- Supports weapon substitution via `forcedWeaponType`
+### Linked factory system
+Based on code analysis, factories appear to be chained to support DLC and modular content:
+- Base game factory appears to contain core weapons
+- DLC factories appear to be added to `_LinkedFactories`
+- Lookup appears to traverse linked factories if weapon not found
+- Appears to support weapon substitution via `forcedWeaponType`
 
 ### Factory Integration
 **Location**: `Il2CppVampireSurvivors.Installers.FactoriesInstaller`
 
-Factories are registered through dependency injection:
+Based on code analysis, factories appear to be registered through dependency injection:
 
 ```csharp
 public class FactoriesInstaller : MonoInstaller<FactoriesInstaller>
@@ -422,7 +422,7 @@ public class FactoriesInstaller : MonoInstaller<FactoriesInstaller>
     
     public override void InstallBindings()
     {
-        // Registers factories with DI container
+        // Registers factories with DI container (inferred from code structure)
     }
 }
 ```
@@ -430,7 +430,7 @@ public class FactoriesInstaller : MonoInstaller<FactoriesInstaller>
 ### WeaponsFacade
 **Location**: `Il2CppVampireSurvivors.Framework.WeaponsFacade`
 
-High-level weapon management using the factory:
+High-level weapon management using the factory based on code analysis:
 
 ```csharp
 public class WeaponsFacade
@@ -444,7 +444,7 @@ public class WeaponsFacade
 }
 ```
 
-### Creating Custom Weapon Factories
+### Creating custom weapon factories
 
 ```csharp
 // Create custom factory for mod weapons
@@ -463,7 +463,7 @@ mainWeaponFactory._LinkedFactories.Add(customFactory);
 ```
 
 ### Factory Usage in DLC System
-DLC bundles include their own weapon factories:
+Based on code analysis, DLC bundles appear to include their own weapon factories:
 
 ```csharp
 public class BundleManifestData
@@ -475,7 +475,7 @@ public class BundleManifestData
 
 ## Hook Points
 
-### Weapon Addition
+### Weapon addition
 
 ```csharp
 [HarmonyPatch(typeof(GameManager), "AddWeapon")]
@@ -486,7 +486,7 @@ public static void OnAddWeapon(WeaponType type, CharacterController character)
 }
 ```
 
-### Evolution Check
+### Evolution check
 
 ```csharp
 [HarmonyPatch(typeof(LevelUpFactory), "HasPotentialEvolution")]
@@ -497,7 +497,7 @@ public static void OnEvolutionCheck(ref bool __result, CharacterController chara
 }
 ```
 
-### Damage Calculation
+### Damage calculation
 
 ```csharp
 [HarmonyPatch(typeof(Weapon), "PPower")]

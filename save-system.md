@@ -1,8 +1,7 @@
 # Save System
 
-Handles player progress, character unlocks, achievements, and game settings with multi-platform support, backup functionality, and cloud synchronization.
+Handles player progress, character unlocks, achievements, and game settings. Based on analysis of decompiled IL2CPP code, the system supports multi-platform storage, backup functionality, and cloud synchronization.
 
-> **📝 DOCUMENTATION UPDATED**: Method accessibility modifiers have been verified against the actual source code. Many methods previously documented as `public static` are actually `private static` and not accessible for modding. See the [Method Accessibility Reference](#method-accessibility-reference) section for accurate information about which methods are available for modding use.
 
 ## Core Save Architecture
 
@@ -18,7 +17,7 @@ public void SerializeObjectEnumEnum<T1, T2>(Dictionary<T1, T2> obj)
 ```
 
 ### Data Serialization Patterns
-Enum arrays, dictionary mappings, nested data structures, and JSON-based serialization with version compatibility.
+Supports enum arrays, dictionary mappings, nested data structures, and JSON-based serialization. Version compatibility handling is inferred from code analysis.
 
 ### Serialization Methods
 ```csharp
@@ -36,7 +35,7 @@ public void SerializeObjectEnumIntArray<T, T2>(Dictionary<T, List<T2>> obj)
 
 ### Static Serialization
 ```csharp
-// In SaveUtils class - comprehensive serialization methods
+// In SaveUtils class - serialization methods
 public static string GetSerializedPlayerDataAsString(PlayerOptionsData data)
 public static Il2CppStructArray<byte> GetSerializedPlayerData(PlayerOptionsData data)
 public static PlayerOptionsData TryParseData(Il2CppStructArray<byte> data)
@@ -91,7 +90,7 @@ private static string GetTempDataPathWithSavesFolder(string tempFolderName) // I
 ## Backup and Recovery System
 
 ### Automatic Backup Creation
-Multiple backup layers: Save Backup (regular backup of current save), Last Run Backup (previous game session backup), and Local Backups (timestamped backups).
+Based on code analysis, the system appears to maintain multiple backup layers: Save Backup (regular backup of current save), Last Run Backup (previous game session backup), and Local Backups (timestamped backups).
 
 ### Backup Management Methods
 ```csharp
@@ -106,7 +105,7 @@ public static PlayerOptionsData LoadSaveFiles()                               //
 ```
 
 ### Recovery Scenarios
-Protection against game crashes, corrupted saves, accidental deletions, and version compatibility issues.
+Based on code analysis, the system appears to provide protection against game crashes, corrupted saves, accidental deletions, and version compatibility issues.
 
 ## Platform Integration
 
@@ -121,7 +120,7 @@ private static bool ElectronDataHasSave()       // Internal Electron save valida
 ```
 
 ### Multi-Platform Save Storage
-The `MultiSlotSaveStorage` class provides multiple save slots with async operations, cloud synchronization (Steam Cloud, etc.), platform-specific save validation, cross-platform save compatibility, async task-based save/load operations, save data compression and decompression, and conflict resolution for cloud saves.
+Based on code analysis, the `MultiSlotSaveStorage` class appears to provide multiple save slots with async operations, cloud synchronization integration, platform-specific save validation, cross-platform save compatibility, async task-based save/load operations, save data compression and decompression, and conflict resolution for cloud saves.
 
 ### Platform Detection
 ```csharp
@@ -143,7 +142,7 @@ public class GZipSaveDataCompressor
 ```
 
 ### Temporary Data Management
-Temporary directories support save file processing and validation, backup operations, cross-platform data migration, and recovery operations.
+Based on code analysis, temporary directories appear to support save file processing and validation, backup operations, cross-platform data migration, and recovery operations.
 
 ## Save Data Structure
 
@@ -152,12 +151,12 @@ Temporary directories support save file processing and validation, backup operat
 public static PlayerOptions _playerOptions;  // Current player preferences
 ```
 
-The `PlayerOptionsData` class contains character and stage selections, game mode preferences (Hyper, Hurry, Mazzo, LimitBreak, etc.), audio and visual settings, control configurations, game progress and unlocks, platform-specific data and achievements, and statistical data (coins, survival time, etc.).
+Based on code analysis, the `PlayerOptionsData` class appears to contain character and stage selections, game mode preferences (Hyper, Hurry, Mazzo, LimitBreak, and others), audio and visual settings, control configurations, game progress and unlocks, platform-specific data and achievements, and statistical data (coins, survival time, and similar metrics).
 
-For detailed information about PlayerOptionsData fields and PlayerOptions methods, see [Player Data System](player-data-system.md).
+For additional information about PlayerOptionsData fields and PlayerOptions methods, see [Player Data System](player-data-system.md).
 
 ### Game Progress Data
-Save files contain character unlocks and levels, weapon and item discoveries, achievement progress, stage completions, and statistical data (kills, time played, etc.).
+Based on code analysis, save files appear to contain character unlocks and levels, weapon and item discoveries, achievement progress, stage completions, and statistical data (kills, time played, and similar metrics).
 
 ## High-Level Save System
 
@@ -209,7 +208,7 @@ public enum CommitOptions
 ## Error Handling and Recovery
 
 ### Save Corruption Recovery
-Corruption recovery: load last run backup, try previous backups chronologically, offer manual selection, or create new save.
+Based on code analysis, corruption recovery appears to follow this process: load last run backup, try previous backups chronologically, offer manual selection, or create new save.
 
 ### Validation Methods
 ```csharp
@@ -222,7 +221,7 @@ bool VerifyBackupCompatibility(string backupPath)
 
 The save system uses `StorageResult` enum to indicate operation outcomes:
 - **Successful**: Operation completed successfully
-- **Failed**: Operation failed (file errors, corruption, etc.)
+- **Failed**: Operation failed (file errors, corruption, and similar items)
 - **NotFound**: Save file not found
 - **SDKNotInitialized**: Platform SDK not initialized
 - **StorageNotInitialized**: Storage system not initialized
@@ -305,18 +304,18 @@ private static Il2CppStringArray GetTempFolders()
 
 ### Modding Recommendations
 
-**✅ RECOMMENDED - Use Public Methods:**
+**Recommended - Use Public Methods:**
 - Use `PhaserSaveDataUtils.LoadSaveFiles()` to access save data
 - Use `SaveUtils` serialization methods for data conversion
 - Use `SaveSystem` methods for high-level save operations
 - Use public backup management methods for backup functionality
 
-**❌ AVOID - Private Methods:**
-- Don't attempt to call private path resolution methods
-- Don't rely on internal validation methods
+**Avoid - Private Methods:**
+- Do not attempt to call private path resolution methods
+- Do not rely on internal validation methods
 - Use alternative approaches for path discovery (see examples below)
 
-**🔧 ALTERNATIVE APPROACHES:**
+**Alternative Approaches:**
 ```csharp
 // Instead of private GetSaveDataPath(), use:
 string savePath = SaveUtils.GetSaveFilePath(Application.persistentDataPath);
@@ -504,7 +503,7 @@ MelonLogger.Msg($"Save sizes - Binary: {uncompressed.Length} bytes, " +
 ## Security and Integrity
 
 ### Save File Validation
-Implement checks for file format corruption, version compatibility, data consistency, and malicious modifications.
+Based on code analysis, the system appears to implement checks for file format corruption, version compatibility, data consistency, and malicious modifications.
 
 ### Backup Verification
 ```csharp
@@ -530,15 +529,15 @@ bool IsValidBackup(string backupPath)
 ## Testing and Debugging
 
 ### Save System Testing
-Save system testing requires thorough save/load cycle testing, backup creation and restoration verification, corrupted save file testing, cross-platform compatibility checking, and game version migration validation.
+Save system testing would typically require thorough save/load cycle testing, backup creation and restoration verification, corrupted save file testing, cross-platform compatibility checking, and game version migration validation.
 
 ### Common Issues
-Common issues include save corruption (incomplete writes or format errors), backup failures (insufficient disk space or permissions), version incompatibility (changes breaking old saves), performance impact (save operations causing frame drops), and data loss (failed save operations without proper backups).
+Common issues may include save corruption (incomplete writes or format errors), backup failures (insufficient disk space or permissions), version incompatibility (changes breaking old saves), performance impact (save operations causing frame drops), and data loss (failed save operations without appropriate backups).
 
 ## Advanced Save Features
 
 ### Incremental Saves and Compression
-For large game states, the system provides automatic save data compression via GZipSaveDataCompressor, efficient binary serialization with SaveUtils.GetSerializedPlayerData(), JSON conversion utilities for cross-platform compatibility, and delta-based saving for performance optimization.
+Based on code analysis, for large game states, the system appears to provide automatic save data compression via GZipSaveDataCompressor, binary serialization with SaveUtils.GetSerializedPlayerData(), JSON conversion utilities for cross-platform compatibility, and delta-based saving for performance optimization.
 
 ### Cloud Synchronization Integration
 Vampire Survivors includes built-in cloud save support through multiple platforms:
@@ -565,4 +564,4 @@ SaveSystem.HandleConflictResolution(localData, cloudData, (resolvedData) =>
 ```
 
 #### Advanced Save Features
-Automatic backup creation before cloud operations, conflict detection based on save timestamps and platform metadata, graceful degradation to local saves when cloud unavailable, cross-platform save compatibility through standardized serialization, multi-slot save management with SaveSlotMetadata, integrated save data compression for reduced storage footprint, and save backup service for automated backup management.
+Based on code analysis, the system appears to provide automatic backup creation before cloud operations, conflict detection based on save timestamps and platform metadata, graceful degradation to local saves when cloud unavailable, cross-platform save compatibility through standardized serialization, multi-slot save management with SaveSlotMetadata, integrated save data compression for reduced storage footprint, and save backup service for automated backup management.

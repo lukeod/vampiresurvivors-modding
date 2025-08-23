@@ -1,11 +1,11 @@
 # Stage System
 
-Manages enemy spawning, environmental effects, and gameplay progression through dynamic enemy placement and spawn patterns.
+Based on analysis of decompiled IL2CPP code, the stage system appears to manage enemy spawning, environmental effects, and gameplay progression through dynamic enemy placement and spawn patterns.
 
 ## Core Stage Architecture
 
 ### Stage Class
-Primary controller for stage mechanics and enemy spawning:
+Based on code analysis, the Stage class appears to serve as the primary controller for stage mechanics and enemy spawning:
 
 ```csharp
 // Key properties for stage management
@@ -18,7 +18,7 @@ public float _effectiveSpawnFrequency;           // Current spawn rate
 ```
 
 ### Stage Data Storage
-Stage configurations are stored in the DataManager:
+Based on decompiled code, stage configurations appear to be stored in the DataManager:
 
 ```csharp
 public JObject _allStagesJson;      // Raw JSON stage data
@@ -33,7 +33,7 @@ var stages = dataManager.GetConvertedStages();  // Dictionary<StageType, List<St
 ## Enemy Spawning System
 
 ### Core Spawning Methods
-The Stage class provides multiple spawning methods for different scenarios:
+The Stage class appears to provide multiple spawning methods for different scenarios:
 
 ```csharp
 // Primary enemy spawning
@@ -56,7 +56,7 @@ public EnemyController SpawnEnemyUnit(ObjectPool pool, EnemyType enemyType, Vect
 ```
 
 ### Spawn Pattern Methods
-Different spawn patterns are implemented through specialized methods:
+Based on code analysis, different spawn patterns appear to be implemented through specialized methods:
 
 ```csharp
 // Pattern-based spawning (internal implementation)
@@ -71,7 +71,7 @@ public void HandleSpawning(bool checkMaxEnemyCount = true)
 ```
 
 ### Spawn Types
-Different spawn behaviors are controlled through the `SpawnType` enum:
+Based on decompiled code, different spawn behaviors appear to be controlled through the `SpawnType` enum:
 - **STANDARD**: Default spawning behavior at random valid locations
 - **HORIZONTAL**: Spawning focused on horizontal patterns
 - **VERTICAL**: Spawning focused on vertical patterns
@@ -82,7 +82,7 @@ Different spawn behaviors are controlled through the `SpawnType` enum:
 ## Enemy Query and Management
 
 ### Enemy Search Methods
-The stage system provides efficient methods for finding and managing enemies:
+Based on code analysis, the stage system appears to provide methods for finding and managing enemies:
 
 ```csharp
 // Distance-based enemy queries
@@ -103,7 +103,7 @@ public List<EnemyController> GetAllEnemiesInScreenBounds(float excludedBorderPer
 ```
 
 ### Performance Monitoring
-Unity Profiler markers for performance analysis:
+Based on decompiled code, Unity Profiler markers appear to be defined for performance analysis:
 
 ```csharp
 public static ProfilerMarker MarkerSpawnEnemy;
@@ -118,15 +118,15 @@ public static ProfilerMarker MarkerDespawnEnemyIfOutsideRect;
 ## Stage Event Management
 
 ### StageEventManager
-Handles stage-specific events beyond basic spawning: timed events and special encounters, stage transitions and boss triggers, dynamic difficulty adjustments, and environmental effects.
+Based on code analysis, this component appears to handle stage-specific events beyond basic spawning: timed events and special encounters, stage transitions and boss triggers, dynamic difficulty adjustments, and environmental effects.
 
 ### Event-Driven Gameplay
-Stages trigger boss spawning, environmental hazards, special enemy waves, and stage-specific mechanics.
+Based on decompiled code analysis, stages appear to trigger boss spawning, environmental hazards, special enemy waves, and stage-specific mechanics.
 
 ## Spawn Boundaries and Zones
 
 ### Spawn Rectangle System
-The stage uses a dual-rectangle system for spawn management:
+Based on code analysis, the stage appears to use a dual-rectangle system for spawn management:
 
 ```csharp
 public Rect SpawnOuterRect;  // Maximum spawn boundary
@@ -146,10 +146,10 @@ public Rect SpawnInnerRect;  // Player safe zone (no spawning)
 public float _effectiveSpawnFrequency;  // Current spawn rate
 ```
 
-Spawn frequency can be modified dynamically based on game progression and time, player performance and difficulty scaling, stage-specific requirements, and special events and boss encounters.
+Based on code analysis, spawn frequency appears to be modifiable dynamically based on game progression and time, player performance and difficulty scaling, stage-specific requirements, and special events and boss encounters.
 
 ### Adaptive Spawning
-The system adapts spawning behavior based on current enemy count on screen, player position and movement patterns, performance requirements, and difficulty curve progression.
+Based on decompiled code, the system appears to adapt spawning behavior based on current enemy count on screen, player position and movement patterns, performance requirements, and difficulty curve progression.
 
 ## Stage Progression
 
@@ -166,15 +166,15 @@ Special handling for boss encounters:
 public void SpawnBoss()  // Triggers boss spawning logic
 ```
 
-Boss spawning involves clearing or reducing regular enemy spawns, special spawn locations and patterns, and modified game mechanics during boss fights.
+Based on code analysis, boss spawning appears to involve clearing or reducing regular enemy spawns, special spawn locations and patterns, and modified game mechanics during boss fights.
 
 ## Stage-Specific Data
 
 ### Stage Configuration
-Stage configuration data includes available enemy types for spawning through `poolsMapping`, spawn pattern preferences via `spawnType` property, environmental settings and tileset configuration, victory/progression conditions and time limits, destructible environment settings (`destructibleType`, `destructibleFreq`, `destructibleChance`), stage-specific events list for timed encounters, background music and visual texture assignments, lighting configuration (`hasLights`, `disableGlobalLight`), and merchant and speedup restrictions (`isMerchantBanned`, `isSpeedupBanned`).
+Based on decompiled code analysis, stage configuration data appears to include available enemy types for spawning through `poolsMapping`, spawn pattern preferences via `spawnType` property, environmental settings and tileset configuration, victory/progression conditions and time limits, destructible environment settings (`destructibleType`, `destructibleFreq`, `destructibleChance`), stage-specific events list for timed encounters, background music and visual texture assignments, lighting configuration (`hasLights`, `disableGlobalLight`), and merchant and speedup restrictions (`isMerchantBanned`, `isSpeedupBanned`).
 
 ### DLC Stage Support
-The system supports DLC stages through the DataManager:
+Based on code analysis, the system appears to support DLC stages through the DataManager:
 ```csharp
 public Dictionary<DlcType, Dictionary<StageType, List<StageData>>> _dlcStageData;
 public Dictionary<DlcType, Dictionary<StageType, List<StageData>>> AllDlcStageData { get; }
@@ -182,7 +182,7 @@ public Dictionary<DlcType, Dictionary<StageType, List<StageData>>> AllDlcStageDa
 
 ## Performance Considerations
 
-Stage systems involve performance-critical operations requiring efficient spatial queries, cached calculations, and batched operations. Avoid hooking high-frequency methods.
+Based on code analysis, stage systems appear to involve performance-critical operations that may require spatial queries, cached calculations, and batched operations. Consider avoiding hooks on high-frequency methods to maintain performance.
 
 ## Common Modding Scenarios
 
@@ -239,7 +239,7 @@ public static bool CustomEnemySelection(ref EnemyType enemyType, Vector2 spawnPo
 ## Enemy Culling and Cleanup
 
 ### Automatic Culling
-Automatic enemy culling through the private `UpdateCulling()` method. Enemies outside boundaries are despawned, off-screen enemies culled for performance, and dead enemies cleaned up automatically.
+Based on decompiled code, automatic enemy culling appears to occur through the private `UpdateCulling()` method. Enemies outside boundaries appear to be despawned, off-screen enemies culled for performance, and dead enemies cleaned up automatically.
 
 ### Manual Enemy Management
 ```csharp
@@ -258,22 +258,22 @@ public void GetEnemyBodiesInRect(Rectangle _rect, ref List<BaseBody> list)
 ## Testing and Debugging
 
 ### Spawn Validation
-When modifying stage systems:
-1. Test spawn patterns across different stage types
-2. Verify enemy counts remain reasonable
-3. Check for spawn location conflicts
-4. Monitor performance impact of changes
+When modifying stage systems, consider testing:
+1. Spawn patterns across different stage types
+2. Enemy counts remain reasonable
+3. Spawn location conflicts
+4. Performance impact of changes
 
-### Common Issues
-1. **Spawn overflow**: Too many enemies causing performance issues
-2. **Invalid spawn locations**: Enemies spawning inside walls or obstacles
-3. **Unbalanced difficulty**: Modified spawn rates breaking game balance
-4. **Memory leaks**: Improper enemy cleanup causing memory issues
+### Potential Issues
+1. **Spawn overflow**: Too many enemies may cause performance issues
+2. **Invalid spawn locations**: Enemies may spawn inside walls or obstacles
+3. **Unbalanced difficulty**: Modified spawn rates may affect game balance
+4. **Memory leaks**: Improper enemy cleanup may cause memory issues
 
 ## Advanced Stage Features
 
 ### Stage Data Access Patterns
-The stage system uses several access patterns for configuration:
+Based on code analysis, the stage system appears to use several access patterns for configuration:
 
 ```csharp
 // Access stage data through DataManager
@@ -290,14 +290,14 @@ stageData.destructibleType; // Environmental destructibles
 ```
 
 ### Conditional Spawning
-Implement spawning based on game state:
+Based on code analysis, spawning appears to be conditional on game state:
 - Player level and equipment
 - Time progression
 - Current enemy composition
 - Special game events
 
 ### Environmental Integration
-Stages interact with environmental systems:
+Based on decompiled code, stages appear to interact with environmental systems:
 - Destructible environments
 - Moving platforms or obstacles
 - Dynamic lighting and visual effects
@@ -318,4 +318,4 @@ Several important method signatures have been updated:
 - `PickRandomEnemyFromList()` for selecting from custom enemy lists
 
 ### Updated Random System
-The stage system now uses Unity.Mathematics.Random for more predictable and controllable randomization. When hooking into random enemy selection methods, pass a specific Random instance for deterministic behavior across different game sessions.
+Based on code analysis, the stage system appears to use Unity.Mathematics.Random for randomization. When hooking into random enemy selection methods, you can pass a specific Random instance for deterministic behavior across different game sessions.

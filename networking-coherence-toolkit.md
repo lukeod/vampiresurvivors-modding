@@ -2,7 +2,7 @@
 
 ## Overview
 
-Vampire Survivors uses the **Coherence Toolkit** for its online multiplayer functionality. This document provides a comprehensive analysis of the networking architecture, based on verified examination of the decompiled source code, to help modders create network-compatible modifications.
+Vampire Survivors appears to use the **Coherence Toolkit** for its online multiplayer functionality, based on analysis of the decompiled IL2CPP source code. This document analyzes the networking architecture to help modders create network-compatible modifications.
 
 ## Core Architecture
 
@@ -26,7 +26,7 @@ Vampire Survivors uses the **Coherence Toolkit** for its online multiplayer func
   - `HasStateAuthority`: Can modify entity state (health, stats, position)
   - `HasInputAuthority`: Can send input commands for entity control
   - `authorityTransferType`: How authority can be transferred (NotTransferable/Request/Stealing)
-  - **Note**: There is NO simple `HasAuthority` property - always use the specific type
+  - **Note**: There appears to be no simple `HasAuthority` property - always use the specific type
 - **Key Methods**:
   - `RequestAuthority()`: Request authority over entity
   - `TransferAuthority()`: Transfer authority to another client
@@ -95,7 +95,7 @@ Vampire Survivors uses a **host authority** model where:
 
 3. **Full Authority**: Having both state and input authority
 
-**There is NO simple `HasAuthority` property** - you must always check the specific authority type you need.
+**There appears to be no simple `HasAuthority` property** - you must always check the specific authority type you need.
 
 ### Authority Transfer Modes
 - **NotTransferable**: Authority cannot be transferred
@@ -132,9 +132,10 @@ Authority holder destroys entity → Destruction replicated to all clients
 - Latency measured continuously during gameplay
 
 ### Compensation Mechanisms
-- **Position Interpolation**: Smooth movement between network updates
-- **Client Prediction**: Local movement prediction to hide latency
-- **Server Reconciliation**: Correction when predictions are wrong
+Based on code analysis, the system appears to implement:
+- **Position Interpolation**: Movement between network updates
+- **Client Prediction**: Local movement prediction
+- **Server Reconciliation**: Correction when predictions are incorrect
 
 ## Connection Management
 
@@ -147,7 +148,7 @@ Authority holder destroys entity → Destruction replicated to all clients
 ### Error Handling
 - **ConnectionException**: Network-level errors
 - **GameManager.BlockConnectionErrorPopups**: Control error UI display
-- Automatic reconnection attempts (implementation details in bridge)
+- Reconnection attempts (inferred from bridge implementation)
 
 ## Modding Guidelines
 
@@ -191,7 +192,7 @@ public static bool Prefix(CharacterController __instance)
 ### 2. Safe Modding Patterns
 
 #### Client-Side Only Modifications
-Safe for multiplayer:
+Appear compatible with multiplayer:
 - UI changes
 - Visual effects
 - Audio modifications  
@@ -212,7 +213,7 @@ public void ModifyPlayerState(CharacterController character)
         }
     }
     
-    // Safe to modify state here
+    // Modify state here
     character.ModifyHp(100);
 }
 ```
@@ -226,9 +227,9 @@ public void ModifyPlayerState(CharacterController character)
 4. **Creating timers** that can desync between clients
 5. **Using Random.Range()** without synchronized seeds
 
-#### Safe Alternatives:
-1. Use proper CoherenceSync destruction
-2. Use game's instantiation system
+#### Alternatives:
+1. Use CoherenceSync destruction methods
+2. Use the game's instantiation system
 3. Check authority before modifications
 4. Use server-authoritative timing
 5. Use deterministic randomization
@@ -267,19 +268,19 @@ The game includes 512 generated CoherenceSync files for different entity types. 
 ### Game Flow Changes:
 - **Authority checks** before state modifications
 - **Network instantiation** instead of direct spawning
-- **Latency compensation** for smooth gameplay
+- **Latency compensation** for gameplay
 - **Connection management** and error handling
 - **Synchronized random events** across clients
 
 ### Performance Considerations:
 - Network bandwidth usage increases with entity count
-- More complex camera calculations for multiple players
+- Camera calculations for multiple players
 - CPU overhead from network processing
 - Memory overhead from prediction/reconciliation
 
 ## Summary
 
-Understanding Coherence Toolkit's architecture is crucial for creating network-compatible mods. The key principles are:
+Understanding Coherence Toolkit's architecture is necessary for creating network-compatible mods. The key principles are:
 
 1. **Respect Authority**: Only modify entities you have authority over
 2. **Use Proper Instantiation**: Use game's network-aware spawning
@@ -287,10 +288,8 @@ Understanding Coherence Toolkit's architecture is crucial for creating network-c
 4. **Test Thoroughly**: Verify functionality in all network scenarios
 5. **Follow Game Patterns**: Use existing networking patterns where possible
 
-By following these guidelines, modders can create modifications that work seamlessly in both single-player and multiplayer scenarios.
+By following these guidelines, modders can create modifications that work in both single-player and multiplayer scenarios.
 
 ---
 
-*🤖 Generated with [Claude Code](https://claude.ai/code)*
-
-*This documentation is based on comprehensive source code analysis of Vampire Survivors v1.0+ and represents the verified networking implementation as of January 2025.*
+*This documentation is based on analysis of decompiled IL2CPP source code from Vampire Survivors v1.0+ and represents the inferred networking implementation as of January 2025.*

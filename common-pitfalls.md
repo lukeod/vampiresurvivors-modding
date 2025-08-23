@@ -1,11 +1,11 @@
 # Common Pitfalls Reference
 
-Solutions for common Vampire Survivors modding issues.
+Reference for Vampire Survivors modding issues based on decompiled IL2CPP code analysis. All behavior patterns are inferred from static code analysis, not runtime testing.
 
 ## Data System
 
 ### Weapon Level Delta Values
-Weapon levels 2-8 contain incremental deltas, not absolute values.
+Based on code analysis, weapon levels 2-8 appear to contain incremental deltas rather than absolute values.
 
 ```csharp
 // Use converted data for absolute values
@@ -14,7 +14,7 @@ var whipLevel3Power = weapons[WeaponType.WHIP][2].power;
 ```
 
 ### IL2CPP Type Prefixes
-All game types require the `Il2Cpp` prefix.
+Game types require the `Il2Cpp` prefix based on IL2CPP compilation patterns.
 
 ```csharp
 using Il2CppVampireSurvivors.Framework;
@@ -22,7 +22,7 @@ Il2CppVampireSurvivors.Framework.GameManager gameManager;
 ```
 
 ### GM.Core Null Reference
-`GM.Core` is null in menu screens.
+`GM.Core` appears to be null in menu screens based on code analysis.
 
 ```csharp
 var dataManager = GM.Core?.DataManager;
@@ -30,7 +30,7 @@ if (dataManager == null) return;
 ```
 
 ### Runtime Assembly Reference
-Add VampireSurvivors.Runtime.dll reference for core game classes.
+You need VampireSurvivors.Runtime.dll reference for core game classes.
 
 ```xml
 <Reference Include="Il2CppVampireSurvivors.Runtime">
@@ -39,7 +39,7 @@ Add VampireSurvivors.Runtime.dll reference for core game classes.
 ```
 
 ### JSON Modification Reload
-Call `ReloadAllData()` after direct JSON modifications.
+Based on code analysis, you need to call `ReloadAllData()` after direct JSON modifications.
 
 ```csharp
 dataManager._allWeaponDataJson["WHIP"][0]["power"] = 100;
@@ -49,7 +49,7 @@ dataManager.ReloadAllData();
 ## IL2CPP Specifics
 
 ### Collection Null Validation
-IL2CPP collections can contain null entries.
+IL2CPP collections can contain null entries based on decompiled code patterns.
 
 ```csharp
 if (il2cppWeaponList != null)
@@ -65,7 +65,7 @@ if (il2cppWeaponList != null)
 ```
 
 ### PlayerModifierStats Wrapper Types
-Different stats use different wrapper types.
+Different stats appear to use different wrapper types based on code analysis.
 
 ```csharp
 playerStats.Revivals.SetValue(5.0);  // EggDouble - requires double
@@ -74,7 +74,7 @@ playerStats.Power.SetValue(100f);    // EggFloat
 ```
 
 ### String Handling
-Use defensive string handling with IL2CPP objects.
+Defensive string handling appears necessary with IL2CPP objects based on decompiled code patterns.
 
 ```csharp
 string name = il2cppObject.name?.ToString();
@@ -84,7 +84,7 @@ if (!string.IsNullOrEmpty(name) && name.Equals("SomeName", StringComparison.Ordi
 ## Performance
 
 ### High-Frequency Method Hooks
-Do not hook methods that execute every frame.
+Avoid hooking methods that execute every frame based on performance considerations.
 
 ```csharp
 // Hook initialization or event-driven methods
@@ -94,7 +94,7 @@ public static void SafeHook() { }
 ```
 
 ### String Allocations
-Minimize string operations in frequently called code.
+Minimizing string operations in frequently called code appears beneficial for performance.
 
 ```csharp
 private static readonly StringBuilder _stringBuilder = new();
@@ -113,7 +113,7 @@ public static void OptimizedStringHandling()
 ## Harmony Hooks
 
 ### Exception Handling
-Wrap all hook logic in try-catch blocks.
+Wrapping hook logic in try-catch blocks appears necessary based on IL2CPP interop patterns.
 
 ```csharp
 [HarmonyPatch(typeof(CharacterController), "LevelUp")]
@@ -135,7 +135,7 @@ public static void SafeHook(CharacterController __instance)
 ```
 
 ### Hook Priority
-Use explicit priority for execution order dependencies.
+Explicit priority appears necessary for execution order dependencies based on Harmony patterns.
 
 ```csharp
 [HarmonyPatch(typeof(WeaponData), "power", MethodType.Getter)]
@@ -223,6 +223,7 @@ public static bool SafeWriteFile(string filePath, string data)
 ## UI and Threading
 
 ### Main Thread UI Updates
+Based on Unity patterns, UI updates require main thread execution.
 
 ```csharp
 Task.Run(() =>
@@ -264,7 +265,7 @@ private static IEnumerator UpdateUICoroutine(string text)
 ## EggFloat/EggDouble Access
 
 ### Proper Value Access
-Use `GetValue()` and `SetValue()` methods.
+Based on decompiled code analysis, you use `GetValue()` and `SetValue()` methods for wrapper types.
 
 ```csharp
 float power = playerStats.Power.GetValue();
@@ -277,21 +278,22 @@ playerStats.Revivals.SetValue(3.0);
 ## Namespace Resolution
 
 ### Correct Type References
+Based on namespace analysis from decompiled code:
 
 ```csharp
 using Il2CppVampireSurvivors.Objects.Characters;
 [HarmonyPatch(typeof(CharacterController), "LevelUp")]
 ```
 
-## Testing Checklist
+## Verification Points
 
-- [ ] IL2CPP objects null-checked
-- [ ] Exception handling in all hooks
-- [ ] No high-frequency method hooks
-- [ ] Proper file operation directories
-- [ ] Correct wrapper types for PlayerModifierStats
-- [ ] GetConvertedWeaponData() for weapon data
-- [ ] GM.Core null checks
-- [ ] GetValue()/SetValue() for EggFloat/EggDouble
-- [ ] Menu and gameplay state testing
-- [ ] Save/load compatibility testing
+- IL2CPP objects null-checked
+- Exception handling in hooks
+- Avoid high-frequency method hooks
+- File operations use appropriate directories
+- Wrapper types match PlayerModifierStats patterns
+- GetConvertedWeaponData() for weapon data access
+- GM.Core null validation
+- GetValue()/SetValue() for EggFloat/EggDouble types
+- Menu and gameplay state compatibility
+- Save/load operation compatibility

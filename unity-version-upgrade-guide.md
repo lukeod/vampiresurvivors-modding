@@ -1,11 +1,11 @@
 # Unity Version Upgrade Guide: 2021.3 → 6000.0.36f1
-## Comprehensive Reference for Vampire Survivors v1.0+ Unity Engine Changes
+## Reference for Vampire Survivors v1.0+ Unity Engine Changes
 
 *Last updated: January 2025*
 
 ## Overview
 
-Vampire Survivors v1.0+ represents a major technological upgrade from Unity 2021.3.44f1 to Unity 6000.0.36f1. This upgrade enables modern networking capabilities, Universal Render Pipeline (URP) support, enhanced IL2CPP optimizations, and improved multiplayer architecture while maintaining backward compatibility for most modding patterns.
+Vampire Survivors v1.0+ upgraded from Unity 2021.3.44f1 to Unity 6000.0.36f1. Based on analysis of the decompiled IL2CPP code, this upgrade appears to enable networking capabilities, Universal Render Pipeline (URP) support, IL2CPP optimizations, and multiplayer architecture while maintaining backward compatibility for most modding patterns.
 
 ## 1. Unity Engine Upgrade Details
 
@@ -14,17 +14,17 @@ Vampire Survivors v1.0+ represents a major technological upgrade from Unity 2021
 - **Current**: Unity 6000.0.36f1 (Latest)
 
 ### Key Upgrade Motivations
-1. **Networking Infrastructure**: Unity 6000 provides robust networking support required for Coherence Toolkit integration
-2. **Render Pipeline Modernization**: URP support for enhanced visual effects and performance
-3. **IL2CPP Improvements**: Better code generation and interop patterns
-4. **Collection Handling**: Enhanced memory management and collection performance
-5. **Modern Platform Support**: Better compatibility with current platform SDKs
+1. **Networking Infrastructure**: Unity 6000 provides networking support required for Coherence Toolkit integration
+2. **Render Pipeline Modernization**: URP support for visual effects and performance
+3. **IL2CPP Improvements**: Code generation and interop patterns
+4. **Collection Handling**: Memory management and collection performance
+5. **Modern Platform Support**: Compatibility with current platform SDKs
 
 ## 2. Universal Render Pipeline (URP) Implementation
 
 ### Evidence from Source Code
 
-The decompiled code reveals extensive URP integration:
+The decompiled IL2CPP code reveals URP integration:
 
 #### URP Assemblies Present
 - `Unity.RenderPipelines.Universal.Runtime` (confirmed in project references)
@@ -42,7 +42,7 @@ public class DisableURPDebugUpdater : MonoBehaviour
 {
     public unsafe void Awake()
     {
-        // Disables URP debug features for performance in production
+        // Appears to disable URP debug features based on code analysis
         // IL2CPP interop calls to native URP debug system
     }
 }
@@ -61,38 +61,38 @@ The game includes URP-compatible shaders for effects:
    - Post-processing effects use URP Volume system
 
 2. **Performance Implications**:
-   - Better GPU performance on modern hardware
-   - Improved batching and culling
-   - More efficient lighting calculations
+   - GPU performance on modern hardware
+   - Batching and culling
+   - Lighting calculations
 
 3. **Visual Effects**:
-   - Enhanced particle systems
-   - Better 2D lighting support
-   - Improved post-processing capabilities
+   - Particle systems
+   - 2D lighting support
+   - Post-processing capabilities
 
 ## 3. IL2CPP Changes and Compatibility
 
-### Enhanced IL2CPP Patterns
+### IL2CPP Patterns
 
-Unity 6000 introduces improved IL2CPP code generation patterns evident in the decompiled code:
+Unity 6000 introduces IL2CPP code generation patterns evident in the decompiled code:
 
 #### Object Pool Management
 ```csharp
-// Enhanced object pooling with better memory management
+// Object pooling with memory management, inferred from decompiled code
 return (intPtr != (System.IntPtr)0) ? Il2CppObjectPool.Get<T>(intPtr) : null;
 ```
 
-#### Improved Interop Calls
+#### Interop Calls
 ```csharp
-// More efficient native method invocation patterns
+// Native method invocation patterns based on code analysis
 System.IntPtr intPtr = IL2CPP.il2cpp_runtime_invoke(methodPtr, objectPtr, args, ref exception);
 Il2CppException.RaiseExceptionIfNecessary(exception);
 ```
 
-#### Collection Handling Improvements
-- Better native array support with `Unity.Collections.NativeArray`
-- Enhanced memory layout for collections
-- Improved garbage collection integration
+#### Collection Handling
+- Native array support with `Unity.Collections.NativeArray`
+- Memory layout for collections
+- Garbage collection integration
 
 ### Breaking Changes for Mods
 
@@ -115,7 +115,7 @@ Il2CppException.RaiseExceptionIfNecessary(exception);
 
 ### Coherence Toolkit Integration
 
-Unity 6000 enables the extensive Coherence Toolkit networking implementation:
+Unity 6000 enables the Coherence Toolkit networking implementation:
 
 #### Coherence Assemblies (30+ assemblies)
 - `Il2CppCoherence.Core` - Core networking functionality
@@ -127,7 +127,7 @@ Unity 6000 enables the extensive Coherence Toolkit networking implementation:
 ```csharp
 public class NetworkTime : Il2CppSystem.Object
 {
-    // Advanced network time synchronization
+    // Network time synchronization based on code analysis
     // Ping compensation and client prediction
     // Multi-client mode support
 }
@@ -154,38 +154,38 @@ public class NetworkTime : Il2CppSystem.Object
 
 ### Unity 6000 Performance Improvements
 
-1. **Better GPU Utilization**:
-   - URP provides more efficient rendering
-   - Improved batching reduces draw calls
-   - Better occlusion culling
+1. **GPU Utilization**:
+   - URP provides rendering
+   - Batching reduces draw calls
+   - Occlusion culling
 
 2. **Memory Management**:
-   - Enhanced garbage collection
-   - Better native collection support
-   - Optimized object pooling
+   - Garbage collection
+   - Native collection support
+   - Object pooling
 
 3. **CPU Performance**:
-   - More efficient IL2CPP code generation
-   - Better method inlining
-   - Reduced overhead in interop calls
+   - IL2CPP code generation
+   - Method inlining
+   - Overhead in interop calls
 
 ### Asset Loading Changes
 
 1. **Addressable Assets**:
-   - Enhanced Addressable system integration
-   - Better asset reference management
-   - Improved loading performance
+   - Addressable system integration
+   - Asset reference management
+   - Loading performance
 
 2. **Shader Compilation**:
    - URP shaders compile differently
    - Shader variants managed by URP
-   - Better shader stripping
+   - Shader stripping
 
 ## 6. Modding Migration Guide
 
 ### Updating Existing Mods
 
-#### 1. Project References
+#### Project References
 Add URP references to your mod project:
 ```xml
 <Reference Include="Unity.RenderPipelines.Universal.Runtime" />
@@ -193,7 +193,7 @@ Add URP references to your mod project:
 <Reference Include="Unity.RenderPipelines.Core.Runtime" />
 ```
 
-#### 2. Multiplayer Compatibility
+#### Multiplayer Compatibility
 Update mod initialization:
 ```csharp
 [HarmonyPatch(typeof(GameManager), "Awake")]
@@ -215,7 +215,7 @@ public static void Postfix(GameManager __instance)
 }
 ```
 
-#### 3. Rendering Updates
+#### Rendering Updates
 Update shader-related code:
 ```csharp
 // Old: Built-in pipeline shader
@@ -225,7 +225,7 @@ var shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
 var shader = Shader.Find("Universal Render Pipeline/2D/Sprite-Lit-Default");
 ```
 
-#### 4. Physics Callback Updates
+#### Physics Callback Updates
 Update collision callbacks for new signatures:
 ```csharp
 // Verify callback parameters match Unity 6000 signatures
@@ -260,13 +260,13 @@ private void OnCollisionEnter2D(Collision2D collision)
 
 ### Network Entity Modifications
 **Issue**: Modifications don't sync in multiplayer
-**Solution**: Check for network authority and use proper synchronization
+**Solution**: Check for network authority and use synchronization
 
 ### IL2CPP Interop Failures
 **Issue**: IL2CPP method calls fail or crash
 **Solution**: Verify method signatures match Unity 6000 IL2CPP patterns
 
-### Performance Degradation
+### Performance Issues
 **Issue**: Mod causes performance issues in URP
 **Solution**: Optimize rendering calls and use URP-specific optimizations
 
@@ -274,20 +274,20 @@ private void OnCollisionEnter2D(Collision2D collision)
 
 ### New Capabilities Available
 
-1. **Enhanced Graphics**:
-   - Better particle systems integration
-   - Advanced post-processing effects
-   - Improved 2D lighting
+1. **Graphics**:
+   - Particle systems integration
+   - Post-processing effects
+   - 2D lighting
 
 2. **Networking Features**:
    - Coherence Toolkit integration
-   - Advanced network synchronization
+   - Network synchronization
    - Multi-client support
 
 3. **Development Tools**:
-   - Better debugging capabilities
-   - Enhanced profiling tools
-   - Improved Unity Editor integration
+   - Debugging capabilities
+   - Profiling tools
+   - Unity Editor integration
 
 ### Features to Avoid in Mods
 
@@ -303,9 +303,9 @@ private void OnCollisionEnter2D(Collision2D collision)
 - URP is now the standard rendering pipeline
 
 ### Modding Ecosystem Evolution
-- Increasing focus on multiplayer compatibility
-- Enhanced networking capabilities for advanced mods
-- Better performance characteristics for complex modifications
+- Focus on multiplayer compatibility
+- Networking capabilities for mods
+- Performance characteristics for modifications
 
 ## 10. Resources and References
 
@@ -322,13 +322,13 @@ private void OnCollisionEnter2D(Collision2D collision)
 
 ## Summary
 
-The Unity 6000.0.36f1 upgrade represents the most significant technological advancement in Vampire Survivors' development. While maintaining compatibility with existing modding patterns, it introduces powerful new capabilities through URP rendering, advanced networking via Coherence Toolkit, and enhanced IL2CPP performance.
+The Unity 6000.0.36f1 upgrade represents a technological advancement in Vampire Survivors' development. While maintaining compatibility with existing modding patterns, it introduces new capabilities through URP rendering, networking via Coherence Toolkit, and IL2CPP performance.
 
 **Key Takeaways for Modders:**
-1. **Multiplayer awareness is now mandatory** for all mods
+1. **Multiplayer awareness is required** for all mods
 2. **URP compatibility** required for rendering-related modifications  
-3. **Enhanced performance** available through modern Unity features
-4. **Network considerations** essential for online gameplay
+3. **Performance** available through Unity features
+4. **Network considerations** for online gameplay
 5. **IL2CPP patterns** refined but fundamentally compatible
 
-The upgrade enables Vampire Survivors to support modern multiplayer gaming while providing modders with more powerful tools and better performance characteristics.
+The upgrade enables Vampire Survivors to support multiplayer gaming while providing modders with tools and performance characteristics.

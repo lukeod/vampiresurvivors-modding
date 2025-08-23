@@ -1,13 +1,13 @@
 # Localization System
 
-Vampire Survivors uses a custom localization system for multi-language support and runtime text management. The system provides direct access to localized content through data classes.
+Based on analysis of decompiled IL2CPP code, Vampire Survivors appears to use a custom localization system for multi-language support and runtime text management. The system provides direct access to localized content through data classes.
 
 ## Core Components
 
 ### LanguageController
 **Location**: `Il2CppVampireSurvivors.LanguageController`
 
-Manages language selection and UI updates:
+Appears to manage language selection and UI updates, based on code analysis:
 
 ```csharp
 public class LanguageController : MonoBehaviour
@@ -24,7 +24,7 @@ public class LanguageController : MonoBehaviour
 ```
 
 ### Data-Specific Localization
-Each data type handles its own localization through specialized methods:
+Based on the decompiled code, each data type appears to handle its own localization through specialized methods:
 
 ```csharp
 // Weapon localization
@@ -60,7 +60,7 @@ public class StageData
 ## Localization Access Patterns
 
 ### Direct Data Access
-Localization is accessed directly through data classes without term-based lookups:
+Based on code analysis, localization appears to be accessed directly through data classes without term-based lookups:
 
 ```csharp
 // Get localized weapon name
@@ -77,7 +77,7 @@ string itemName = itemData.GetLocalizedName(ItemType.SPINACH);
 ```
 
 ### Language UI Components
-Language selection uses dedicated UI components:
+Based on the decompiled code, language selection appears to use dedicated UI components:
 
 ```csharp
 public class LanguageButtonUI : MonoBehaviour
@@ -145,14 +145,14 @@ public static class CustomLocalization
 ## Language System Types
 
 ### Language Support
-The system supports multiple languages through language codes:
+Based on code analysis, the system appears to support multiple languages through language codes:
 
 ```csharp
 // Language button configuration
 public class LanguageButtonUI
 {
-    public string Code;  // Language code (e.g., "en", "it", "es")
-    public string Name;  // Display name (e.g., "English", "Italiano")
+    public string Code;  // Language code (for example, "en", "it", "es")
+    public string Name;  // Display name (for example, "English", "Italiano")
 }
 ```
 
@@ -170,7 +170,7 @@ public static class PlatformIntegration
 ## Integration with Game Systems
 
 ### WeaponData Localization
-Weapons provide direct localization methods:
+Based on the decompiled code, weapons appear to provide direct localization methods:
 
 ```csharp
 public class WeaponData
@@ -194,7 +194,7 @@ public class WeaponData
 ```
 
 ### Character Localization
-Characters use name-based localization:
+Based on code analysis, characters appear to use name-based localization:
 
 ```csharp
 public class CharacterData
@@ -208,7 +208,7 @@ public class CharacterData
 ```
 
 ### Other Game Systems
-Other data types follow similar patterns:
+Based on the decompiled code, other data types appear to follow similar patterns:
 
 ```csharp
 // Achievements
@@ -294,7 +294,7 @@ public static class MultiLanguageSupport
 
 ## UI Localization Components
 
-The system uses Unity components for UI localization:
+Based on code analysis, the system appears to use Unity components for UI localization:
 
 ```csharp
 // Force parse escape characters in localized text
@@ -309,7 +309,7 @@ public class ForceParseEscapeCharacters : MonoBehaviour
 
 ## Dynamic Parameter Replacement
 
-The system supports parameter injection through description methods:
+Based on the decompiled code, the system appears to support parameter injection through description methods:
 
 ```csharp
 // WeaponData parameter replacement
@@ -391,7 +391,7 @@ public static void CustomWeaponDescriptions(WeaponType wType, ref string __resul
 {
     if (wType == WeaponType.CUSTOM_WEAPON)
     {
-        __result = CustomLocalization.GetCustomTranslation("custom_weapon_desc", "A powerful custom weapon");
+        __result = CustomLocalization.GetCustomTranslation("custom_weapon_desc", "A custom weapon");
     }
 }
 ```

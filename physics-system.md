@@ -1,15 +1,15 @@
 # Physics System
 
-Vampire Survivors uses a custom physics engine (ArcadePhysics) for collision detection and movement, integrated with Unity's component system.
+Based on code analysis, Vampire Survivors appears to use a custom physics engine (ArcadePhysics) for collision detection and movement, integrated with Unity's component system. All information in this document is inferred from decompiled IL2CPP code.
 
-**Note**: This documentation reflects the current Unity 6000.0.36f1 implementation. Collision callback signatures and some method parameters have been updated from previous versions.
+**Note**: This documentation reflects the Unity 6000.0.36f1 implementation observed in the decompiled code. Collision callback signatures and some method parameters appear to have been updated from previous versions.
 
 ## Core Components
 
 ### PhysicsManager (Singleton)
 **Location**: `Il2CppVampireSurvivors.Framework.PhysicsManager`
 
-Central physics management singleton:
+Appears to function as a central physics management singleton based on code analysis:
 
 ```csharp
 // Singleton access
@@ -18,7 +18,7 @@ PhysicsManager.Instance // Property accessor
 ```
 
 #### Physics Groups
-Manages different collision groups for game objects:
+Based on the decompiled code, manages different collision groups for game objects:
 - `_playerGroup` - Player characters
 - `_playersWithWallCollisionGroup` - Players that collide with walls
 - `_enemyGroup` - Enemy characters
@@ -45,7 +45,7 @@ Manages different collision groups for game objects:
 ### ArcadePhysics System
 **Location**: `Il2Cpp.ArcadePhysics`
 
-Custom physics engine implementation:
+Based on code analysis, appears to be a custom physics engine implementation:
 
 ```csharp
 // Static access points
@@ -67,7 +67,7 @@ ArcadePhysics.Config         // Physics configuration property
 ### BaseBody
 **Location**: `Il2CppPhaserPort.BaseBody`
 
-Base physics body with core properties:
+Based on the decompiled code, serves as the base physics body with core properties:
 
 ```csharp
 public class BaseBody : RBush.IRectangular
@@ -118,7 +118,7 @@ public class BaseBody : RBush.IRectangular
 ### ArcadeSprite
 **Location**: `Il2Cpp.ArcadeSprite`
 
-Extends PhaserGameObject with physics integration:
+Based on code analysis, extends PhaserGameObject with physics integration:
 
 ```csharp
 public class ArcadeSprite : PhaserGameObject
@@ -148,7 +148,7 @@ public enum PhysicsType
 #### ArcadeColliderType
 **Location**: `Il2Cpp.ArcadeColliderType`
 
-Abstract base class for collision objects in callbacks:
+Based on the decompiled code, appears to be an abstract base class for collision objects in callbacks:
 
 ```csharp
 public abstract class ArcadeColliderType
@@ -163,7 +163,7 @@ public abstract class ArcadeColliderType
 #### CallbackContext
 **Location**: `Il2Cpp.CallbackContext`
 
-Context object passed to collision callbacks:
+Based on code analysis, appears to be a context object passed to collision callbacks:
 
 ```csharp
 public class CallbackContext
@@ -177,7 +177,7 @@ public class CallbackContext
 ### PhysicsGroup Class
 **Location**: `Il2Cpp.PhysicsGroup`
 
-Container for physics objects:
+Based on the decompiled code, functions as a container for physics objects:
 
 ```csharp
 public class PhysicsGroup : Group
@@ -193,7 +193,7 @@ public class PhysicsGroup : Group
 ### BulletPool (Projectile Management)
 **Location**: `Il2CppVampireSurvivors.Objects.Pools.BulletPool`
 
-Specialized pool for projectiles:
+Based on code analysis, appears to be a specialized pool for projectiles:
 
 ```csharp
 public class BulletPool : PhysicsGroup
@@ -217,7 +217,7 @@ public class BulletPool : PhysicsGroup
 ### Projectile Class
 **Location**: `Il2CppVampireSurvivors.Objects.Projectiles.Projectile`
 
-Extends ArcadeSprite for weapon projectiles:
+Based on the decompiled code, extends ArcadeSprite for weapon projectiles:
 
 ```csharp
 public class Projectile : ArcadeSprite
@@ -240,11 +240,13 @@ public class Projectile : ArcadeSprite
     
     // Lifecycle
     public virtual void InternalUpdate();
-    // Note: Collision handling methods have been updated in Unity 6
+    // Note: Collision handling methods appear to have been updated in Unity 6 based on code analysis
 }
 ```
 
 ### Integration Flow
+
+Based on code analysis, the integration appears to follow this pattern:
 
 ```
 1. Weapon.Fire() creates projectile
@@ -291,8 +293,8 @@ PhysicsManager.Instance._bulletGroup.add(customObject);
 // 3. Set movement
 customObject.setVelocity(100, 0);  // Move right at 100 units/sec
 
-// 4. Handle collisions - Note: collision callback signatures have changed
-// Override appropriate collision methods as needed
+// 4. Handle collisions - Note: collision callback signatures appear to have changed
+// Override appropriate collision methods as needed based on your requirements
 ```
 
 ### Custom Projectile Pool
@@ -336,8 +338,8 @@ var hits = ArcadePhysics.Instance.OverlapLine(new float2(x1, y1), new float2(x2,
 ### Collision Callbacks
 
 ```csharp
-// Register collision callback - Note: callbacks now use different signatures
-// These are typically registered internally by the game
+// Register collision callback - Note: callbacks appear to use different signatures based on code analysis
+// These appear to be registered internally by the game
 bool OnPlayerOverlapsEnemy(CallbackContext context, ArcadeColliderType player, ArcadeColliderType enemy)
 {
     // Handle player-enemy collision
@@ -354,47 +356,55 @@ PhysicsManager.Instance.InitPhysicsColliders();
 ## Performance Considerations
 
 ### Object Pooling
-- All projectiles use BulletPool for memory efficiency
-- Enemies often use similar pooling systems
-- Pickups are recycled through object pools
+Based on code analysis:
+- All projectiles appear to use BulletPool for memory efficiency
+- Enemies appear to use similar pooling systems
+- Pickups appear to be recycled through object pools
 
 ### Spatial Indexing
-- Uses RBush spatial tree for efficient queries
-- Automatically managed by ArcadePhysics system
-- Reduces collision check complexity
+Based on the decompiled code:
+- Appears to use RBush spatial tree for queries
+- Appears to be automatically managed by ArcadePhysics system
+- Appears to reduce collision check complexity
 
 ### Update Patterns
-- Physics updates happen in fixed timestep
-- Movement integration handled by physics world
-- Collision detection runs after movement
+Based on code analysis:
+- Physics updates appear to happen in fixed timestep
+- Movement integration appears to be handled by physics world
+- Collision detection appears to run after movement
 
-## Best Practices
+## Implementation Patterns
 
 ### Physics Object Creation
-1. Always extend appropriate base class (ArcadeSprite for moving objects)
-2. Set physics type explicitly during initialization
-3. Register with correct physics group
-4. Configure collision shape appropriately
+Based on code analysis:
+1. Extend appropriate base class (ArcadeSprite for moving objects)
+2. Set physics type during initialization
+3. Register with physics group
+4. Configure collision shape
 
 ### Memory Management
+Based on the decompiled code patterns:
 1. Use object pooling for frequently created/destroyed objects
-2. Properly return objects to pools when done
+2. Return objects to pools when done
 3. Clear references in pooled objects
 
 ### Collision Configuration
-1. Only enable necessary collision pairs
+Based on observed patterns:
+1. Enable necessary collision pairs
 2. Use appropriate collision shapes (circle vs rectangle)
-3. Consider using layers for complex scenarios
+3. Consider using layers for scenarios
 
 ### Performance
+Based on code analysis:
 1. Minimize physics body count
 2. Use static bodies for non-moving colliders
 3. Batch physics operations when possible
-4. Profile collision detection hotspots
+4. Profile collision detection areas
 
 ### Unity 6 Migration Notes
-1. Collision callbacks now use `CallbackContext` and `ArcadeColliderType` parameters
-2. All collision callbacks return boolean values
+Based on the decompiled Unity 6 code:
+1. Collision callbacks appear to use `CallbackContext` and `ArcadeColliderType` parameters
+2. All collision callbacks appear to return boolean values
 3. Access physics bodies through `.body` property on collider types
 4. Use property accessors for ArcadePhysics static access (`Instance`, `scene`, `Config`)
 5. Check for `PickupImmaterial` flag in PhysicsManager for pickup collision state

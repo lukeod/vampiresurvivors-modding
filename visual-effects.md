@@ -1,10 +1,10 @@
 # Visual Effects System
 
-The visual effects system manages particle effects, animations, and visual feedback through specialized managers.
+Based on analysis of decompiled IL2CPP code, the visual effects system appears to manage particle effects, animations, and visual feedback through specialized managers.
 
 ## ParticleManager
 
-Centralized particle effect management with automatic pause handling.
+The decompiled code indicates particle effect management with automatic pause handling.
 
 ### Properties
 
@@ -43,14 +43,16 @@ ParticleManager particleManager = GM.Core.ParticleManager;
 
 ### Features
 
-- Centralized tracking of all game particle systems
+Based on the decompiled code, this system appears to provide:
+
+- Tracking of game particle systems
 - Automatic pause/unpause handling for visual consistency
-- Global shader parameter management for particle effects
+- Shader parameter management for particle effects
 - Time synchronization for particle animations
 
 ## GizmoManager
 
-Comprehensive visual feedback system for level-ups, icons, and special effects.
+Based on code analysis, this appears to be a visual feedback system for level-ups, icons, and special effects.
 
 ### Properties
 
@@ -108,11 +110,13 @@ public class GizmoManager : Il2CppSystem.Object
 
 ### Features
 
+Based on code analysis, this system appears to provide:
+
 - Character-centric visual feedback
 - Multiplayer-aware revival effects
 - Configurable Y-offsets for different effect types
-- Tween-based animations for smooth transitions
-- Extensive usage throughout the game (50+ call sites)
+- Tween-based animations for transitions
+- Usage throughout the game (50+ call sites identified in decompiled code)
 
 ## Integration with Game Systems
 
@@ -149,25 +153,30 @@ ParticleManager particleManager = GM.Core.ParticleManager;
 
 ### GizmoManager
 
-- `DisplayMultiplayerRevive()` specifically for online play
-- Visual effects are client-side for performance
-- No network synchronization for particle effects
+Based on decompiled code analysis:
+
+- `DisplayMultiplayerRevive()` appears to be for online play
+- Visual effects appear to be client-side
+- No apparent network synchronization for particle effects
 
 ### ParticleManager
 
-- Particle effects handled locally on each client
-- Pause state managed independently per client
-- No network traffic for visual effects
+Inferred from code structure:
 
-## Modding Guidelines
+- Particle effects appear to be handled locally on each client
+- Pause state appears to be managed independently per client
+- No apparent network traffic for visual effects
+
+## Modding Reference
 
 ### Custom Particle Effects
+
+Based on the decompiled code structure, you can patch particle system registration:
 
 ```csharp
 [HarmonyPatch(typeof(ParticleManager), "RegisterParticleSystem")]
 public static void Postfix(ParticleManager __instance, ParticleSystem particleSystem)
 {
-    // Track custom mod particles
     if (particleSystem.name.Contains("CustomMod"))
     {
         MyModParticleTracker.Register(particleSystem);
@@ -176,6 +185,8 @@ public static void Postfix(ParticleManager __instance, ParticleSystem particleSy
 ```
 
 ### Custom Visual Feedback
+
+The decompiled code suggests this pattern for custom effects:
 
 ```csharp
 public class CustomEffectMod : MelonMod
@@ -189,20 +200,17 @@ public class CustomEffectMod : MelonMod
     
     public void ShowCustomEffect(CharacterController character)
     {
-        // Standard level up
         gizmoManager.DisplayLevelUp(character);
         
-        // Custom highlight
         var pos = character.transform.position;
         gizmoManager.ShowHighlightAt(pos.x, pos.y);
         
-        // Custom icon
         gizmoManager.DisplayIconOverhead(
             "star", 
             "EPIC!", 
             Color.gold, 
             character, 
-            2.0f, // Double display time
+            2.0f,
             Vector2.up * 0.5f
         );
     }
@@ -210,6 +218,8 @@ public class CustomEffectMod : MelonMod
 ```
 
 ### Multiplayer-Aware Effects
+
+The decompiled code indicates multiplayer awareness:
 
 ```csharp
 [HarmonyPatch(typeof(GizmoManager), "DisplayLevelUp")]
@@ -232,23 +242,24 @@ public static void Postfix(GizmoManager __instance, CharacterController characte
 
 ### Memory Management
 
+Based on code analysis, cleanup appears necessary:
+
 ```csharp
 public override void OnDeinitializeMelon()
 {
     if (customParticleSystem != null)
     {
-        // Unregister from manager
         particleManager.UnregisterParticleSystem(customParticleSystem);
-        
-        // Destroy GameObject
         UnityEngine.Object.Destroy(customParticleSystem.gameObject);
     }
 }
 ```
 
-## Common Patterns
+## Implementation Patterns
 
 ### Creating Custom Particles
+
+The decompiled code suggests this approach:
 
 ```csharp
 private void SetupCustomParticles()
@@ -256,20 +267,20 @@ private void SetupCustomParticles()
     var particleObject = new GameObject("CustomModParticles");
     customParticleSystem = particleObject.AddComponent<ParticleSystem>();
     
-    // Configure particle system
     var main = customParticleSystem.main;
     main.startColor = Color.magenta;
     main.startSpeed = 5.0f;
     
-    // Register for pause handling
     GM.Core.ParticleManager.RegisterParticleSystem(customParticleSystem);
 }
 ```
 
-### Safe Effect Access
+### Accessing Effects
+
+Based on the decompiled structure:
 
 ```csharp
-public static void SafeShowEffect(CharacterController character)
+public static void AccessEffect(CharacterController character)
 {
     var gizmoManager = GM.Core?._gizmoManager;
     if (gizmoManager == null) return;
@@ -285,11 +296,13 @@ public static void SafeShowEffect(CharacterController character)
 }
 ```
 
-## Best Practices
+## Implementation Notes
 
-- Always register custom particle systems with ParticleManager for proper pause handling
+Based on decompiled IL2CPP code analysis:
+
+- Register custom particle systems with ParticleManager for pause handling
 - Check multiplayer state before applying visual modifications
 - Use late initialization hooks to ensure managers are available
-- Properly dispose of custom effects to prevent memory leaks
-- Visual effects are client-side only - don't rely on them for gameplay logic
-- Test effects in all three game modes (single player, local coop, online multiplayer)
+- Dispose of custom effects to prevent memory leaks
+- Visual effects appear to be client-side only
+- Test effects in different game modes (single player, local coop, online multiplayer)

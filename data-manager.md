@@ -1,12 +1,12 @@
 # Data Manager
 
-Central repository for game data in Vampire Survivors. Handles loading, storing, and providing access to JSON-based configuration data with online multiplayer synchronization support.
+Central repository for game data in Vampire Survivors, based on analysis of decompiled IL2CPP code. This component appears to handle loading, storing, and providing access to JSON-based configuration data with online multiplayer synchronization support.
 
 **Location**: `Il2CppVampireSurvivors.Data.DataManager`
 
 ## JSON Data Storage
 
-DataManager stores game data as JObject instances (from Newtonsoft.Json):
+DataManager stores game data as JObject instances (from Newtonsoft.Json), based on code analysis:
 
 ### Core Data Properties (Line 897-983 in DataManager.cs)
 
@@ -48,15 +48,15 @@ public bool _weaponDataChangedForOnline;     // Weapon data modified for online 
 public bool _enemyDataChangedForOnline;      // Enemy data modified for online play
 ```
 
-These flags are declared but not currently used in the codebase. They prepare for future online synchronization features.
+These flags appear to be declared but are not currently used in the codebase. They are inferred to prepare for future online synchronization features.
 
-These flags will track which data types have been modified by mods and need synchronization across online multiplayer clients.
+These flags track which data types mods modify and require synchronization across online multiplayer clients.
 
 ## Additional Data Types
 
 ### CPU/AI Data System (_allCPUJson)
 
-**Purpose**: Defines AI behaviors for multiplayer bots and CPU-controlled characters.
+**Purpose**: Appears to define AI behaviors for multiplayer bots and CPU-controlled characters.
 
 **Access**: `dataManager.AllCPU` → `Dictionary<AIType, AIData>`
 
@@ -88,7 +88,7 @@ string AIIconTexture;    // Texture path for AI icon
 
 ### Album Data System (_allAlbumData)
 
-**Purpose**: Music collection/gallery system for tracking unlocked albums.
+**Purpose**: Appears to be a music collection/gallery system for tracking unlocked albums.
 
 **Access**: `dataManager.AllAlbumData` → `Dictionary<AlbumType, AlbumData>`
 
@@ -118,7 +118,7 @@ ContentGroupType contentGroupType;  // Content group classification
 
 ### Stage Set Data System (_allStageSetJson)
 
-**Purpose**: Groups stages into sets for adventure mode progression.
+**Purpose**: Appears to group stages into sets for adventure mode progression.
 
 **Access**: `dataManager.AllStageSetData` → `Dictionary<StageSetType, JObject>`
 
@@ -134,15 +134,15 @@ STAGESET_SHEMOON,        // Moonspell stage set
 STAGESET_FOSCARI         // Foscari stage set
 ```
 
-Each stage set defines a collection of stages that form a cohesive adventure experience, themed around specific DLC content or character storylines.
+Each stage set appears to define a collection of stages that form a cohesive adventure experience, themed around specific DLC content or character storylines.
 
 ### Adventure Stage Data (_allAdventureStagesJson)
 
-Adventure mode-specific stage configurations that differ from regular stages.
+Adventure mode-specific stage configurations that appear to differ from regular stages.
 
 **Access**: Via JSON only (no direct converted access method found)
 
-Works with `_allStageSetJson` to define complete adventure experiences with stage progression, special rules, and unique configurations not available in standard stages.
+Works with `_allStageSetJson` to define complete adventure experiences with stage progression, special rules, and unique configurations not available in standard stages, based on code analysis.
 
 ## DLC Data Storage
 
@@ -174,7 +174,7 @@ Dictionary<CharacterType, CustomMerchantData> _adventureMerchantsData;
 ### Getting DataManager Instance
 
 ```csharp
-// Primary method - through GameManager (recommended)
+// Primary method - through GameManager
 var dataManager = GM.Core?._data;  // Note: _data is the actual field name
 
 // Alternative - through GameManager.DataManager property
@@ -183,7 +183,7 @@ var dataManager = GM.Core?.DataManager;
 // Legacy - through SoundManager static field (still works)
 var dataManager = SoundManager._dataManager;
 
-// Always null-check in multiplayer contexts
+// Null-check in multiplayer contexts
 if (dataManager == null)
 {
     MelonLogger.Error("DataManager not available!");
@@ -193,7 +193,7 @@ if (dataManager == null)
 
 ### GetConverted Methods
 
-DataManager provides converted data methods that return strongly-typed objects with absolute values:
+DataManager provides converted data methods that return strongly-typed objects with absolute values, based on code analysis:
 
 ```csharp
 Dictionary<WeaponType, List<WeaponData>> weapons = dataManager.GetConvertedWeaponData();
@@ -253,7 +253,7 @@ PropData specificProp = dataManager.GetPropData(PropType.CANDLE);
 
 ## Direct JSON Manipulation
 
-For advanced modifications, you can directly manipulate the JSON data:
+For advanced modifications, direct JSON data manipulation is possible, based on code analysis:
 
 ### Reading JSON Data
 
@@ -284,7 +284,7 @@ dataManager.ReloadAllData();
 
 ## Incremental Level System
 
-Weapon and PowerUp levels use an incremental delta system:
+Weapon and PowerUp levels appear to use an incremental delta system:
 
 - **Level 1**: Absolute base values
 - **Levels 2-8**: Incremental changes from previous level
@@ -384,7 +384,7 @@ private void LoadDataFromJson()
 
 ### Profiling Markers
 
-DataManager includes Unity Profiler markers for performance monitoring:
+DataManager appears to include Unity Profiler markers for performance monitoring:
 
 ```csharp
 ProfilerMarker MarkerReloadAllData;      // Tracks ReloadAllData performance
@@ -403,7 +403,7 @@ public static void OnDataLoad(DataManager __instance)
 {
     // Raw JSON data loaded and ready for modification
     // Called 2 times during startup
-    // Safe to modify _all*Json properties here
+    // _all*Json properties appear to be modifiable here
     
     // Example: Modify AI data
     if (__instance._allCPUJson != null)
@@ -423,12 +423,12 @@ public static void OnDataReload(DataManager __instance)
 {
     reloadCount++;
     // Called 7 times: base game + 6 DLCs
-    // Safe to access GetConverted methods and All* properties
+    // GetConverted methods and All* properties appear to be accessible
     
     if (reloadCount >= 7) // Final call
     {
-        // All data fully loaded and converted
-        // Safe to access new data types:
+        // All data appears to be fully loaded and converted
+        // New data types appear to be accessible:
         var cpuData = __instance.AllCPU;
         var albumData = __instance.AllAlbumData;
         var stageSetData = __instance.AllStageSetData;
@@ -443,7 +443,7 @@ public static void OnDataReload(DataManager __instance)
 public static void OnDataConversion(DataManager __instance)
 {
     // Called 3 times during data processing
-    // Best place for multiplayer-aware modifications
+    // Appears to be the best place for multiplayer-aware modifications
     
     // Check if in multiplayer mode before modifying
     if (GM.Core?.IsOnlineMultiplayer == true)
@@ -452,7 +452,7 @@ public static void OnDataConversion(DataManager __instance)
         return; // Skip modifications for online play
     }
     
-    // Safe to modify data for single player/local coop
+    // Modifications appear to be safe for single player/local coop
 }
 ```
 
@@ -471,7 +471,7 @@ foreach (var kvp in weapons)
     WeaponType type = kvp.Key;
     List<WeaponData> levels = kvp.Value;
     
-    // Always null-check IL2Cpp objects
+    // IL2Cpp objects require null checking
     if (levels != null && levels.Count > 0)
     {
         // Process weapon data
@@ -491,14 +491,14 @@ foreach (var kvp in weapons)
 
 ### Online Multiplayer Data Restrictions
 
-Mods must check multiplayer state before modifying data:
+Mods should check multiplayer state before modifying data:
 
 ```csharp
 [HarmonyPatch(typeof(DataManager), "ReloadAllData")]
 [HarmonyPostfix]
 public static void SafeDataModification(DataManager __instance)
 {
-    // ALWAYS check multiplayer mode first
+    // Check multiplayer mode first
     if (GM.Core?.IsOnlineMultiplayer == true)
     {
         // Skip data modifications in online multiplayer
@@ -508,11 +508,11 @@ public static void SafeDataModification(DataManager __instance)
     
     if (GM.Core?.IsLocalMultiplayer == true)
     {
-        // Local coop: modifications usually safe
-        // But test thoroughly with multiple players
+        // Local coop: modifications appear to be safe
+        // Testing with multiple players is required
     }
     
-    // Single player: all modifications safe
+    // Single player: modifications appear to be safe
     ModifyGameData(__instance);
 }
 ```
@@ -536,9 +536,9 @@ public static void ModifyWeaponData(DataManager dataManager)
 
 ### IsOnline Method
 
-DataManager includes a private `IsOnline()` method (Line 2777) that checks multiplayer state for handling online vs offline data.
+DataManager appears to include a private `IsOnline()` method (Line 2777) that checks multiplayer state for handling online vs offline data.
 
-## Usage Guidelines
+## Usage Notes
 
 ### 1. Multiplayer Awareness
 
@@ -551,7 +551,7 @@ if (GM.Core?.IsOnlineMultiplayer == true)
 ```
 
 ### 2. Use GetConverted Methods
-Prefer `GetConverted*` methods over direct JSON manipulation for strongly typed, absolute values.
+`GetConverted*` methods provide strongly typed, absolute values over direct JSON manipulation.
 
 ### 3. Delta System (Unchanged)
 When modifying JSON directly:
@@ -563,12 +563,12 @@ When modifying JSON directly:
 var weapons = dataManager?.GetConvertedWeaponData();
 if (weapons != null && weapons.Count > 0)
 {
-    // IL2CPP collections require careful null checking
+    // IL2CPP collections require null checking
     foreach (var kvp in weapons)
     {
-        if (kvp.Value != null) // Always check IL2CPP objects
+        if (kvp.Value != null) // Check IL2CPP objects
         {
-            // Safe to use
+            // Object appears to be safe to use
         }
     }
 }
@@ -604,7 +604,7 @@ foreach (var album in albums)
 
 **Location**: `Il2CppVampireSurvivors.App.Data.DataManagerSettings`
 
-Centralized configuration container for all game data JSON assets:
+Centralized configuration container for all game data JSON assets, based on code analysis:
 
 ### Core Game Data Assets
 - `_AchievementDataJsonAsset` - Achievement definitions and requirements
@@ -667,13 +667,13 @@ public TextAsset GetWeaponDataJsonAsset()
 - `HitVfxType` - Hit visual effect identifiers
 
 ### Enum ID Assignment Patterns
-- **Base Game**: Generally uses lower ranges (0-200)
+- **Base Game**: Appears to use lower ranges (0-200)
 - **DLC Content**: Uses specific reserved ranges:
   - 300s: Foscari DLC (FB_ prefix)
   - 360s-410s: Emergency Meeting DLC (EME_ prefix)
   - 1400s-1500s: Tides of the Foscari (TP_ prefix)
 - **Special Values**: Some enums use -1 for VOID/NULL values
-- **Reserved Gaps**: Large gaps suggest space for future content
+- **Reserved Gaps**: Large gaps appear to be space for future content
 
 ### Data Classes
 - `WeaponData` - Weapon configuration

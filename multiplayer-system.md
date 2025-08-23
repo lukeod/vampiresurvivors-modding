@@ -1,33 +1,39 @@
 # Vampire Survivors Multiplayer System
 
-## Overview
+This document contains technical reference for the multiplayer system implementation in Vampire Survivors, covering the architecture, components, and modding considerations across single-player, local cooperative, and online multiplayer modes.
 
-Vampire Survivors includes a comprehensive multiplayer system supporting both local cooperative and online multiplayer gameplay. This system is built on Unity Coherence Toolkit for network synchronization and Rewired for input management.
+**Source**: Decompiled IL2CPP code analysis  
+**Game Version**: v1.0+ (Unity 6000.0.36f1)  
+**Network Framework**: Unity Coherence Toolkit  
 
-**File Locations:**
-- `F:\vampire\melon_decompiled\Il2CppVampireSurvivors.Runtime\Il2CppVampireSurvivors.Framework\MultiplayerManager.cs`
-- `F:\vampire\melon_decompiled\Il2CppVampireSurvivors.Runtime\Il2CppVampireSurvivors.Framework\CoopConfig.cs`
-- `F:\vampire\melon_decompiled\Il2CppVampireSurvivors.Runtime\Il2CppVampireSurvivors.Framework\GameManager.cs` (Lines 7432, 7446)
+## Architecture Overview
+
+Vampire Survivors supports three distinct gameplay modes:
+
+- **Single Player**: Direct entity control, no synchronization requirements
+- **Local Cooperative**: Up to 4 players on shared screen, no network layer
+- **Online Multiplayer**: Network-synchronized gameplay via Coherence Toolkit
+
+**Core File Locations:**
+- `Il2CppVampireSurvivors.Framework.MultiplayerManager` - Primary multiplayer controller
+- `Il2CppVampireSurvivors.Framework.CoopConfig` - Configuration system
+- `Il2CppVampireSurvivors.Framework.GameManager` - Mode detection properties
 
 ## Core Components
 
-### 1. MultiplayerManager
+### MultiplayerManager
 
-**Location:** `Il2CppVampireSurvivors.Framework.MultiplayerManager`  
-**Access:** `GM.Core._multiplayerManager`  
-**Dependencies:** Injected into GameManager via Zenject
-
-#### Key Properties
+**Access**: `GM.Core._multiplayerManager`  
+**Injection**: Via Zenject dependency injection into GameManager
 
 ```csharp
 public class MultiplayerManager
 {
-    // Core Multiplayer Detection
+    // Mode Detection
     public bool IsMultiplayer { get; }                    // Any multiplayer mode active
     
     // Configuration
     public CoopConfig CoopConfig { get; }                 // 738 references - central config
-    public CoopConfig _coopConfig { get; }                // Internal backing field
     
     // Player Management
     public List<Player> _players { get; set; }            // All active players
@@ -38,74 +44,66 @@ public class MultiplayerManager
     public List<FollowerData> AICharacters { get; }       // AI-controlled characters
     
     // Event System
-    public event OnPlayerStateChange PlayerAdded;         // Fired when player joins
-    public event OnPlayerStateChange PlayerRemoved;       // Fired when player leaves
-    public event OnPlayerStateChange PlayerSelected;      // UI selection events
-    public event OnPlayerStateChange PlayerSettingChanged; // Player config changes
-    public event OnControllerStateChange ControllerDisconnected; // Hardware disconnections
+    public event OnPlayerStateChange PlayerAdded;
+    public event OnPlayerStateChange PlayerRemoved;
+    public event OnPlayerStateChange PlayerSelected;
+    public event OnPlayerStateChange PlayerSettingChanged;
+    public event OnControllerStateChange ControllerDisconnected;
 }
 ```
 
-#### Core Methods
-
+**Key Methods:**
 ```csharp
 // Player Access
-public List<Player> GetPlayers();                    // Get all active players
-public int GetPlayerCount();                         // Get active player count
-public Player GetPlayerFromID(int id);               // Find player by ID
-public Player GetPlayerFromIndex(int playerIndex);   // Find player by index
-public Player GetSelectedPlayer();                   // Get currently selected player
-public Player GetPlayerOne();                        // Get player 1 (host)
-
-// Player Management
-public void SelectPlayer(Player player, bool animate = true, bool sound = true, float delay = 0f);
-public bool NextPlayer(bool wrapAround = true, bool animate = true);
-public bool PreviousPlayer(bool wrapAround = true, bool animate = true);
+public List<Player> GetPlayers();
+public int GetPlayerCount();
+public Player GetPlayerFromID(int id);
+public Player GetPlayerFromIndex(int playerIndex);
+public Player GetSelectedPlayer();
+public Player GetPlayerOne();
 
 // Character Management
-public void AddCharacter(Player player, CharacterController character);
-public void RemoveCharacter(Player player);
-public void RemoveAllCharacters();
 public CharacterController GetCharacter(int playerIndex);
 public CharacterController GetCharacter(Player player);
 public List<CharacterController> GetAllCharacters();
 public CharacterController GetSelectedCharacter();
 
-// Visual/UI
-public Color GetPlayerColour(Player player);         // Get player-specific color
+// Visual Systems
+public Color GetPlayerColour(Player player);
 ```
 
-### 2. Game Mode Detection
+### Game Mode Detection
 
-These properties are located in **GameManager**, NOT MultiplayerManager.
+Mode detection properties are located in **GameManager**, not MultiplayerManager.
 
 ```csharp
 public class GameManager
 {
-    // Mode Detection Properties
     public bool IsOnlineMultiplayer { get; }         // 318 references - Network multiplayer
     public bool IsLocalMultiplayer { get; }          // Local cooperative play
     
-    // Internal Fields
-    public bool _isOnlineMultiplayer { get; set; }   // Backing field
-    public bool _isLocalMultiplayer { get; set; }    // Backing field
+    // Internal backing fields
+    public bool _isOnlineMultiplayer { get; set; }
+    public bool _isLocalMultiplayer { get; set; }
 }
+```
 
-// Access Pattern
+**Usage Pattern:**
+```csharp
+// Access through GameManager
 bool isOnline = GM.Core.IsOnlineMultiplayer;
 bool isLocal = GM.Core.IsLocalMultiplayer;
 bool isAnyMulti = GM.Core._multiplayerManager.IsMultiplayer;
 ```
 
-#### Game Mode Logic
-
+**Mode Logic Implementation:**
 ```csharp
-// Single Player: Neither flag is true
+// Single Player: Both flags false
 if (!GM.Core.IsOnlineMultiplayer && !GM.Core.IsLocalMultiplayer)
 {
-    // Single player mode
+    // Single player characteristics:
     // - One CharacterController
-    // - Fixed camera on player
+    // - Fixed camera positioning
     // - Direct loot collection
     // - No revival mechanics
 }
@@ -113,8 +111,8 @@ if (!GM.Core.IsOnlineMultiplayer && !GM.Core.IsLocalMultiplayer)
 // Local Multiplayer: IsLocalMultiplayer = true, IsOnlineMultiplayer = false
 else if (GM.Core.IsLocalMultiplayer && !GM.Core.IsOnlineMultiplayer)
 {
-    // Local cooperative mode (up to 4 players)
-    // - Multiple CharacterControllers
+    // Local cooperative characteristics:
+    // - Multiple CharacterControllers (up to 4 players)
     // - Shared screen with dynamic camera
     // - Revival system active
     // - Enemy scaling based on player count
@@ -123,21 +121,21 @@ else if (GM.Core.IsLocalMultiplayer && !GM.Core.IsOnlineMultiplayer)
 // Online Multiplayer: IsOnlineMultiplayer = true
 else if (GM.Core.IsOnlineMultiplayer)
 {
-    // Network multiplayer mode
+    // Network multiplayer characteristics:
     // - Coherence Toolkit synchronization
-    // - Latency compensation
+    // - Latency compensation systems
     // - Host authority model
     // - Network-aware revival system
 }
 ```
 
-### 3. CoopConfig System
+## Configuration System (CoopConfig)
 
-**Location:** `Il2CppVampireSurvivors.Framework.CoopConfig`  
-**Type:** ScriptableObject  
-**Access:** `GM.Core._multiplayerManager.CoopConfig`
+**Type**: ScriptableObject  
+**Access**: `GM.Core._multiplayerManager.CoopConfig`  
+**Usage Count**: 738 references throughout codebase (based on code analysis)
 
-#### Enums
+### Enumerations
 
 ```csharp
 public enum CameraMode
@@ -155,10 +153,10 @@ public enum AccessoryBonusMode
 }
 ```
 
-#### Experience and Progression Settings
+### Experience and Progression
 
 ```csharp
-// XP System
+// XP System Configuration
 public float _xpGainModifier;                     // Global XP multiplier
 public float _xpGainDivisionPerPlayer;            // XP split factor per additional player
 public bool _globalLevelNumber;                   // Share level progression globally
@@ -168,7 +166,7 @@ public float _enemyHealthModifierPerMinute;       // Health increase per minute
 public int _extraCharmPerPlayer;                  // Charm scaling per player
 public int _extraCharmCutoffMinute;               // When to stop adding charm
 
-// Loot and Upgrades
+// Loot Distribution
 public AccessoryBonusMode _accessoryBonusMode;    // How accessory bonuses are shared
 public bool _blockWeaponsOwnedByOtherPlayers;     // Prevent weapon overlap
 public bool _blockAccessoriesOwnedByOtherPlayers; // Prevent accessory overlap
@@ -177,7 +175,7 @@ public bool _shareEvolutionPassives;              // Share evolution requirement
 public float _goldBonusForNotSharingPassives;     // Gold bonus when not sharing
 ```
 
-#### Revival System Settings
+### Revival System
 
 ```csharp
 // Revival Mechanics
@@ -195,7 +193,7 @@ public float _removeDeadPlayerFromCameraDuration; // Camera adjustment delay
 public bool _removeDeadPlayersFromCamera;         // Remove dead from camera bounds
 ```
 
-#### Camera and Visual Settings
+### Camera System
 
 ```csharp
 // Camera Configuration
@@ -213,7 +211,7 @@ public Material _navigationUIMaterial;                    // UI navigation mater
 public float _multiplayerIndicatorDuration;              // Indicator display time
 ```
 
-#### Treasure and Randomization Settings
+### Treasure and Enemy Behavior
 
 ```csharp
 // Treasure Chest Behavior
@@ -223,83 +221,43 @@ public AnimationCurve _chestRandomisationSpinPositionCurve; // Chest spin animat
 public int _chestRandomnessSetSize;               // Size of random item pool
 public bool _chestRandomPrioritiseEvolvablePlayers; // Favor players who can evolve
 
-// Special Items
-public int _amuletsInAmuletBag;                   // Amulets per bag
-public int _amuletBagSize;                        // Maximum amulet bag size
-```
-
-#### Enemy Behavior Settings
-
-```csharp
 // Enemy Mechanics
 public int _enemyChompMaxCount;                   // Max enemies that can chomp
 public float _enemyChompHPGainProportionPerChomp; // HP gain per chomp
 public float _enemyChompScaleGainProportionPerChomp; // Scale gain per chomp
 public HitVfxType _enemyChompEffect;              // Visual effect for chomping
 public bool _spawningEnemiesTargetDeadPlayersAlso; // Target dead players too
+
+// Special Items
+public int _amuletsInAmuletBag;                   // Amulets per bag
+public int _amuletBagSize;                        // Maximum amulet bag size
 ```
 
-#### Controller and Feedback Settings
+## Player Management
+
+### Player vs CharacterController Distinction
 
 ```csharp
-// Controller Feedback
-public float _levelupVibrationMilliseconds;       // Level up vibration duration
-```
-
-### 4. Player Management System
-
-#### Player vs CharacterController
-
-```csharp
-// Player (Rewired) - Input and Identity
-public class Player // From Il2CppRewired namespace
+// Player (Il2CppRewired namespace) - Input and Identity
+public class Player
 {
-    // This represents the input player (controller/keyboard)
+    // Represents the input player (controller/keyboard)
     // Handles input mapping, controller assignment, and identity
     // Used for UI navigation and control assignment
 }
 
 // CharacterController - Game Entity
-public class CharacterController // Game entity that moves and fights
+public class CharacterController
 {
-    // This is the actual in-game character that moves, fights, and collects items
+    // The actual in-game character that moves, fights, and collects items
     // Each Player is associated with one CharacterController during gameplay
     // Handles movement, combat, inventory, and game mechanics
 }
 ```
 
-#### Player Lifecycle Management
+### AI Characters (FollowerData)
 
 ```csharp
-// Adding Players
-GM.Core._multiplayerManager.PlayerAdded += (player) =>
-{
-    Debug.Log($"Player {player.id} joined the game");
-    // Player added event fired
-    // CharacterController will be created and assigned separately
-};
-
-// Removing Players
-GM.Core._multiplayerManager.PlayerRemoved += (player) =>
-{
-    Debug.Log($"Player {player.id} left the game");
-    // Player removed event fired
-    // Associated CharacterController will be cleaned up
-};
-
-// Player Disconnection Handling
-GM.Core._multiplayerManager.ControllerDisconnected += (controller) =>
-{
-    // Hardware controller disconnected
-    // Player moved to _disconnectedPlayers list
-    // Game can pause or show reconnection UI
-};
-```
-
-#### AI Characters (FollowerData)
-
-```csharp
-// AI Character Configuration
 public class FollowerData
 {
     public CharacterType _FollowerCharacter;         // Which character type
@@ -311,57 +269,34 @@ public class FollowerData
     public bool _ShouldFollowMainPlayer;             // Follow behavior
     public bool _AllowDuplicates;                    // Allow multiple of same type
 }
-
-// Access AI Characters
-List<FollowerData> aiCharacters = GM.Core._multiplayerManager.AICharacters;
 ```
 
-### 5. Network vs Local Differences
-
-#### Network-Specific Features (Online Multiplayer)
+### Player Lifecycle Events
 
 ```csharp
-// Coherence Toolkit Integration
-if (GM.Core.IsOnlineMultiplayer)
+// Event subscription pattern
+GM.Core._multiplayerManager.PlayerAdded += (player) =>
 {
-    // Network synchronization active
-    // - CoherenceSync components on all networked entities
-    // - Host authority for game state
-    // - Latency compensation for movement and actions
-    // - Network-aware spawning and despawning
-    // - Remote player state synchronization
-    
-    // Example: Check if entity has network sync
-    var sync = characterController.GetComponent<CoherenceSync>();
-    if (sync != null)
-    {
-        // This entity is network-synchronized
-        // Modifications may need host authority
-    }
-}
-```
+    // Player joined - CharacterController created separately
+};
 
-#### Local-Specific Features (Local Cooperative)
-
-```csharp
-if (GM.Core.IsLocalMultiplayer && !GM.Core.IsOnlineMultiplayer)
+GM.Core._multiplayerManager.PlayerRemoved += (player) =>
 {
-    // Local cooperative features
-    // - Shared screen with dynamic camera positioning
-    // - Immediate state updates (no network latency)
-    // - Local input handling for all players
-    // - Shared game state without synchronization overhead
-    // - Split-screen or shared-screen rendering
-    
-    // Player limit: Up to 4 players typically
-    int maxLocalPlayers = 4; // Inferred from typical cooperative games
-}
+    // Player removed - CharacterController cleanup handled
+};
+
+GM.Core._multiplayerManager.ControllerDisconnected += (controller) =>
+{
+    // Hardware controller disconnected
+    // Player moved to _disconnectedPlayers list
+};
 ```
 
-#### Network Items System
+## Network System Integration
+
+### Network Items Classification
 
 ```csharp
-// Network Items System
 public static class NetworkItems
 {
     public static HashSet<ItemType> _networkItems;    // Items that sync over network
@@ -369,22 +304,22 @@ public static class NetworkItems
     public static bool IsNetworkItem(ItemType type);  // 37 references
 }
 
-// Usage in online multiplayer
+// Usage pattern for online synchronization
 if (GM.Core.IsOnlineMultiplayer && NetworkItems.IsNetworkItem(itemType))
 {
-    // This item requires network synchronization
-    // Handle with network authority checks
+    // Item requires network synchronization
+    // Handle with network authority considerations
 }
 ```
 
-### 6. Data Change Tracking for Online Synchronization
+### Data Change Tracking
 
-**Location:** `DataManager` class
+Located in `DataManager` class for online synchronization:
 
 ```csharp
 public class DataManager
 {
-    // Online Synchronization Flags
+    // Online synchronization flags - appears to track modifications
     public bool _characterDataChangedForOnline;    // Character modifications
     public bool _powerUpDataChangedForOnline;      // Power-up changes
     public bool _stageDataChangedForOnline;        // Stage modifications
@@ -393,109 +328,115 @@ public class DataManager
 }
 ```
 
-## Modding Guidelines and Best Practices
+### Authority System (Online Mode)
 
-### 1. Multiplayer-Aware Development
+Based on code analysis, online multiplayer appears to use Coherence Toolkit's authority model (inferred from network system integration):
+
+- **Host Authority**: Host maintains authoritative game state
+- **Entity Authority**: Individual entities may have distributed authority
+- **Input Authority**: Separate from state authority for control
+
+## Modding Considerations
+
+### Mode Detection for Mods
 
 ```csharp
+// Mode detection pattern for mod development
 [HarmonyPatch(typeof(SomeGameClass), "SomeMethod")]
 public static class SomeGameClassPatch
 {
     public static void Postfix(SomeGameClass __instance)
     {
-        // Check multiplayer state first
         var gm = GM.Core;
+        if (gm == null) return; // GM.Core appears null in menu contexts
         
         if (gm.IsOnlineMultiplayer)
         {
-            // Online multiplayer requirements:
-            // - Check network authority before modifying entities
-            // - Respect host/client relationships  
-            // - Handle synchronization delays
-            // - Test with network latency
-            
-            if (IsHost()) // Implement host detection
-            {
-                // Host can safely modify game state
-                ModifyGameState();
-            }
-            else
-            {
-                // Clients should request changes or only modify local UI
-                RequestGameStateChange();
-            }
+            // Online multiplayer - network authority considerations appear required
+            // Modifications appear to need host permission or entity authority
+            // Synchronization delays and network latency require consideration
         }
         else if (gm.IsLocalMultiplayer)
         {
-            // Local cooperative features:
-            // - No network concerns
-            // - Immediate state updates
-            // - Shared game state
-            
-            ModifyGameStateDirectly();
+            // Local cooperative - no network considerations based on code analysis
+            // Multiple players share game state directly
+            // Immediate state updates appear possible
         }
         else
         {
-            // Single player mode
-            ModifyGameStateDirectly();
+            // Single player - control available based on code structure
+            // No multiplayer considerations needed
         }
     }
 }
 ```
 
-### 2. Player Management Examples
+### Modification Patterns
+
+Based on the decompiled code structure, modification patterns vary by target system:
+
+**Data Modifications:**
+```csharp
+// Modifying data structures appears to affect all modes
+// Based on code analysis, these affect all players
+[HarmonyPatch(typeof(DataManager), "ReloadAllData")]
+public static void ModifyGameData(DataManager __instance)
+{
+    // Weapon data, character data, stage data modifications
+    // Inferred from code: loaded by all clients/players
+}
+```
+
+**Entity Modifications:**
+```csharp
+// Direct entity modifications appear to require authority checking in online mode
+// Based on NetworkItems system and data change tracking analysis
+if (GM.Core.IsOnlineMultiplayer)
+{
+    // Authority checking appears required based on code structure
+    // Inferred need to verify entity ownership or host status
+}
+```
+
+### Player Enumeration Pattern
 
 ```csharp
-// Get all active players
+// Player enumeration based on API analysis
 var players = GM.Core._multiplayerManager.GetPlayers();
 foreach (var player in players)
 {
     var character = GM.Core._multiplayerManager.GetCharacter(player);
     if (character != null)
     {
-        // Do something with each player's character
-        Debug.Log($"Player {player.id} has character: {character.name}");
+        // Process each player's character
+        // Authority requirements appear necessary for modifications
     }
-}
-
-// React to player joins/leaves
-GM.Core._multiplayerManager.PlayerAdded += OnPlayerJoined;
-GM.Core._multiplayerManager.PlayerRemoved += OnPlayerLeft;
-
-private static void OnPlayerJoined(Player player)
-{
-    Debug.Log($"Player {player.id} joined - total players: {GM.Core._multiplayerManager.GetPlayerCount()}");
-}
-
-private static void OnPlayerLeft(Player player)
-{
-    Debug.Log($"Player {player.id} left");
 }
 ```
 
-### 3. Configuration Access Examples
+## Configuration Access Examples
 
 ```csharp
-// Access multiplayer configuration
+// Access configuration settings
 var coopConfig = GM.Core._multiplayerManager.CoopConfig;
 
-// Check revival settings
+// Check revival configuration
 if (coopConfig._reviveAllRatherThanClosest)
 {
-    Debug.Log("Revive all nearby players instead of just the closest");
+    // Revival affects all nearby players vs closest only
 }
 
 // Check camera mode
 switch (coopConfig._cameraMode)
 {
     case CoopConfig.CameraMode.AveragePosition:
-        Debug.Log("Camera follows average player position");
+        // Camera follows average player position
         break;
     case CoopConfig.CameraMode.PositionExtentsCenter:
-        Debug.Log("Camera centers on position bounds");
+        // Camera centers on position bounds
         break;
     case CoopConfig.CameraMode.VisualBoundsExtentsCenter:
-        Debug.Log("Camera centers on visual bounds");
+        // Camera centers on visual bounds
         break;
 }
 
@@ -503,123 +444,42 @@ switch (coopConfig._cameraMode)
 switch (coopConfig._accessoryBonusMode)
 {
     case CoopConfig.AccessoryBonusMode.OwnerOnly:
-        Debug.Log("Accessories only affect their owner");
+        // Accessories only affect their owner
         break;
     case CoopConfig.AccessoryBonusMode.MatchingDescription:
-        Debug.Log("Share bonuses with players who have matching accessories");
+        // Share bonuses with players who have matching accessories
         break;
     case CoopConfig.AccessoryBonusMode.AllPlayers:
-        Debug.Log("All players benefit from all accessories");
+        // All players benefit from all accessories
         break;
 }
 ```
 
-### 4. Testing Considerations
+## Reference Information
 
-#### Single Player Testing
-```csharp
-// Verify mod works in single player
-Debug.Assert(!GM.Core.IsOnlineMultiplayer && !GM.Core.IsLocalMultiplayer);
-```
-
-#### Local Multiplayer Testing
-```csharp
-// Test with multiple controllers
-Debug.Assert(GM.Core.IsLocalMultiplayer && !GM.Core.IsOnlineMultiplayer);
-var playerCount = GM.Core._multiplayerManager.GetPlayerCount();
-Debug.Log($"Testing with {playerCount} local players");
-```
-
-#### Online Multiplayer Testing
-```csharp
-// Test with network conditions
-Debug.Assert(GM.Core.IsOnlineMultiplayer);
-// Test with simulated latency, packet loss, etc.
-```
-
-### 5. Common Pitfalls and Solutions
-
-#### Pitfall: Modifying Network Entities Without Authority
-```csharp
-// Incorrect - Direct modification in online mode
-if (GM.Core.IsOnlineMultiplayer)
-{
-    character.health = 100; // Conflicts with network sync
-}
-
-// Correct - Check authority first
-if (GM.Core.IsOnlineMultiplayer)
-{
-    var sync = character.GetComponent<CoherenceSync>();
-    if (sync != null && sync.HasStateAuthority)
-    {
-        character.health = 100; // Safe
-    }
-    else
-    {
-        // Request change from host or modify locally only
-    }
-}
-else
-{
-    character.health = 100; // Safe
-}
-```
-
-#### Pitfall: Ignoring Game Mode Detection
-```csharp
-// Incorrect - Assuming single player
-ModifyGameDirectly();
-
-// Correct - Check mode first
-if (GM.Core._multiplayerManager.IsMultiplayer)
-{
-    HandleMultiplayerModification();
-}
-else
-{
-    HandleSinglePlayerModification();
-}
-```
-
-#### Pitfall: Not Handling Player Count Changes
-```csharp
-// Incorrect - Caching player count
-private static int cachedPlayerCount = 1;
-
-// Correct - Get current count
-int currentPlayerCount = GM.Core._multiplayerManager.GetPlayerCount();
-```
-
-## Technical Architecture
-
-### Key Files and Line Numbers
-- `MultiplayerManager.cs` - Lines 22-1976+ (class definition through GetPlayerFromID method)
-- `CoopConfig.cs` - Lines 14-784+ (complete class with all settings)
+### Key File References
+- `MultiplayerManager.cs` - Lines 22-1976+ (complete class implementation)
+- `CoopConfig.cs` - Lines 14-784+ (configuration system)
 - `GameManager.cs` - Lines 7432 (IsLocalMultiplayer), 7446 (IsOnlineMultiplayer)
 - `FollowerData.cs` - Lines 13-30+ (AI character configuration)
 - `NetworkItems.cs` - Lines 12-50+ (network synchronization items)
 
-### Reference Counts
-- `CoopConfig`: 738 references throughout codebase
-- `IsOnlineMultiplayer`: 318 references
-- `PlayerAdded`/`PlayerRemoved`: Event system with multiple subscribers
-- `IsNetworkItem`: 37 references for network synchronization
+### Usage Statistics
+- `CoopConfig`: 738 references throughout codebase (based on code analysis)
+- `IsOnlineMultiplayer`: 318 references (based on decompiled code)
+- `IsNetworkItem`: 37 references for network synchronization (based on code analysis)
+- Player management events have multiple subscribers across systems (inferred from code structure)
 
 ### Dependencies
-- **Unity Coherence Toolkit**: Network synchronization (30+ assemblies)
-- **Rewired**: Input management and Player class
-- **Zenject**: Dependency injection for MultiplayerManager
-- **Unity 6000.0.36f1**: Modern networking capabilities
+- **Unity Coherence Toolkit**: Network synchronization framework (30+ assemblies based on decompiled code)
+- **Rewired**: Input management system providing Player class (inferred from code analysis)
+- **Zenject**: Dependency injection system for MultiplayerManager (based on code structure)
+- **Unity 6000.0.36f1**: Base engine with networking capabilities (version detected in code)
 
 ## Summary
 
-The Vampire Survivors multiplayer system handles single player, local cooperative (up to 4 players), and online multiplayer modes. Key requirements for modders:
+Based on code analysis, Vampire Survivors appears to implement a multiplayer system that supports single-player, local cooperative (up to 4 players based on decompiled code), and online multiplayer modes. The system appears to use event-driven architecture with configuration options managed through CoopConfig.
 
-1. **Always check game mode** using `IsOnlineMultiplayer`, `IsLocalMultiplayer`, and `IsMultiplayer`
-2. **Respect network authority** in online modes
-3. **Handle player lifecycle events** through the event system
-4. **Test in all three modes** to ensure compatibility
-5. **Use the extensive CoopConfig** for customization options
+For mod developers, understanding the mode detection system and authority patterns appears necessary for creating compatible modifications based on the code structure. The CoopConfig system appears to offer configuration points, while the network integration appears to require consideration of synchronization requirements in online modes.
 
-The system's modular design allows targeted modifications while maintaining compatibility across all multiplayer modes.
+All behavior descriptions are inferred from decompiled code analysis and have not been validated through runtime testing.

@@ -1,6 +1,6 @@
 # Event System Documentation
 
-Vampire Survivors uses Zenject's SignalBus for event-driven communication between game systems.
+Based on decompiled IL2CPP code analysis, Vampire Survivors appears to use Zenject's SignalBus for event-driven communication between game systems.
 
 ## Signal System Overview
 
@@ -9,12 +9,12 @@ Vampire Survivors uses Zenject's SignalBus for event-driven communication betwee
 #### SignalBus (Zenject)
 **Location**: `Il2CppZenject.SignalBus`
 
-The central event bus that handles all signal subscriptions and firing. Accessible via `GameManager.SignalBus` public property.
+The central event bus that appears to handle all signal subscriptions and firing. Based on code analysis, it is accessible via `GameManager.SignalBus` public property.
 
 #### SignalsInstaller
 **Location**: `Il2CppVampireSurvivors.Signals.SignalsInstaller`
 
-Declares all signal types during game initialization:
+Based on code analysis, declares all signal types during game initialization:
 - `DeclareUISignals()` - UI event signals
 - `DeclareOnlineSignals()` - Online/multiplayer signals
 - `DeclareOptionsSignals()` - Settings/options signals  
@@ -25,6 +25,7 @@ Declares all signal types during game initialization:
 ## Signal Types
 
 ### Total Signal Count: 163
+Based on analysis of the decompiled code:
 - **Blittable (struct) signals**: 128 - Can be subscribed to directly with delegates
 - **Non-blittable (class) signals**: 35 - Contain IL2CPP object references, require special handling
 
@@ -269,7 +270,7 @@ TestFinished { string TestName; }
 
 ### OnlineSignals
 
-The OnlineSignals category is new in Unity 6000.0.36f1, containing signals for multiplayer and online functionality.
+Based on code analysis, the OnlineSignals category is new in Unity 6000.0.36f1, containing signals for multiplayer and online functionality.
 
 #### Blittable Signals (Structs)
 ```csharp
@@ -332,13 +333,13 @@ CharacterDisconnected { CharacterController DisconnectedPlayer; }
 ## IL2CPP Signal Limitations
 
 ### The Non-Blittable Problem
-Signals containing IL2CPP object references (CharacterController, WeaponType, etc.) cannot be marshaled through normal C# delegates. This causes errors like:
+Based on code analysis, signals containing IL2CPP object references (CharacterController, WeaponType, etc.) cannot be marshaled through normal C# delegates. This causes errors like:
 ```
 Delegate has parameter of type CharacterReceivedDamageSignal (non-blittable struct) which is not supported
 ```
 
-### Solution: InternalFire Interception
-Instead of subscribing with delegates, intercept signals at the method level:
+### InternalFire Interception
+Based on code analysis, instead of subscribing with delegates, you can intercept signals at the method level:
 
 ```csharp
 [HarmonyPatch(typeof(SignalBus), "InternalFire")]
@@ -351,7 +352,7 @@ public static void OnInternalFire(Il2CppSystem.Type signalType, Il2CppSystem.Obj
     if (signalTypeName == "CharacterReceivedDamageSignal")
     {
         var damageSignal = signal.Cast<GameplaySignals.CharacterReceivedDamageSignal>();
-        // Access damageSignal.Character directly - no marshaling needed
+        // Access damageSignal.Character directly - no marshaling needed based on analysis
     }
     else if (signalTypeName == "OnlineLevelUpWithItem")
     {
@@ -372,7 +373,7 @@ public static void OnInternalFire(Il2CppSystem.Type signalType, Il2CppSystem.Obj
 ```csharp
 var signalBus = GM.Core.SignalBus;
 
-// Simple signal
+// Signal without data
 signalBus.Subscribe<GameplaySignals.InitializeGameSessionSignal>(
     (Action)(() => MelonLogger.Msg("Session started!"))
 );
@@ -398,9 +399,9 @@ signalBus.Subscribe<OnlineSignals.TouchedPianoKeySignal>(
 );
 ```
 
-### For Non-Blittable Signals (Use Harmony Patches)
+### For Non-Blittable Signals
 ```csharp
-// Cannot subscribe directly - use InternalFire interception as shown above
+// Based on code analysis, cannot subscribe directly - use InternalFire interception method
 ```
 
 ## Firing Signals
@@ -422,7 +423,7 @@ signalBus.TryFire(xpSignal);
 ```
 
 ### Firing with Identifier
-The identifier parameter is optional and rarely used. It allows targeted signal delivery:
+Based on code analysis, the identifier parameter appears optional and rarely used. It appears to allow targeted signal delivery:
 ```csharp
 signalBus.FireId<SomeSignal>(identifier, signalData);
 ```
@@ -431,7 +432,7 @@ signalBus.FireId<SomeSignal>(identifier, signalData);
 
 ### Core Methods
 ```csharp
-// InternalFire - All signals go through this
+// InternalFire - Based on code analysis, all signals go through this method
 void InternalFire(Type signalType, object signal, object identifier, bool requireDeclaration)
 
 // Subscription
@@ -456,6 +457,7 @@ int NumSubscribers { get; }
 ## Signal Flow Examples
 
 ### XP Change Flow
+Based on code analysis, the flow appears to be:
 1. Enemy killed → `EnemyController.Die()`
 2. XP pickup created → `LootManager.CreateXP()`
 3. Player collects → `CharacterController.AddXP()`
@@ -463,12 +465,13 @@ int NumSubscribers { get; }
 5. UI updates → `MainGamePage.UpdateExperienceProgress(signal)`
 
 ### Damage Flow
+Based on code analysis, the flow appears to be:
 1. Enemy attacks → Collision detected
 2. Damage calculated → `CharacterController.TakeDamage()`
 3. Signal fired → `signalBus.Fire<CharacterReceivedDamageSignal>()`
 4. Systems react → Shield loss, invincibility frames, UI update
 
-## Best Practices
+## Implementation Notes
 
 ### Memory Management
 - Store action references for unsubscribing
@@ -476,12 +479,14 @@ int NumSubscribers { get; }
 - Be careful with lambda captures
 
 ### Performance
-- Signals are synchronous - handlers execute immediately
+Based on code analysis:
+- Signals appear to be synchronous - handlers execute immediately
 - Keep handlers lightweight
 - Execution order follows subscription order
 
 ### Hook Points
-1. **GameManager.SignalBus property** - Best access point
+Based on code analysis:
+1. **GameManager.SignalBus property** - Primary access point
 2. **GameManager.Awake** - Early subscription point
 3. **After GM.Core is set** - Safe for all subscriptions
 
@@ -499,10 +504,10 @@ public static void MonitorAllSignals(Il2CppSystem.Type signalType, Il2CppSystem.
 
 ### Accessing SignalBus
 ```csharp
-// Via GameManager property (preferred)
+// Via GameManager property (based on analysis, primary approach)
 var signalBus = GM.Core.SignalBus;
 
-// Via reflection (not recommended - use public property instead)
+// Via reflection (based on analysis, use public property instead)
 var gmType = gameManager.GetType();
 var properties = gmType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 foreach (var prop in properties)
@@ -516,20 +521,21 @@ foreach (var prop in properties)
 
 ## Limitations
 
+Based on code analysis, identified limitations:
 1. **Non-blittable struct marshaling** - Cannot create delegates for signals with IL2CPP references
-2. **Signal declaration required** - Must use TryFire for undeclared signals
-3. **Synchronous only** - All signals execute immediately
+2. **Signal declaration required** - Use TryFire for undeclared signals
+3. **Synchronous only** - All signals appear to execute immediately
 4. **No priority system** - Handlers execute in subscription order
 5. **Memory leaks** - Forgetting to unsubscribe causes leaks
 
 ## Summary
 
-The Vampire Survivors event system:
+Based on decompiled IL2CPP code analysis, the Vampire Survivors event system:
 - Uses Zenject SignalBus for all game events
 - Has 163 different signal types (significantly expanded in Unity 6000.0.36f1)
 - Splits between blittable (128 signals) and non-blittable (35 signals)
 - Includes new OnlineSignals category for multiplayer functionality
 - Requires special handling for IL2CPP object references
-- All signals pass through InternalFire method
-- Identifiers are optional and rarely used (usually null)
+- All signals appear to pass through InternalFire method
+- Identifiers appear optional and rarely used (usually null)
 - Synchronous execution in subscription order
