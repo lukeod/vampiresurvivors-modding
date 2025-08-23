@@ -74,9 +74,49 @@ var mainUI = GM.Core?.MainUI;
 
 Manages experience bar, kill counters, coin display, time, level, equipment panels, and game controls.
 
-## TextMeshPro Integration
+## Font and Text Systems
 
-### Widespread TextMeshPro Usage
+### FontFactory
+
+Centralized font asset management system using Unity's Addressable system.
+
+```csharp
+public class FontFactory : SerializedScriptableObject
+{
+    public UnityFontRefDictionary _Fonts;        // Unity font references
+    public TMPFontRefDictionary _TMPFonts;       // TextMeshPro font references
+}
+```
+
+#### Font Access Methods
+- `Font GetFont(string fontName)` - Retrieve Unity font by name
+- `TMP_FontAsset GetTMPFont(string fontName)` - Retrieve TextMeshPro font by name
+
+#### Data Structures
+```csharp
+public class UnityFontRefData : Il2CppSystem.Object
+{
+    public AssetReferenceT<Font> UnityFontRef { get; set; }
+}
+
+public class TMPFontRefData : Il2CppSystem.Object
+{
+    public AssetReferenceT<TMP_FontAsset> TMPFontRef { get; set; }
+}
+```
+
+#### Access Pattern
+```csharp
+// Via GameManager
+FontFactory fontFactory = GM.Core.FontFactory;
+
+// Get fonts
+Font myFont = fontFactory.GetFont("MenuFont");
+TMP_FontAsset tmpFont = fontFactory.GetTMPFont("UIFont");
+```
+
+### TextMeshPro Integration
+
 Multiple UI classes extensively use TextMeshPro for text rendering:
 
 **Key UI Classes with TextMeshPro**:
@@ -247,6 +287,27 @@ public static void CustomUITheme(CharacterSelectionPage __instance)
 {
     // Modify UI component colors, fonts, or layouts
     // Access TextMeshPro components for custom styling
+}
+```
+
+### Font Replacement
+```csharp
+[HarmonyPatch(typeof(FontFactory), "GetTMPFont")]
+[HarmonyPostfix]
+public static void CustomFontOverride(string fontName, ref TMP_FontAsset __result)
+{
+    // Replace specific fonts
+    switch (fontName)
+    {
+        case "DamageFont":
+            if (ModSettings.UseHighContrastDamage)
+                __result = LoadCustomFont("HighContrastDamage");
+            break;
+        case "UIFont":
+            if (ModSettings.UseDyslexiaFriendlyFont)
+                __result = LoadCustomFont("DyslexiaFriendly");
+            break;
+    }
 }
 ```
 

@@ -7,8 +7,8 @@ Vampire Survivors uses dependency injection (Zenject) with centralized static ac
 **v1.0+ Components:**
 - GameManager injects 28 dependencies
 - Multiplayer properties (`IsOnlineMultiplayer`, `IsLocalMultiplayer`)
-- Additional managers: ParticleManager, GizmoManager, MultiplayerManager
-- Additional factories: FontFactory, ShopFactory with multiplayer support
+- Managers: ParticleManager (particle effects), GizmoManager (visual feedback), MultiplayerManager (online/local coop)
+- Factories: FontFactory (font assets), ShopFactory (merchant inventories)
 - Coherence Toolkit integration for online networking
 
 ## Static Accessors
@@ -165,27 +165,27 @@ public void Construct(
     PhysicsManager physicsManager,    // Physics simulation
     EggManager egg,                   // Egg/secret management
     LimitBreakManager limitBreakManager, // Limit break system
-    GizmoManager gizmoManager,        // Visual effects (v1.0+)
+    GizmoManager gizmoManager,        // Visual effects and overlays
     TreasureFactory treasureFactory,  // Treasure generation
     ProjectileFactory projectileFactory, // Projectile management
     SpellsManager spellsManager,      // Spell system
     AchievementManager achievementManager, // Achievement tracking
     MainGamePage mainGamePage,        // Main UI
-    MultiplayerManager multiplayer,   // Multiplayer coordination (v1.0+)
+    MultiplayerManager multiplayer,   // Multiplayer coordination
     AdventureManager adventureManager, // Adventure mode
-    FontFactory fontFactory,          // Font management (v1.0+)
+    FontFactory fontFactory,          // Font asset management
     AssetReferenceLibrary assetReferenceLibrary, // Asset loading
-    ParticleManager particleManager,  // Particle effects (v1.0+)
-    ShopFactory shopFactory           // Shop generation (v1.0+)
+    ParticleManager particleManager,  // Particle system management
+    ShopFactory shopFactory           // Shop inventory generation
 )
 ```
 
-**v1.0+ Dependencies:**
-- **GizmoManager**: Visual effects and UI overlays (level-up animations, weapon icons)
-- **MultiplayerManager**: Multiplayer coordination and player management
-- **FontFactory**: Centralized font asset management
-- **ParticleManager**: Particle system lifecycle and rendering
-- **ShopFactory**: Shop inventory generation with multiplayer support
+**Key Dependencies:**
+- **GizmoManager**: Visual effects and UI overlays for level-ups, weapon icons, and special animations. See [Visual Effects System](visual-effects.md)
+- **MultiplayerManager**: Handles online and local multiplayer coordination. See [Multiplayer System](multiplayer-system.md)
+- **FontFactory**: Centralized font asset management using Unity's Addressable system. See [UI System](ui-system.md#fontfactory)
+- **ParticleManager**: Manages particle system lifecycle with automatic pause handling. See [Visual Effects System](visual-effects.md)
+- **ShopFactory**: Generates merchant inventories with multiplayer synchronization. See [Shop System](shop-system.md)
 
 The `DiContainer` is stored as `_diContainer` for runtime object creation.
 
@@ -270,12 +270,12 @@ Access through GM.Core or injected references.
 9. **LootManager** - Loot generation and management
 10. **AccessoriesFacade** - Accessories system
 11. **SpellsManager** - Spell system management
-12. **MultiplayerManager** - Multiplayer functionality and coordination (v1.0+)
+12. **MultiplayerManager** - Multiplayer functionality and coordination
 13. **AdventureManager** - Adventure mode management
-14. **ParticleManager** - Particle system lifecycle and rendering (v1.0+)
-15. **GizmoManager** - Visual effects and UI overlays (v1.0+)
-16. **FontFactory** - Centralized font asset management (v1.0+)
-17. **ShopFactory** - Shop generation with multiplayer support (v1.0+)
+14. **ParticleManager** - Particle system lifecycle and rendering
+15. **GizmoManager** - Visual effects and UI overlays
+16. **FontFactory** - Centralized font asset management
+17. **ShopFactory** - Shop generation with multiplayer support
 
 ### Communication Patterns
 
@@ -411,5 +411,5 @@ Game systems are not thread-safe. Modify only on main Unity thread.
 - `CharacterFactory` - Characters
 - `TreasureFactory` - Treasures
 - `ProjectileFactory` - Projectiles
-- `ShopFactory` - Shops and merchants (v1.0+ with multiplayer support)
-- `FontFactory` - Font asset management (v1.0+)
+- `ShopFactory` - Shops and merchants with multiplayer support
+- `FontFactory` - Font asset management

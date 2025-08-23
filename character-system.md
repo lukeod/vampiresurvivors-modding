@@ -98,7 +98,7 @@ public enum CharacterType
     IMELDA,
     PASQUALINA,
     GENNARO,
-    CHRISTINE,
+    CRISTINA,
     POPPEA,
     CONCETTA,
     // ... many more including DLC characters
@@ -152,7 +152,7 @@ if (allPlayers != null)
 
 ## Character Weapons Manager
 
-**Location**: `Il2CppVampireSurvivors.Objects.Characters.CharacterWeaponsManager`
+**Location**: `Il2CppVampireSurvivors.Objects.CharacterWeaponsManager`
 
 Manages the character's equipped weapons:
 
@@ -168,7 +168,7 @@ if (weaponsManager != null)
 
 ## Character Accessories Manager
 
-**Location**: `Il2CppVampireSurvivors.Objects.Characters.CharacterAccessoriesManager`
+**Location**: `Il2CppVampireSurvivors.Objects.CharacterAccessoriesManager`
 
 Manages passive items and accessories:
 

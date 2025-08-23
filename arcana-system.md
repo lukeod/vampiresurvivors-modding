@@ -113,7 +113,7 @@ public List<ArcanaType> ActiveArcanas { get; set; }  // Property for currently a
 The manager also tracks specific arcana states through boolean properties:
 ```csharp
 public bool _hasWickedSeason;     // T13_WICKED active
-public bool _hasSilentSanctuary;  // T19_FIRE active  
+public bool _hasSilentSanctuary;  // D19_RIPPING_SILENCE active  
 public bool _hasAstronomia;       // T20_SINKING active
 public bool _hasSapphireMist;     // D01_SAPPHIRE_MIST active
 public bool _hasBreadAnathema;    // D03_BREAD_ANATHEMA active

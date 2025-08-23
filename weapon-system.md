@@ -10,7 +10,7 @@ Weapon identifiers with over 2500 entries (VOID = 0, highest value = 2501):
 
 ### Categories
 
-- **Base Weapons** (1-49): `WHIP = 3`, `AXE = 5`, `KNIFE = 7`, `CROSS = 4`
+- **Base Weapons** (1-49): `WHIP = 3`, `VAMPIRICA = 4`, `AXE = 5`, `KNIFE = 7`, `CROSS = 16`
 - **PowerUps** (50-68): `POWER = 50`, `AREA = 51`, `SPEED = 52`, `DURATION = 53`
 - **Evolutions** (100+): Various evolved weapon forms
 - **DLC Prefixes**:

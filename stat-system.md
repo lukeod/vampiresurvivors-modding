@@ -28,7 +28,6 @@ public unsafe EggFloat MaxHp { get; set; }
 public unsafe EggFloat Magnet { get; set; }
 public unsafe EggFloat Curse { get; set; }
 public unsafe EggFloat Banish { get; set; }
-public unsafe EggFloat Recycle { get; set; }
 ```
 
 ### Special Type Properties
@@ -45,6 +44,7 @@ public unsafe float Shields { get; set; }
 public unsafe float Defang { get; set; }
 public unsafe float InvulTimeBonus { get; set; }    // Note exact casing
 public unsafe float Fever { get; set; }
+public unsafe float Recycle { get; set; }
 ```
 
 **Raw Int (No Wrapper)**:
@@ -194,7 +194,7 @@ if (player?.PlayerStats != null)
     player.PlayerStats.Power.SetValue(100);
     player.PlayerStats.MaxHp.SetValue(200);
     player.PlayerStats.Revivals.SetValue(5);
-    player.PlayerStats.Recycle.SetValue(10);
+    player.PlayerStats.Recycle = 10f;
 }
 ```
 

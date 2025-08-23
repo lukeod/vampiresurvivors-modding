@@ -9,7 +9,7 @@ Vampire Survivors uses Zenject's SignalBus for event-driven communication betwee
 #### SignalBus (Zenject)
 **Location**: `Il2CppZenject.SignalBus`
 
-The central event bus that handles all signal subscriptions and firing. Accessible via `GameManager._signalBus` property.
+The central event bus that handles all signal subscriptions and firing. Accessible via `GameManager.SignalBus` public property.
 
 #### SignalsInstaller
 **Location**: `Il2CppVampireSurvivors.Signals.SignalsInstaller`
@@ -370,7 +370,7 @@ public static void OnInternalFire(Il2CppSystem.Type signalType, Il2CppSystem.Obj
 
 ### For Blittable Signals (Direct Subscription)
 ```csharp
-var signalBus = GM.Core._signalBus;
+var signalBus = GM.Core.SignalBus;
 
 // Simple signal
 signalBus.Subscribe<GameplaySignals.InitializeGameSessionSignal>(
@@ -481,7 +481,7 @@ int NumSubscribers { get; }
 - Execution order follows subscription order
 
 ### Hook Points
-1. **GameManager._signalBus property** - Best access point
+1. **GameManager.SignalBus property** - Best access point
 2. **GameManager.Awake** - Early subscription point
 3. **After GM.Core is set** - Safe for all subscriptions
 
@@ -500,14 +500,14 @@ public static void MonitorAllSignals(Il2CppSystem.Type signalType, Il2CppSystem.
 ### Accessing SignalBus
 ```csharp
 // Via GameManager property (preferred)
-var signalBus = GM.Core._signalBus;
+var signalBus = GM.Core.SignalBus;
 
-// Via GameManager field search
+// Via reflection (not recommended - use public property instead)
 var gmType = gameManager.GetType();
 var properties = gmType.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 foreach (var prop in properties)
 {
-    if (prop.PropertyType == typeof(SignalBus) && prop.Name == "_signalBus")
+    if (prop.PropertyType == typeof(SignalBus) && prop.Name == "SignalBus")
     {
         signalBus = prop.GetValue(gameManager) as SignalBus;
     }

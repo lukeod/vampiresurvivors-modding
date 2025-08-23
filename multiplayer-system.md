@@ -2,7 +2,7 @@
 
 ## Overview
 
-Vampire Survivors v1.0+ includes a comprehensive multiplayer system supporting both local cooperative and online multiplayer gameplay. This system is built on Unity Coherence Toolkit for network synchronization and Rewired for input management.
+Vampire Survivors includes a comprehensive multiplayer system supporting both local cooperative and online multiplayer gameplay. This system is built on Unity Coherence Toolkit for network synchronization and Rewired for input management.
 
 **File Locations:**
 - `F:\vampire\melon_decompiled\Il2CppVampireSurvivors.Runtime\Il2CppVampireSurvivors.Framework\MultiplayerManager.cs`

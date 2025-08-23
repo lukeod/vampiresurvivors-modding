@@ -29,7 +29,7 @@ public JObject _allAdventuresJson;     // Adventure mode data
 public JObject _allAdventureMerchantsJson; // Adventure merchant data
 public JObject _allCustomMerchantsJson;   // Custom merchant configurations
 
-// NEW DATA TYPES (v1.0+)
+// DATA TYPES
 public JObject _allStageSetJson;          // Stage set configurations for adventures
 public JObject _allAdventureStagesJson;   // Adventure-specific stage definitions 
 public JObject _allAlbumData;             // Music album/collection system
@@ -52,7 +52,7 @@ These flags are declared but not currently used in the codebase. They prepare fo
 
 These flags will track which data types have been modified by mods and need synchronization across online multiplayer clients.
 
-## v1.0+ Data Types
+## Additional Data Types
 
 ### CPU/AI Data System (_allCPUJson)
 
@@ -241,7 +241,7 @@ var adventureCharacters = dataManager.AdventureCharacterData;   // Dictionary<Ch
 var adventureStages = dataManager.AdventureStageData;           // Dictionary<StageType, List<StageData>>
 var adventureBestiary = dataManager.AdventureBestiaryData;      // Dictionary<EnemyType, List<EnemyData>>
 
-// v1.0+ DATA TYPES with detailed descriptions
+// DATA TYPES with detailed descriptions
 var albumData = dataManager.AllAlbumData;       // Dictionary<AlbumType, AlbumData> - Music collection system
 var cpuData = dataManager.AllCPU;               // Dictionary<AIType, AIData> - AI behavior for multiplayer
 var stageSetData = dataManager.AllStageSetData; // Dictionary<StageSetType, JObject> - Adventure stage sets
@@ -393,7 +393,7 @@ ProfilerMarker MarkerBuildConvertedData; // Tracks object conversion
 ProfilerMarker MarkerLoadBaseJObjects;   // Tracks initial JSON loading
 ```
 
-### Hook Points (Updated for v1.0+)
+### Hook Points
 
 **LoadBaseJObjects Hook** - JSON Data Ready:
 ```csharp
@@ -586,7 +586,7 @@ if (GM.Core?.IsOnlineMultiplayer != true)
 
 ### 6. New Data Type Access
 ```csharp
-// Access new v1.0+ data types
+// Access additional data types
 var aiData = dataManager.AllCPU; // Dictionary<AIType, AIData>
 foreach (var ai in aiData)
 {
@@ -687,13 +687,13 @@ public TextAsset GetWeaponDataJsonAsset()
 - `MusicData` - Music/BGM configuration
 - `AdventureData` - Adventure mode configuration
 - `CustomMerchantData` - Merchant configuration data
-- `AIData` - CPU/AI behavior configuration (NEW v1.0+)
-- `AlbumData` - Music album information (NEW v1.0+)  
+- `AIData` - CPU/AI behavior configuration
+- `AlbumData` - Music album information  
 - `HitVfxData` - Hit visual effect configuration
 - `SecretData` - Secret unlock data
 - `AchievementData` - Achievement configuration data
 
-### v1.0+ Data Classes
+### Additional Data Classes
 
 **AIData Fields** (from AIData.cs):
 ```csharp
